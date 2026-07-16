@@ -5,7 +5,7 @@ const isDev = config.server.isDevelopment;
 
 export const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: isDev ? 1000 : 100,
+  max: isDev ? 1000 : 500,
   standardHeaders: true,
   legacyHeaders: false,
   message: {

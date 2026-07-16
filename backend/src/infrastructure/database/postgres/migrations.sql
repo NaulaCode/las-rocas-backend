@@ -104,21 +104,31 @@ CREATE TABLE IF NOT EXISTS organization (
 );
 
 -- Insertar registro institucional por defecto
-INSERT INTO organization (id, name, description, mission, vision)
+INSERT INTO organization (id, name, description, mission, vision, updated_at)
 VALUES (
     '00000000-0000-0000-0000-000000000001',
     'Asociación Turística Las Rocas',
     'Promoviendo el turismo local y experiencias auténticas en nuestra región.',
     'Ser el puente entre los visitantes y las maravillas de nuestra tierra, promoviendo el desarrollo turístico sostenible.',
-    'Convertirnos en la asociación turística de referencia, preservando nuestra cultura y naturaleza.'
+    'Convertirnos en la asociación turística de referencia, preservando nuestra cultura y naturaleza.',
+    NOW()
 )
 ON CONFLICT (id) DO NOTHING;
 
 -- Insertar usuario administrador por defecto (password: Admin123!)
 -- Email: admin@lasrocas
 -- Password hash: $2a$10$rQyK.vTqJj8.3PqXJQVxEeZY8pE2vqFqPxqVxQ3xQ3xQ3xQ3xQ3xQ (bcrypt de "Admin123!")
-INSERT INTO users (email, password_hash, first_name, last_name, role)
-VALUES ('admin@lasrocas', '$2a$10$N9qo8uLOickgx2ZMRZoMye.IjqQBrkHxO3A3F9bBqJq.f5hT1LR5u', 'Administrador', 'Las Rocas', 'super_admin')
+INSERT INTO users (id, email, password_hash, first_name, last_name, role, created_at, updated_at)
+VALUES (
+    gen_random_uuid(),
+    'admin@lasrocas',
+    '$2a$10$N9qo8uLOickgx2ZMRZoMye.IjqQBrkHxO3A3F9bBqJq.f5hT1LR5u',
+    'Administrador',
+    'Las Rocas',
+    'super_admin',
+    NOW(),
+    NOW()
+)
 ON CONFLICT (email) DO NOTHING;
 
 -- Índices para optimización

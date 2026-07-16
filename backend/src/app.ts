@@ -7,6 +7,8 @@ import { config } from './shared/config/config';
 import { log } from './shared/logger/logger';
 import { AppError, ValidationError } from './domain/errors/AppError';
 import { generalLimiter } from './interfaces/http/middlewares/rateLimit';
+import healthRoutes from './interfaces/http/routes/healthRoutes';
+import welcomeRoutes from './interfaces/http/routes/welcomeRoutes';
 import authRoutes from './interfaces/http/routes/authRoutes';
 import serviceRoutes from './interfaces/http/routes/serviceRoutes';
 import newsRoutes from './interfaces/http/routes/newsRoutes';
@@ -41,29 +43,11 @@ app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Ruta raíz de prueba (sin depender de variables)
-app.get('/', (_req, res) => res.json({ status: 'ok', message: 'Las Rocas API' }));
+// Health check
+app.use(`/api/${config.server.apiVersion}`, healthRoutes);
 
-// Ruta de verificación hardcoded (para diagnóstico)
-app.get('/health', (_req, res) => res.json({ status: 'ok', message: 'Health hardcoded' }));
-
-// Ruta de verificación
-app.get(`/api/${config.server.apiVersion}/health`, (_req, res) => {
-  res.json({
-    status: 'ok',
-    message: '🌿 API Las Rocas funcionando correctamente',
-    version: config.server.apiVersion,
-    environment: config.server.nodeEnv,
-    timestamp: new Date().toISOString(),
-  });
-});
-
-// Ruta de bienvenida
-app.get(`/api/${config.server.apiVersion}`, (_req, res) => {
-  res.json({
-    message: '🌿 Bienvenido a la API de Las Rocas Turismo',
-  });
-});
+// Welcome
+app.use(`/api/${config.server.apiVersion}`, welcomeRoutes);
 
 // Archivos estáticos (imágenes subidas localmente)
 app.use('/uploads', express.static(path.join(__dirname, '../../uploads')));
