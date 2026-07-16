@@ -219,9 +219,9 @@ async function runSeed() {
     }
   }
 
-  await prisma.organization.update({
+  await prisma.organization.upsert({
     where: { id: '00000000-0000-0000-0000-000000000001' },
-    data: {
+    update: {
       name: 'Asociación Turística Las Rocas',
       legalName: 'Asociación Turística Las Rocas - Guayas',
       ruc: '0999999999001',
@@ -234,6 +234,23 @@ async function runSeed() {
       email: 'info@lasrocas',
       website: 'https://lasrocas',
       coverImage: IMAGES.hero,
+      pageContent: merged,
+    },
+    create: {
+      id: '00000000-0000-0000-0000-000000000001',
+      name: 'Asociación Turística Las Rocas',
+      legalName: 'Asociación Turística Las Rocas - Guayas',
+      ruc: '0999999999001',
+      description: 'Descubre quiénes somos y cómo nació la Asociación Turística Las Rocas, una iniciativa comunitaria que promueve el turismo sostenible, el bienestar y la conservación de la naturaleza en la comuna San Miguel, cantón Naranjal.',
+      history: 'La Asociación Turística Las Rocas fue fundada en el año 2013 por diez socios de la comuna San Miguel, ubicada en el cantón Naranjal, provincia del Guayas. Su creación surgió como respuesta a las dificultades económicas que enfrentaba la comunidad debido a la disminución del apoyo de entidades gubernamentales.',
+      mission: 'Brindar experiencias de bienestar y recreación en el cantón Naranjal mediante servicios turísticos de calidad, promoviendo el contacto responsable con la naturaleza, fortaleciendo el turismo local y contribuyendo a la conservación ambiental.',
+      vision: 'Consolidarnos como un referente regional en turismo comunitario y actividades al aire libre en el cantón Naranjal, destacándonos por ofrecer experiencias únicas, fomentar el desarrollo sostenible y preservar el patrimonio natural para las futuras generaciones.',
+      address: 'Comuna San Miguel, Cantón Naranjal, Provincia del Guayas, Ecuador',
+      phone: '+593 4 123 4567',
+      email: 'info@lasrocas',
+      website: 'https://lasrocas',
+      coverImage: IMAGES.hero,
+      isActive: true,
       pageContent: merged,
     },
   });
@@ -278,9 +295,10 @@ async function runSeed() {
 
   // Admin user
   const passwordHash = await bcrypt.hash('Admin123!', 10);
-  await prisma.user.update({
+  await prisma.user.upsert({
     where: { email: 'admin@lasrocas' },
-    data: { passwordHash, role: 'super_admin', roleRef: adminRoleId ? { connect: { id: adminRoleId } } : undefined },
+    update: { passwordHash, role: 'super_admin', roleRef: adminRoleId ? { connect: { id: adminRoleId } } : undefined },
+    create: { email: 'admin@lasrocas', passwordHash, firstName: 'Administrador', lastName: 'Las Rocas', role: 'super_admin', roleRef: adminRoleId ? { connect: { id: adminRoleId } } : undefined },
   });
 
   console.log('');
