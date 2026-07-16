@@ -75,6 +75,18 @@ export const publicPostLimiter = rateLimit({
   },
 });
 
+export const chatLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: isDev ? 30 : 6,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    status: 'error',
+    code: 'RATE_LIMIT',
+    message: 'Demasiados mensajes. Intenta de nuevo en 1 minuto.',
+  },
+});
+
 export const reservationPostLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: isDev ? 20 : 2,

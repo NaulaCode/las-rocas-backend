@@ -67,21 +67,38 @@ export class ChatbotEmbeddingRepositoryImpl implements IChatbotEmbeddingReposito
 
   async searchSimilar(embedding: number[], topK: number = 10): Promise<SemanticSearchResult[]> {
     const prisma = getPrisma();
-    const results = await prisma.$queryRaw<
-      { id: string; content: string; embedding: any; created_at: Date; updated_at: Date; similarity: number }[]
-    >`
-      SELECT id, content, embedding, created_at, updated_at,
-        1 - (embedding::jsonb <=> ${JSON.stringify(embedding)}::jsonb) as similarity
-      FROM chatbot_embeddings
-      ORDER BY similarity DESC
-      LIMIT ${topK}
-    `;
-    return results.map((row) => ({
-      id: row.id,
-      content: row.content,
-      ...this.parseId(row.id),
-      similarity: Number(row.similarity.toFixed(4)),
-    }));
+    const rows = await prisma.chatbotEmbedding.findMany({
+      select: { id: true, content: true, embedding: true },
+    });
+
+    const results = rows
+      .map((row) => {
+        const stored = Array.isArray(row.embedding) ? (row.embedding as unknown as number[]) : [];
+        const similarity = this.cosineSimilarity(embedding, stored);
+        return {
+          id: row.id,
+          content: row.content,
+          ...this.parseId(row.id),
+          similarity: Number(similarity.toFixed(4)),
+        };
+      })
+      .filter((r) => r.similarity > 0)
+      .sort((a, b) => b.similarity - a.similarity)
+      .slice(0, topK);
+
+    return results;
+  }
+
+  private cosineSimilarity(a: number[], b: number[]): number {
+    if (a.length !== b.length || a.length === 0) return 0;
+    let dot = 0, normA = 0, normB = 0;
+    for (let i = 0; i < a.length; i++) {
+      dot += a[i] * b[i];
+      normA += a[i] * a[i];
+      normB += b[i] * b[i];
+    }
+    if (normA === 0 || normB === 0) return 0;
+    return dot / (Math.sqrt(normA) * Math.sqrt(normB));
   }
 
   private parseId(id: string): { type: SemanticSearchResult['type']; entityId: string } {

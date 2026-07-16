@@ -35,6 +35,7 @@ export class ChatbotRepositoryImpl implements ChatbotRepository {
   async search(queryText: string): Promise<ChatbotQuestion[]> {
     const prisma = getPrisma();
     const searchTerms = queryText.split(/\s+/).filter(Boolean);
+    const queryLower = queryText.toLowerCase();
 
     const termConditions = searchTerms.flatMap((term) => [
       { question: { contains: term, mode: 'insensitive' as const } },
@@ -56,10 +57,26 @@ export class ChatbotRepositoryImpl implements ChatbotRepository {
       ],
     });
 
-    return result.map((q) => ({
-      ...q,
-      relevance: 0,
-    })) as ChatbotQuestion[];
+    return result.map((q) => {
+      const qLower = q.question.toLowerCase();
+      const aLower = q.answer.toLowerCase();
+      const kwLower = (q.keywords ?? []).map(k => k.toLowerCase());
+
+      let score = 0;
+
+      if (qLower === queryLower) score += 80;
+      else if (qLower.includes(queryLower)) score += 60;
+
+      for (const term of searchTerms) {
+        if (qLower.includes(term)) score += 12;
+        if (aLower.includes(term)) score += 6;
+        if (kwLower.some(k => k.includes(term) || term.includes(k))) score += 20;
+      }
+
+      score += Math.min(q.priority ?? 0, 10);
+
+      return { ...q, relevance: Math.min(score, 100) };
+    }) as ChatbotQuestion[];
   }
 
   async create(data: CreateChatbotQuestionData): Promise<ChatbotQuestion> {

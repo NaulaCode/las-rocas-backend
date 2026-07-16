@@ -2,7 +2,8 @@ import { IChatbotRepository } from '../../../domain/ports/IChatbotRepository';
 import { ChatbotQuestion, CreateQuestionDTO, UpdateQuestionDTO, ChatResponse, ChatbotStats, ChatStreamCallbacks } from '../../../domain/entities/ChatbotQuestion';
 import { apiClient } from '../ApiClient';
 
-const STREAM_URL = '/api/v1/chatbot/chat/stream';
+const API_BASE = import.meta.env.VITE_API_URL || '/api/v1';
+const STREAM_URL = `${API_BASE}/chatbot/chat/stream`;
 
 export class ChatbotRepositoryImpl implements IChatbotRepository {
   chat(query: string, sessionId?: string): Promise<ChatResponse> {

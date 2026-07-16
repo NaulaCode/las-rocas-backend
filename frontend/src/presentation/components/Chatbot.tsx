@@ -202,6 +202,7 @@ export default function Chatbot() {
   const lastMentionedServiceRef = useRef<string>('');
   const [feedbackGiven, setFeedbackGiven] = useState<Set<number>>(new Set());
   const [showResetBanner, setShowResetBanner] = useState(false);
+  const streamingMsgIdx = useRef<number | null>(null);
 
   useEffect(() => {
     if (isOpen && services.length === 0) {
@@ -293,33 +294,68 @@ export default function Chatbot() {
     }
 
     try {
-      const res = await container.chatbot.chat(text, sessionId);
-      let responseText = res.answer;
-      if (res.matchedQuestion && res.confidence === 'baja') {
-        responseText = `*Entendí que preguntas sobre:* ${res.matchedQuestion}\n\n${res.answer}`;
-      }
-      if (res.matchedQuestion && res.confidence === 'media') {
-        responseText = `📌 ${res.matchedQuestion}\n\n${res.answer}`;
-      }
-      lastTopicRef.current = res.matchedQuestion || 'general';
-      setMessages((prev) => [...prev, { role: 'bot', content: responseText, time: formatTime(new Date()), logId: res.logId, aiGenerated: res.aiGenerated, relatedQuestions: res.relatedQuestions }]);
-      const related = (res.relatedQuestions || []).map(q => ({ text: q.question }));
-      setCurrentSuggestions([
-        ...related,
-        ...(res.aiGenerated ? [
-          { text: 'Hablar con un asesor' },
-          { text: 'Volver al inicio' },
-        ] : [
-          { text: 'Más información' },
-          { text: 'Hablar con un asesor' },
-          { text: 'Volver al inicio' },
-        ]),
-      ]);
-      setShowSuggestions(true);
-      setShowResetBanner(false);
-      setLoading(false);
+      let accText = '';
+      streamingMsgIdx.current = null;
+
+      await container.chatbot.chatStream(text, sessionId, {
+        onToken: (token: string) => {
+          accText += token;
+          if (streamingMsgIdx.current === null) {
+            const now = formatTime(new Date());
+            setMessages((prev) => {
+              const idx = prev.length;
+              streamingMsgIdx.current = idx;
+              return [...prev, { role: 'bot', content: accText, time: now }];
+            });
+          } else {
+            setMessages((prev) => {
+              const copy = [...prev];
+              copy[streamingMsgIdx.current!] = { ...copy[streamingMsgIdx.current!], content: accText };
+              return copy;
+            });
+          }
+        },
+        onDone: (result: { answer: string; aiGenerated?: boolean; logId?: string }) => {
+          if (streamingMsgIdx.current !== null) {
+            setMessages((prev) => {
+              const copy = [...prev];
+              copy[streamingMsgIdx.current!] = {
+                ...copy[streamingMsgIdx.current!],
+                content: result.answer,
+                logId: result.logId,
+                aiGenerated: result.aiGenerated ?? true,
+              };
+              return copy;
+            });
+          }
+          streamingMsgIdx.current = null;
+          setCurrentSuggestions([
+            { text: 'Más información' },
+            { text: 'Hablar con un asesor' },
+            { text: 'Volver al inicio' },
+          ]);
+          setShowSuggestions(true);
+          setShowResetBanner(false);
+          setLoading(false);
+        },
+        onError: () => {
+          streamingMsgIdx.current = null;
+          setMessages((prev) => [...prev, {
+            role: 'bot',
+            content: t('chatbot.errorMessage'),
+            time: formatTime(new Date()),
+          }]);
+          setCurrentSuggestions([
+            { text: 'Intentar de nuevo' },
+            { text: 'Contactar asesor' },
+          ]);
+          setShowSuggestions(true);
+          setShowResetBanner(false);
+          setLoading(false);
+        },
+      });
     } catch {
-      await new Promise((r) => setTimeout(r, 400));
+      streamingMsgIdx.current = null;
       setMessages((prev) => [...prev, {
         role: 'bot',
         content: t('chatbot.errorMessage'),
