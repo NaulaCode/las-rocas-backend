@@ -4,18 +4,8 @@ import { config } from '../../../shared/config/config';
 import { UnauthorizedError, ForbiddenError } from '../../../domain/errors/AppError';
 import { UserRole } from '../../../domain/entities/User';
 
-export interface AuthRequest extends Request {
-  user?: {
-    userId: string;
-    email?: string;
-    role: UserRole;
-    roleId?: string;
-  };
-  userPermissions?: string[];
-}
-
 export const authenticate = (
-  req: AuthRequest,
+  req: Request,
   _res: Response,
   next: NextFunction
 ): void => {
@@ -45,7 +35,7 @@ export const authenticate = (
 };
 
 export const authorize = (...roles: UserRole[]) => {
-  return (req: AuthRequest, _res: Response, next: NextFunction): void => {
+  return (req: Request, _res: Response, next: NextFunction): void => {
     if (!req.user) {
       return next(new UnauthorizedError('No autenticado'));
     }

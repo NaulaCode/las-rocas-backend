@@ -1,11 +1,11 @@
-import { Response, NextFunction } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { UnauthorizedError, ForbiddenError } from '../../../domain/errors/AppError';
-import { AuthRequest, authenticate } from './authMiddleware';
+import { authenticate } from './authMiddleware';
 import { RoleRepository } from '../../../domain/repositories/RoleRepository';
 import { getPrisma } from '../../../infrastructure/database/postgres/PrismaService';
 
 export function createPermissionLoader(roleRepo: RoleRepository) {
-  return async (req: AuthRequest, _res: Response, next: NextFunction) => {
+  return async (req: Request, _res: Response, next: NextFunction) => {
     if (!req.user) return next();
     if (req.user.role === 'super_admin') {
       req.userPermissions = [];
@@ -35,7 +35,7 @@ export function createPermissionLoader(roleRepo: RoleRepository) {
 }
 
 export function createRequirePermission(permissionName: string) {
-  return (req: AuthRequest, _res: Response, next: NextFunction) => {
+  return (req: Request, _res: Response, next: NextFunction) => {
     if (req.user?.role === 'super_admin') return next();
     if (!req.userPermissions?.includes(permissionName)) {
       return next(new ForbiddenError('No tienes permiso para esta acción'));
