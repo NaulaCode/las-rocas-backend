@@ -1,47 +1,44 @@
 import rateLimit from 'express-rate-limit';
-import { config } from '../../../shared/config/config';
-
-const isDev = config.server.isDevelopment;
 
 export const generalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: isDev ? 2000 : 2000,
+  windowMs: 60 * 1000,
+  max: 10000,
   standardHeaders: true,
   legacyHeaders: false,
   message: {
     status: 'error',
     code: 'RATE_LIMIT',
-    message: 'Demasiadas solicitudes. Intenta de nuevo en 15 minutos.',
+    message: 'Demasiadas solicitudes. Intenta de nuevo en 1 minuto.',
   },
 });
 
 export const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: isDev ? 100 : 10,
+  windowMs: 60 * 1000,
+  max: 1000,
   standardHeaders: true,
   legacyHeaders: false,
   message: {
     status: 'error',
     code: 'RATE_LIMIT',
-    message: 'Demasiados intentos de inicio de sesión. Intenta de nuevo en 15 minutos.',
+    message: 'Demasiados intentos de inicio de sesión. Intenta de nuevo en 1 minuto.',
   },
 });
 
 export const reservationLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: isDev ? 100 : 10,
+  windowMs: 60 * 1000,
+  max: 1000,
   standardHeaders: true,
   legacyHeaders: false,
   message: {
     status: 'error',
     code: 'RATE_LIMIT',
-    message: 'Demasiadas reservas. Intenta de nuevo en 15 minutos.',
+    message: 'Demasiadas solicitudes. Intenta de nuevo en 1 minuto.',
   },
 });
 
 export const uploadLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
-  max: isDev ? 200 : 20,
+  max: 2000,
   standardHeaders: true,
   legacyHeaders: false,
   message: {
@@ -52,20 +49,20 @@ export const uploadLimiter = rateLimit({
 });
 
 export const forgotPasswordLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: isDev ? 20 : 3,
+  windowMs: 60 * 1000,
+  max: 200,
   standardHeaders: true,
   legacyHeaders: false,
   message: {
     status: 'error',
     code: 'RATE_LIMIT',
-    message: 'Demasiadas solicitudes de recuperación. Intenta de nuevo en 15 minutos.',
+    message: 'Demasiadas solicitudes. Intenta de nuevo en 1 minuto.',
   },
 });
 
 export const publicPostLimiter = rateLimit({
   windowMs: 60 * 1000,
-  max: isDev ? 30 : 3,
+  max: 1000,
   standardHeaders: true,
   legacyHeaders: false,
   message: {
@@ -77,7 +74,7 @@ export const publicPostLimiter = rateLimit({
 
 export const chatLimiter = rateLimit({
   windowMs: 60 * 1000,
-  max: isDev ? 30 : 6,
+  max: 1000,
   standardHeaders: true,
   legacyHeaders: false,
   message: {
@@ -89,7 +86,7 @@ export const chatLimiter = rateLimit({
 
 export const reservationPostLimiter = rateLimit({
   windowMs: 60 * 1000,
-  max: isDev ? 20 : 2,
+  max: 500,
   standardHeaders: true,
   legacyHeaders: false,
   message: {
