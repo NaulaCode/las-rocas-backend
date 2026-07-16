@@ -1,0 +1,96 @@
+import { useState } from 'react';
+import { TouristicAttraction } from '../../../../domain/entities/TouristicAttraction';
+import { renderTable, actionButtons, searchInput, sortData } from '../AdminTable';
+import StatusBadge from '../StatusBadge';
+import Pagination from '../../Pagination';
+import ImageLightbox from '../../ImageLightbox';
+import { exportAttractionsPDF } from '../../../utils/pdf';
+import { attractionCategoryLabels } from '../forms/AttractionForm';
+
+interface Props {
+  attractions: TouristicAttraction[];
+  searchTerm: string;
+  setSearchTerm: (v: string) => void;
+  filterValue: string;
+  setFilterValue: (v: string) => void;
+  openCreate: (type: string) => void;
+  openEdit: (type: string, item: any) => void;
+  setDeleteId: (id: string | null) => void;
+}
+
+const PAGE_SIZE = 10;
+
+export default function AttractionsTab({ attractions, searchTerm, setSearchTerm, filterValue, setFilterValue, openCreate, openEdit, setDeleteId }: Props) {
+  const [page, setPage] = useState(1);
+  const [sortKey, setSortKey] = useState('name');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
+  const [previewImg, setPreviewImg] = useState<string | null>(null);
+
+  const filtered = attractions.filter((a) => {
+    const matchSearch = !searchTerm || a.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchFilter = !filterValue || a.category === filterValue;
+    return matchSearch && matchFilter;
+  });
+
+  const sorted = sortData(filtered, sortKey, sortDir);
+  const totalPages = Math.ceil(sorted.length / PAGE_SIZE);
+  const paginated = sorted.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  const handleSort = (key: string) => {
+    if (sortKey === key) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
+    else { setSortKey(key); setSortDir('asc'); }
+    setPage(1);
+  };
+
+  return (
+    <div>
+      {previewImg && <ImageLightbox images={[{ url: previewImg }]} index={0} onClose={() => setPreviewImg(null)} onPrev={() => {}} onNext={() => {}} />}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-5">
+        <div className="flex items-center gap-3 flex-1 w-full sm:w-auto">
+          <div className="relative flex-1 max-w-xs">{searchInput(searchTerm, setSearchTerm, 'Buscar por nombre...')}</div>
+          <select value={filterValue} onChange={(e) => { setFilterValue(e.target.value); setPage(1); }}
+            className="px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition-all bg-white">
+            <option value="">Todas las categorías</option>
+            {Object.entries(attractionCategoryLabels).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+          </select>
+        </div>
+        <div className="flex items-center gap-2">
+          <button onClick={() => exportAttractionsPDF(filtered)}
+            className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors" title="Exportar PDF">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
+          </button>
+          <button onClick={() => openCreate('attraction')} className="flex items-center gap-2 bg-primary-600 text-white px-4 py-2.5 rounded-lg hover:bg-primary-700 transition-colors text-sm font-medium whitespace-nowrap">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+            Nueva Atracción
+          </button>
+        </div>
+      </div>
+      {renderTable(
+        [
+          { label: 'Imagen', key: 'image', sortable: true },
+          { label: 'Nombre', key: 'name', sortable: true },
+          { label: 'Categoría', key: 'category', sortable: true },
+          { label: 'Ubicación', key: 'location', sortable: true },
+          { label: 'Estado', key: 'isActive', sortable: true },
+          { label: 'Acciones' }
+        ],
+        paginated.map((a) => (
+          <tr key={a.id} className="hover:bg-gray-50/50 transition-colors">
+            <td className="px-4 py-3">
+              {a.image ? <img src={a.image} alt="" className="w-10 h-10 object-cover rounded-lg cursor-pointer hover:opacity-80" loading="lazy" onClick={() => setPreviewImg(a.image ?? null)} />
+                : <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center"><svg className="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg></div>}
+            </td>
+            <td className="px-4 py-3 text-sm font-medium text-gray-800">{a.name}</td>
+            <td className="px-4 py-3"><span className="inline-block px-2.5 py-0.5 bg-gray-100 text-gray-600 rounded-full text-xs font-medium">{attractionCategoryLabels[a.category] || a.category}</span></td>
+            <td className="px-4 py-3 text-sm text-gray-600">{a.location || '-'}</td>
+            <td className="px-4 py-3"><StatusBadge active={a.isActive} status={a.isActive ? 'activo' : 'inactivo'} /></td>
+            <td className="px-4 py-3">{actionButtons(() => openEdit('attraction', a), () => setDeleteId(`attraction:${a.id}`))}</td>
+          </tr>
+        )),
+        { key: sortKey, dir: sortDir },
+        handleSort
+      )}
+      {totalPages > 1 && <Pagination current={page} total={sorted.length} pageSize={PAGE_SIZE} onChange={setPage} />}
+    </div>
+  );
+}

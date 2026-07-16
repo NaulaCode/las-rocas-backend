@@ -1,0 +1,21 @@
+node_modules
+dist
+.env
+*.local
+
+# Backend
+backend/dist/
+backend/uploads/
+
+# Frontend
+frontend/dist/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db

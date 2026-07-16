@@ -1,0 +1,360 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(uuid()) @db.Uuid
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  firstName    String   @map("first_name")
+  lastName     String   @map("last_name")
+  phone        String?
+  role         String   @default("visitor")
+  isActive     Boolean  @default(true) @map("is_active")
+
+  createdById   String?  @map("created_by") @db.Uuid
+  createdBy     User?    @relation("UserCreated", fields: [createdById], references: [id])
+  createdUsers  User[]   @relation("UserCreated")
+
+  roleId  String? @map("role_id") @db.Uuid
+  roleRef Role?   @relation(fields: [roleId], references: [id])
+
+  auditLogs         AuditLog[]
+  createdServices   Service[]           @relation("ServiceCreatedBy")
+  updatedServices   Service[]           @relation("ServiceUpdatedBy")
+  createdNews       News[]              @relation("NewsCreatedBy")
+  updatedNews       News[]              @relation("NewsUpdatedBy")
+  createdQuestions  ChatbotQuestion[]   @relation("QuestionCreatedBy")
+  updatedQuestions  ChatbotQuestion[]   @relation("QuestionUpdatedBy")
+  createdAttractions TouristicAttraction[] @relation("AttractionCreatedBy")
+  updatedAttractions TouristicAttraction[] @relation("AttractionUpdatedBy")
+  createdReservations  Reservation[] @relation("ReservationCreatedBy")
+  managedReservations  Reservation[] @relation("ReservationManagedBy")
+  approvedReviews   Review[]
+  assignedMessages  ContactMessage[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([roleId])
+  @@map("users")
+}
+
+model Role {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String   @unique
+  description String?
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  permissions RolePermission[]
+  users       User[]
+
+  @@map("roles")
+}
+
+model Permission {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String   @unique
+  module    String
+  action    String
+  label     String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  roles RolePermission[]
+
+  @@index([module])
+  @@map("permissions")
+}
+
+model RolePermission {
+  roleId       String @map("role_id") @db.Uuid
+  permissionId String @map("permission_id") @db.Uuid
+
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+model Service {
+  id             String   @id @default(uuid()) @db.Uuid
+  name           String
+  description    String
+  category       String
+  image          String?
+  price          Decimal? @db.Decimal(10, 2)
+  currency       String   @default("USD")
+  duration       String?
+  location       String?
+  schedule       String?
+  isActive       Boolean  @default(true) @map("is_active")
+  maxCapacity    Int      @default(999) @map("max_capacity")
+  availableFrom  DateTime? @map("available_from") @db.Date
+  availableUntil DateTime? @map("available_until") @db.Date
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  createdById String? @map("created_by") @db.Uuid
+  updatedById String? @map("updated_by") @db.Uuid
+  createdBy   User?   @relation("ServiceCreatedBy", fields: [createdById], references: [id])
+  updatedBy   User?   @relation("ServiceUpdatedBy", fields: [updatedById], references: [id])
+
+  reservations Reservation[]
+  reviews      Review[]
+
+  @@index([category])
+  @@index([isActive])
+  @@index([createdById])
+  @@index([updatedById])
+  @@map("services")
+}
+
+model News {
+  id          String   @id @default(uuid()) @db.Uuid
+  title       String
+  content     String
+  summary     String?
+  type        String
+  image       String?
+  eventDate   DateTime? @map("event_date")
+  location    String?
+  isPublished Boolean  @default(true) @map("is_published")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  createdById String? @map("created_by") @db.Uuid
+  updatedById String? @map("updated_by") @db.Uuid
+  createdBy   User?   @relation("NewsCreatedBy", fields: [createdById], references: [id])
+  updatedBy   User?   @relation("NewsUpdatedBy", fields: [updatedById], references: [id])
+
+  @@index([type])
+  @@index([isPublished])
+  @@index([eventDate])
+  @@index([createdById])
+  @@index([updatedById])
+  @@map("news")
+}
+
+model Reservation {
+  id              String   @id @default(uuid()) @db.Uuid
+  serviceId       String?  @map("service_id") @db.Uuid
+  serviceName     String?  @map("service_name")
+  userName        String   @map("user_name")
+  userEmail       String   @map("user_email")
+  userPhone       String?  @map("user_phone")
+  numberOfPeople  Int?     @map("number_of_people")
+  preferredDate   DateTime? @map("preferred_date")
+  message         String?
+  status          String   @default("pendiente")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  createdById String? @map("created_by") @db.Uuid
+  managedById String? @map("managed_by") @db.Uuid
+  createdBy   User?   @relation("ReservationCreatedBy", fields: [createdById], references: [id])
+  managedBy   User?   @relation("ReservationManagedBy", fields: [managedById], references: [id])
+
+  service Service? @relation(fields: [serviceId], references: [id])
+
+  @@index([status])
+  @@index([serviceId])
+  @@index([createdById])
+  @@index([managedById])
+  @@map("reservations")
+}
+
+model ChatbotQuestion {
+  id        String   @id @default(uuid()) @db.Uuid
+  keywords  String[]
+  question  String
+  answer    String
+  category  String
+  priority  Int      @default(0)
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  createdById String? @map("created_by") @db.Uuid
+  updatedById String? @map("updated_by") @db.Uuid
+  createdBy   User?   @relation("QuestionCreatedBy", fields: [createdById], references: [id])
+  updatedBy   User?   @relation("QuestionUpdatedBy", fields: [updatedById], references: [id])
+
+  matchedLogs ChatbotLog[] @relation("LogMatchedQuestion")
+
+  @@index([category])
+  @@index([isActive])
+  @@index([createdById])
+  @@index([updatedById])
+  @@map("chatbot_questions")
+}
+
+model Organization {
+  id          String   @id @default("00000000-0000-0000-0000-000000000001") @db.Uuid
+  name        String   @default("Asociación Turística Las Rocas")
+  legalName   String?  @map("legal_name")
+  ruc         String?
+  description String?
+  history     String?
+  mission     String?
+  vision      String?
+  objectives  String?
+  address     String?
+  phone       String?
+  email       String?
+  website     String?
+  logo        String?
+  coverImage  String?  @map("cover_image")
+  pageContent Json?    @default("{}") @map("page_content")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("organization")
+}
+
+model ChatbotLog {
+  id              String        @id @default(uuid()) @db.Uuid
+  query           String
+  answer          String
+  source          String
+  matchedQuestion String?       @map("matched_question")
+  matchedQuestionId String?     @map("matched_question_id") @db.Uuid
+  confidence      String?
+  feedback        String?
+  sessionId       String?       @map("session_id")
+  createdAt       DateTime      @default(now()) @map("created_at")
+
+  matchedQuestionRef ChatbotQuestion? @relation("LogMatchedQuestion", fields: [matchedQuestionId], references: [id])
+  session            ChatbotSession?  @relation(fields: [sessionId], references: [id])
+
+  @@index([createdAt])
+  @@index([source])
+  @@index([sessionId])
+  @@index([matchedQuestionId])
+  @@map("chatbot_logs")
+}
+
+model TouristicAttraction {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String
+  description String
+  category    String
+  image       String?
+  location    String?
+  latitude    Decimal? @db.Decimal(10, 8)
+  longitude   Decimal? @db.Decimal(11, 8)
+  schedule    String?
+  price       Decimal? @db.Decimal(10, 2)
+  currency    String   @default("USD")
+  duration    String?
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  createdById String? @map("created_by") @db.Uuid
+  updatedById String? @map("updated_by") @db.Uuid
+  createdBy   User?   @relation("AttractionCreatedBy", fields: [createdById], references: [id])
+  updatedBy   User?   @relation("AttractionUpdatedBy", fields: [updatedById], references: [id])
+
+  @@index([category])
+  @@index([isActive])
+  @@index([createdById])
+  @@index([updatedById])
+  @@map("touristic_attractions")
+}
+
+model AuditLog {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String   @map("user_id") @db.Uuid
+  userEmail  String   @map("user_email")
+  action     String
+  entityType String   @map("entity_type")
+  entityId   String   @map("entity_id") @db.Uuid
+  details    Json?    @default("{}")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([action])
+  @@index([entityType])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+model ContactMessage {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  email     String
+  phone     String?
+  subject   String?
+  message   String
+  isRead    Boolean  @default(false) @map("is_read")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  assignedToId String? @map("assigned_to") @db.Uuid
+  assignedTo   User?   @relation(fields: [assignedToId], references: [id])
+
+  @@index([isRead])
+  @@index([createdAt])
+  @@index([assignedToId])
+  @@map("contact_messages")
+}
+
+model Review {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String
+  email       String
+  text        String
+  rating      Int
+  serviceName String?  @map("service_name")
+  serviceId   String?  @map("service_id") @db.Uuid
+  role        String?
+  isApproved  Boolean  @default(false) @map("is_approved")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  approvedById String? @map("approved_by") @db.Uuid
+  approvedBy   User?   @relation(fields: [approvedById], references: [id])
+
+  service Service? @relation(fields: [serviceId], references: [id])
+
+  @@index([isApproved])
+  @@index([serviceName])
+  @@index([serviceId])
+  @@index([createdAt])
+  @@index([approvedById])
+  @@map("reviews")
+}
+
+model ChatbotSession {
+  id                String        @id
+  history           Json          @default("[]")
+  summary           String        @default("")
+  language          String        @default("es")
+  preferredCategory String?       @map("preferred_category")
+  createdAt         DateTime      @default(now()) @map("created_at")
+  updatedAt         DateTime      @updatedAt @map("updated_at")
+
+  logs ChatbotLog[]
+
+  @@index([updatedAt])
+  @@map("chatbot_sessions")
+}
+
+model ChatbotEmbedding {
+  id        String   @id
+  content   String
+  embedding Json
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("chatbot_embeddings")
+}
