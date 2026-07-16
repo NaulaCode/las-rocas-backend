@@ -41,6 +41,12 @@ app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Ruta raíz de prueba (sin depender de variables)
+app.get('/', (_req, res) => res.json({ status: 'ok', message: 'Las Rocas API' }));
+
+// Ruta de verificación hardcoded (para diagnóstico)
+app.get('/health', (_req, res) => res.json({ status: 'ok', message: 'Health hardcoded' }));
+
 // Ruta de verificación
 app.get(`/api/${config.server.apiVersion}/health`, (_req, res) => {
   res.json({
