@@ -74,7 +74,7 @@ export const publicPostLimiter = rateLimit({
 
 export const chatLimiter = rateLimit({
   windowMs: 60 * 1000,
-  max: 1000,
+  max: 30,
   standardHeaders: true,
   legacyHeaders: false,
   message: {
