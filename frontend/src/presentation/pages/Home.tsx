@@ -297,6 +297,13 @@ export default function Home() {
     );
   }
 
+  const cardThemes = [
+    { bg: 'bg-emerald-100', text: 'text-emerald-600', icon: 'M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z' },
+    { bg: 'bg-sky-100', text: 'text-sky-600', icon: 'M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z' },
+    { bg: 'bg-amber-100', text: 'text-amber-600', icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z' },
+    { bg: 'bg-violet-100', text: 'text-violet-600', icon: 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z' },
+  ];
+
   const whatsapp = org?.pageContent?.contacto?.whatsappNumber || '593999999999';
 
   return (
@@ -373,7 +380,21 @@ export default function Home() {
             transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
             className="absolute bottom-20 right-10 w-80 h-80 bg-accent-500/10 rounded-full blur-3xl"
           />
-          <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-accent-500/5 rounded-full blur-3xl" />
+          <motion.div
+            animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0.8, 0.5] }}
+            transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
+            className="absolute top-1/4 left-1/3 w-96 h-96 bg-accent-400/8 rounded-full blur-3xl"
+          />
+          <motion.div
+            animate={{ rotate: [0, 360] }}
+            transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
+            className="absolute top-1/2 right-12 w-20 h-20 border border-white/10 rounded-full"
+          />
+          <motion.div
+            animate={{ rotate: [0, -360] }}
+            transition={{ duration: 15, repeat: Infinity, ease: 'linear' }}
+            className="absolute bottom-1/4 left-20 w-14 h-14 border border-white/10 rounded-lg"
+          />
         </div>
 
         <div className="relative z-10 text-center text-white px-4 max-w-5xl">
@@ -447,17 +468,24 @@ export default function Home() {
         </div>
 
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.5 }}
           className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10"
         >
           <motion.div
             animate={{ y: [0, 8, 0] }}
-            transition={{ duration: 2, repeat: Infinity }}
-            className="w-6 h-10 border-2 border-white/30 rounded-full flex items-start justify-center p-1.5"
+            transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+            className="flex flex-col items-center gap-2"
           >
-            <div className="w-1.5 h-1.5 bg-white rounded-full" />
+            <span className="text-[10px] uppercase tracking-[0.2em] text-white/40 font-medium">Scroll</span>
+            <div className="w-5 h-8 border-2 border-white/30 rounded-full flex items-start justify-center p-1">
+              <motion.div
+                animate={{ y: [0, 6, 0] }}
+                transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+                className="w-1 h-1 bg-white rounded-full"
+              />
+            </div>
           </motion.div>
         </motion.div>
 
@@ -514,9 +542,10 @@ export default function Home() {
               className="relative"
             >
               <div className="absolute -top-4 -right-4 w-20 h-20 bg-accent-100 rounded-2xl -rotate-12 hidden md:block" />
-              <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100 relative z-10">
+              <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100 relative z-10 overflow-hidden">
+                <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-accent-500 to-accent-600" />
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 bg-accent-100 rounded-xl flex items-center justify-center">
+                  <div className="w-10 h-10 bg-accent-100 rounded-xl flex items-center justify-center flex-shrink-0">
                     <svg className="w-5 h-5 text-accent-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
@@ -528,9 +557,10 @@ export default function Home() {
                 </div>
                 <p className="text-gray-600 leading-relaxed text-sm">{org?.mission || 'Promover el turismo sostenible mediante la oferta de servicios turísticos de calidad.'}</p>
               </div>
-              <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100 mt-5 ml-0 md:ml-10 relative z-10">
+              <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100 mt-5 ml-0 md:ml-10 relative z-10 overflow-hidden">
+                <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-primary-500 to-primary-600" />
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 bg-primary-100 rounded-xl flex items-center justify-center">
+                  <div className="w-10 h-10 bg-primary-100 rounded-xl flex items-center justify-center flex-shrink-0">
                     <svg className="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                     </svg>
@@ -583,14 +613,14 @@ export default function Home() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: i * 0.1 }}
-                className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 hover:shadow-xl transition-all hover:-translate-y-1"
+                className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 hover:shadow-xl transition-all hover:-translate-y-1 group"
               >
-                <div className="w-14 h-14 bg-green-100 rounded-xl flex items-center justify-center mb-5">
-                  <svg className="w-7 h-7 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                <div className={`w-14 h-14 ${cardThemes[i].bg} rounded-xl flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300`}>
+                  <svg className={`w-7 h-7 ${cardThemes[i].text}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={cardThemes[i].icon} />
                   </svg>
                 </div>
-                <h3 className="text-xl font-bold text-gray-800 mb-3">{w.title}</h3>
+                <h3 className={`text-xl font-bold mb-3 ${cardThemes[i].text}`}>{w.title}</h3>
                 <p className="text-gray-500 text-sm leading-relaxed">{w.text}</p>
               </motion.div>
             ))}
@@ -734,13 +764,21 @@ export default function Home() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -30 }}
                 transition={{ duration: 0.5 }}
-                className="bg-white rounded-2xl shadow-xl p-8 md:p-10 border border-gray-100 text-center"
+                className="bg-white rounded-2xl shadow-xl p-8 md:p-10 border border-gray-100 text-center relative overflow-hidden"
               >
-                <Avatar name={testimonials[testimonialIndex].name} />
+                <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-accent-500 via-primary-500 to-accent-500" />
+                <div className="relative">
+                  <svg className="absolute -top-2 -left-2 w-12 h-12 text-primary-100 -z-0" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10H14.017zM0 21v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151C7.563 6.068 6 8.789 6 11h4.017v10H0z" />
+                  </svg>
+                  <div className="relative z-10">
+                    <Avatar name={testimonials[testimonialIndex].name} />
+                  </div>
+                </div>
                 <div className="mt-6 mb-6">
                   <Stars count={testimonials[testimonialIndex].rating} />
                 </div>
-                <p className="text-gray-600 text-lg leading-relaxed mb-6 italic">
+                <p className="text-gray-600 text-lg leading-relaxed mb-6 italic relative z-10">
                   &ldquo;{testimonials[testimonialIndex].text}&rdquo;
                 </p>
                 <div className="mt-4 pt-4 border-t border-gray-100">
