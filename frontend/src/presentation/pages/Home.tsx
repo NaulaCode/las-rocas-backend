@@ -664,6 +664,7 @@ export default function Home() {
                     className="absolute -inset-0.5 bg-gradient-to-r from-primary-500 to-accent-500 rounded-2xl opacity-0 group-hover:opacity-20 blur transition-all duration-500"
                   />
                   <div className="relative bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 border border-gray-100 group-hover:border-transparent">
+                    <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary-500 via-accent-500 to-primary-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10" />
                     <Link to={`/servicios/${service.id}`} className="block">
                       <div className="relative h-52 overflow-hidden">
                         {service.image ? (
@@ -673,13 +674,13 @@ export default function Home() {
                             <span className="text-7xl opacity-30">{categoryIcons[service.category] || '🏖️'}</span>
                           </div>
                         )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                         <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
-                          <span className="flex items-center gap-1.5 text-xs font-bold text-white uppercase tracking-wider bg-white/20 backdrop-blur-sm px-3 py-1.5 rounded-full">
+                          <span className="flex items-center gap-1.5 text-xs font-bold text-white uppercase tracking-wider bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10">
                             {categoryIcons[service.category] || ''} {service.category}
                           </span>
                           {service.price && (
-                            <span className="text-sm font-bold text-white bg-accent-500/90 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-lg">
+                            <span className="text-sm font-bold text-white bg-gradient-to-r from-accent-500 to-accent-600 px-3 py-1.5 rounded-full shadow-lg shadow-accent-500/30">
                               <AnimatedPrice value={service.price} />
                             </span>
                           )}
@@ -691,17 +692,17 @@ export default function Home() {
                         )}
                       </div>
                       <div className="p-5">
-                        <h3 className="font-bold text-lg mb-2 text-gray-800 group-hover:text-primary-700 transition-colors">{service.name}</h3>
+                        <h3 className="font-bold text-lg mb-2 text-gray-800 group-hover:text-primary-600 transition-colors">{service.name}</h3>
                         <p className="text-gray-500 text-sm leading-relaxed line-clamp-2">{service.description}</p>
-                        <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
-                          <span className="text-sm text-primary-600 font-medium flex items-center gap-1.5 group-hover:gap-2.5 transition-all">
+                        <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100 group-hover:border-primary-100 transition-colors">
+                          <span className="text-sm text-primary-600 font-medium flex items-center gap-1.5 group-hover:text-accent-600 group-hover:gap-2.5 transition-all">
                             {t('common.verDetalle')}
-                            <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-4 h-4 group-hover:translate-x-1.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                             </svg>
                           </span>
                           {service.duration && (
-                            <span className="text-gray-400 text-xs flex items-center gap-1">
+                            <span className="text-gray-400 text-xs flex items-center gap-1 group-hover:text-gray-500 transition-colors">
                               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                               </svg>

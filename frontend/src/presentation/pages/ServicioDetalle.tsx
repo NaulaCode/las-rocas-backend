@@ -141,6 +141,20 @@ export default function ServicioDetalle() {
           <motion.div className="absolute top-10 left-20 w-20 h-20 border border-white/10 rounded-full" animate={{ y: [-10, 10, -10] }} transition={{ duration: 7, repeat: Infinity }} />
           <motion.div className="absolute bottom-10 right-32 w-32 h-32 border border-white/5 rounded-full" animate={{ y: [10, -10, 10] }} transition={{ duration: 9, repeat: Infinity }} />
           <motion.div className="absolute top-1/3 right-1/4 w-16 h-16 bg-white/5 rounded-full blur-xl" animate={{ y: [-15, 15, -15], scale: [1, 1.2, 1] }} transition={{ duration: 6, repeat: Infinity }} />
+          <motion.div
+            animate={{ rotate: [0, 360] }}
+            transition={{ duration: 25, repeat: Infinity, ease: 'linear' }}
+            className="absolute top-1/4 left-1/4 w-40 h-40 border border-white/5 rounded-full"
+          >
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-2 h-2 bg-white/30 rounded-full" />
+          </motion.div>
+          <motion.div
+            animate={{ rotate: [360, 0] }}
+            transition={{ duration: 35, repeat: Infinity, ease: 'linear' }}
+            className="absolute bottom-1/3 right-1/3 w-52 h-52 border border-white/5 rounded-full"
+          >
+            <div className="absolute top-1/2 right-0 -translate-y-1/2 w-3 h-3 bg-accent-500/40 rounded-full" />
+          </motion.div>
         </div>
         <div className="container mx-auto px-4 relative z-10">
           <motion.button
@@ -191,7 +205,8 @@ export default function ServicioDetalle() {
           className="grid lg:grid-cols-3 gap-10"
         >
           <motion.div variants={item} className="lg:col-span-2 space-y-10 pb-16">
-            <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-gray-100 shadow-sm p-6 md:p-8">
+            <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-gray-100 shadow-sm p-6 md:p-8 relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-primary-500 via-accent-500 to-primary-500" />
               <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
                 <svg className="w-5 h-5 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -199,6 +214,7 @@ export default function ServicioDetalle() {
                 {t('serviceDetail.descripcion')}
               </h2>
               <p className="text-gray-600 leading-relaxed text-base md:text-lg">{service.description}</p>
+              <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-primary-50 rounded-full blur-2xl pointer-events-none" />
             </div>
 
             <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-gray-100 shadow-sm p-6 md:p-8">
@@ -209,24 +225,34 @@ export default function ServicioDetalle() {
                 {t('serviceDetail.detalles')}
               </h2>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {details.map((d, i) => (
-                  <motion.div
-                    key={d.label}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: i * 0.08 }}
-                    whileHover={{ y: -4, boxShadow: '0 8px 25px rgba(0,0,0,0.08)' }}
-                    className="bg-gradient-to-br from-gray-50 to-white rounded-xl p-4 border border-gray-100 transition-all"
-                  >
-                    <div className="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center mb-2">
-                      <svg className="w-4 h-4 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d.icon} />
-                      </svg>
-                    </div>
-                    <p className="text-xs text-gray-400 font-medium mb-0.5">{d.label}</p>
-                    <p className="text-sm font-semibold text-gray-800">{d.value}</p>
-                  </motion.div>
-                ))}
+                {details.map((d, i) => {
+                  const cardColors = [
+                    { bg: 'bg-emerald-50', icon: 'text-emerald-600', border: 'hover:border-emerald-200', accent: 'from-emerald-500 to-emerald-600' },
+                    { bg: 'bg-sky-50', icon: 'text-sky-600', border: 'hover:border-sky-200', accent: 'from-sky-500 to-sky-600' },
+                    { bg: 'bg-amber-50', icon: 'text-amber-600', border: 'hover:border-amber-200', accent: 'from-amber-500 to-amber-600' },
+                    { bg: 'bg-violet-50', icon: 'text-violet-600', border: 'hover:border-violet-200', accent: 'from-violet-500 to-violet-600' },
+                  ];
+                  const c = cardColors[i];
+                  return (
+                    <motion.div
+                      key={d.label}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: i * 0.08 }}
+                      whileHover={{ y: -4, boxShadow: '0 8px 25px rgba(0,0,0,0.08)' }}
+                      className={`bg-gradient-to-br from-gray-50 to-white rounded-xl p-4 border border-gray-100 transition-all hover:shadow-md group ${c.border}`}
+                    >
+                      <div className={`w-10 h-10 rounded-xl ${c.bg} flex items-center justify-center mb-3 group-hover:scale-110 transition-transform`}>
+                        <svg className={`w-5 h-5 ${c.icon}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d.icon} />
+                        </svg>
+                      </div>
+                      <p className="text-xs text-gray-400 font-medium mb-0.5">{d.label}</p>
+                      <p className="text-sm font-semibold text-gray-800">{d.value}</p>
+                      <div className={`absolute bottom-0 left-2 right-2 h-0.5 bg-gradient-to-r ${c.accent} rounded-full scale-x-0 group-hover:scale-x-100 transition-transform duration-300`} />
+                    </motion.div>
+                  );
+                })}
               </div>
             </div>
 
@@ -241,20 +267,27 @@ export default function ServicioDetalle() {
                   </h2>
                   <motion.div
                     whileHover={{ scale: 1.01 }}
-                    className="relative rounded-xl overflow-hidden cursor-pointer group bg-gray-100"
+                    className="relative rounded-xl overflow-hidden cursor-pointer group bg-gray-100 shadow-inner"
                     onClick={() => setLightboxIndex(0)}
                   >
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity z-10" />
                     <SafeImage
                       src={service.image}
                       alt={service.name}
                       className="w-full h-72 md:h-96 object-cover group-hover:scale-105 transition-transform duration-700"
                     />
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
-                      <div className="opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-4 group-hover:translate-y-0 w-14 h-14 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center">
-                        <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m-3-3h6" />
-                        </svg>
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center z-20">
+                      <div className="opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-4 group-hover:translate-y-0">
+                        <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 shadow-xl">
+                          <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m-3-3h6" />
+                          </svg>
+                        </div>
                       </div>
+                    </div>
+                    <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between z-10">
+                      <span className="text-xs text-white/80 bg-black/30 backdrop-blur-sm px-3 py-1 rounded-full">Click para ampliar</span>
+                      <span className="text-xs text-white/80 bg-black/30 backdrop-blur-sm px-3 py-1 rounded-full">1 / 1</span>
                     </div>
                   </motion.div>
                 </div>
@@ -264,16 +297,20 @@ export default function ServicioDetalle() {
 
           <motion.div variants={item} className="lg:col-span-1">
             <div className="sticky top-24 space-y-5">
-              <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-gray-100 shadow-sm p-6">
-                <div className="mb-5">
+              <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-gray-100 shadow-sm p-6 relative overflow-hidden">
+                <div className="absolute -top-10 -right-10 w-28 h-28 bg-primary-50 rounded-full blur-2xl pointer-events-none" />
+                <div className="absolute -bottom-6 -left-6 w-20 h-20 bg-accent-50 rounded-full blur-xl pointer-events-none" />
+                <div className="mb-5 relative z-10">
                   <p className="text-sm text-gray-400 font-medium mb-1">{t('serviceDetail.precio')}</p>
-                  <p className="text-3xl font-bold text-gray-900">
-                    {service.price ? <><AnimatedPrice value={service.price} /></> : t('serviceDetail.consultar')}
-                  </p>
-                  {service.duration && <p className="text-sm text-gray-500 mt-0.5">{t('serviceDetail.per')} {service.duration}</p>}
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-4xl font-bold text-gray-900">
+                      {service.price ? <><AnimatedPrice value={service.price} /></> : t('serviceDetail.consultar')}
+                    </span>
+                    {service.price && <span className="text-gray-400 text-sm">/ {service.duration || t('serviceDetail.persona')}</span>}
+                  </div>
                   {service.availableUntil && (
-                    <p className="text-xs text-amber-600 mt-1 flex items-center gap-1">
-                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <p className="text-xs text-amber-600 mt-2 flex items-center gap-1.5 bg-amber-50/80 px-3 py-1.5 rounded-lg">
+                      <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                       </svg>
                       Disponible hasta {new Date(service.availableUntil).toLocaleDateString('es-EC', { day: 'numeric', month: 'long', year: 'numeric' })}
@@ -512,6 +549,7 @@ export default function ServicioDetalle() {
                       className="absolute -inset-0.5 bg-gradient-to-r from-primary-500 to-accent-500 rounded-2xl opacity-0 group-hover:opacity-15 blur transition-all duration-500"
                     />
                     <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden transition-all duration-300 group-hover:shadow-xl group-hover:-translate-y-1">
+                      <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-primary-500 via-accent-500 to-primary-500 opacity-0 group-hover:opacity-100 transition-opacity z-10" />
                       <div className="aspect-[16/10] overflow-hidden bg-gray-100">
                         {r.image ? (
                           <SafeImage src={r.image} alt={r.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
@@ -520,13 +558,16 @@ export default function ServicioDetalle() {
                             <span className="text-4xl font-bold text-gray-300">{r.name.charAt(0)}</span>
                           </div>
                         )}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                       </div>
                       <div className="p-4">
-                        <h3 className="font-bold text-gray-800 group-hover:text-primary-700 transition-colors">{r.name}</h3>
-                        <p className="text-sm text-gray-500 line-clamp-1 mt-1">{r.description}</p>
-                        {r.price && (
-                          <p className="text-sm font-bold text-primary-700 mt-3">$<AnimatedPrice value={r.price} /></p>
-                        )}
+                        <div className="flex items-center justify-between gap-2">
+                          <h3 className="font-bold text-gray-800 group-hover:text-primary-600 transition-colors">{r.name}</h3>
+                          {r.price && (
+                            <span className="text-sm font-bold text-accent-600 whitespace-nowrap bg-accent-50 px-2.5 py-0.5 rounded-full">$<AnimatedPrice value={r.price} /></span>
+                          )}
+                        </div>
+                        <p className="text-sm text-gray-500 line-clamp-2 mt-1.5">{r.description}</p>
                       </div>
                     </div>
                   </motion.div>
@@ -545,9 +586,10 @@ export default function ServicioDetalle() {
           {reviews.length > 0 && (
             <div className="grid md:grid-cols-2 gap-4 mb-8">
               {reviews.map((r) => (
-                <div key={r.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center text-white font-bold text-sm">
+                <div key={r.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 relative overflow-hidden hover:shadow-md transition-shadow">
+                  <div className="absolute top-0 left-0 bottom-0 w-1 bg-gradient-to-b from-accent-500 to-primary-500" />
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center text-white font-bold text-sm shadow-md flex-shrink-0">
                       {r.name.charAt(0).toUpperCase()}
                     </div>
                     <div>
@@ -562,7 +604,7 @@ export default function ServicioDetalle() {
                       ))}
                     </div>
                   </div>
-                  <p className="text-gray-600 text-sm leading-relaxed">{r.text}</p>
+                  <p className="text-gray-600 text-sm leading-relaxed ml-0">&ldquo;{r.text}&rdquo;</p>
                 </div>
               ))}
             </div>
