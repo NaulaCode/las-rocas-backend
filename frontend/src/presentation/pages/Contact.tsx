@@ -291,9 +291,17 @@ export default function Contact() {
     <div className="bg-gray-50 min-h-screen">
       <SEO title={t('contact.seoTitulo')} description={t('contact.seoDescripcion')} />
       <section className="relative bg-gradient-to-br from-primary-900 via-primary-700 to-primary-500 overflow-hidden min-h-[50vh] flex items-center">
+        <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 25px 25px, white 1px, transparent 1px)', backgroundSize: '50px 50px' }} />
         <FloatingShape className="top-20 left-10 w-96 h-96 bg-accent-500" delay={0} />
         <FloatingShape className="bottom-10 right-20 w-80 h-80 bg-primary-300" delay={1} />
         <FloatingShape className="top-1/3 right-1/4 w-64 h-64 bg-white" delay={2} />
+        <motion.div
+          animate={{ rotate: [0, 360] }}
+          transition={{ duration: 30, repeat: Infinity, ease: 'linear' }}
+          className="absolute top-1/4 left-1/4 w-64 h-64 border border-white/5 rounded-full pointer-events-none"
+        >
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3 h-3 bg-white/20 rounded-full" />
+        </motion.div>
         <div className="absolute inset-0 pointer-events-none">
           <svg className="absolute bottom-0 w-full" viewBox="0 0 1440 120" preserveAspectRatio="none">
             <path fill="white" fillOpacity="1" d="M0,60 C360,120 720,0 1440,60 L1440,120 L0,120 Z" />
@@ -416,7 +424,15 @@ export default function Contact() {
                   )}
                 </AnimatePresence>
 
-                {contactTab === 'reserva' ? (
+                <AnimatePresence mode="wait">
+                  {contactTab === 'reserva' && (
+                    <motion.div
+                      key="reserva"
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: 20 }}
+                      transition={{ duration: 0.25 }}
+                    >
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="relative">
                     <label className="block text-sm font-medium text-gray-700 mb-1.5">{t('contact.servicio')}</label>
@@ -450,6 +466,47 @@ export default function Contact() {
                       })()}
                     </div>
                   </div>
+
+                {form.serviceId && (() => {
+                  const s = services.find(x => x.id === form.serviceId);
+                  if (!s) return null;
+                  return (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      className="bg-gradient-to-r from-primary-50 via-accent-50 to-primary-50 rounded-xl p-4 border border-primary-100 overflow-hidden"
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center flex-shrink-0 border border-primary-100">
+                            {s.image ? (
+                              <img src={s.image} alt="" className="w-full h-full object-cover rounded-xl" />
+                            ) : (
+                              <svg className="w-5 h-5 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                              </svg>
+                            )}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="font-semibold text-gray-800 text-sm truncate">{s.name}</p>
+                            <p className="text-xs text-gray-400">{s.category}</p>
+                          </div>
+                        </div>
+                        {s.price && (
+                          <span className="text-sm font-bold text-accent-600 whitespace-nowrap bg-white px-3 py-1 rounded-full shadow-sm">${s.price}</span>
+                        )}
+                      </div>
+                      {s.duration && (
+                        <div className="flex items-center gap-2 mt-3 pt-3 border-t border-primary-100/50">
+                          <svg className="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          <span className="text-xs text-gray-500">{t('serviceDetail.duracion')}: {s.duration}</span>
+                        </div>
+                      )}
+                    </motion.div>
+                  );
+                })()}
 
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="relative">
@@ -565,7 +622,16 @@ export default function Contact() {
                     )}
                   </motion.button>
                 </form>
-                ) : (
+                    </motion.div>
+                  )}
+                  {contactTab === 'consulta' && (
+                    <motion.div
+                      key="consulta"
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: 20 }}
+                      transition={{ duration: 0.25 }}
+                    >
                 <form onSubmit={handleContactSubmit} className="space-y-4">
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="relative">
@@ -616,7 +682,9 @@ export default function Contact() {
                     )}
                   </motion.button>
                 </form>
-                )}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </motion.div>
           </motion.div>
