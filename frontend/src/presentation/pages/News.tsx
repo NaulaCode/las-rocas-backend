@@ -91,9 +91,9 @@ export default function News() {
             className="absolute bottom-1/4 right-1/5 w-[500px] h-[500px] bg-accent-500/10 rounded-full blur-3xl" />
         </div>
         <div className="relative z-10 text-center text-white px-4 max-w-4xl mx-auto">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">{t('news.titulo')}</h1>
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">{org?.pageContent?.news?.heroTitle || org?.pageContent?.news?.title || t('news.titulo')}</h1>
           <p className="text-primary-100 text-lg max-w-2xl mx-auto">
-            {t('news.subtitulo')}
+            {org?.pageContent?.news?.heroSubtitle || org?.pageContent?.news?.subtitle || t('news.subtitulo')}
           </p>
         </div>
         <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-gray-50 to-transparent" />

@@ -1,6 +1,9 @@
 export interface Organization {
   id: string;
   name: string;
+  legalName?: string;
+  ruc?: string;
+  website?: string;
   description?: string;
   mission?: string;
   vision?: string;
@@ -10,6 +13,7 @@ export interface Organization {
   address?: string;
   coverImage?: string;
   logo?: string;
+  isActive?: boolean;
   pageContent: PageContent;
 }
 
@@ -52,6 +56,9 @@ export interface PageContent {
 
 export interface UpdateOrganizationDTO {
   name?: string;
+  legalName?: string;
+  ruc?: string;
+  website?: string;
   description?: string;
   mission?: string;
   vision?: string;
@@ -61,5 +68,6 @@ export interface UpdateOrganizationDTO {
   address?: string;
   coverImage?: string;
   logo?: string;
+  isActive?: boolean;
   pageContent?: PageContent;
 }

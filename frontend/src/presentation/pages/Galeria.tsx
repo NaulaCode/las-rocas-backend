@@ -95,7 +95,7 @@ export default function Galeria() {
             transition={{ duration: 0.5 }}
             className="text-4xl md:text-5xl font-bold text-white mb-4"
           >
-            {t('galeria.titulo')}
+            {org?.pageContent?.galeria?.heroTitle || org?.pageContent?.galeria?.title || t('galeria.titulo')}
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
@@ -103,7 +103,7 @@ export default function Galeria() {
             transition={{ duration: 0.5, delay: 0.15 }}
             className="text-primary-100 text-lg max-w-2xl mx-auto"
           >
-            {t('galeria.subtitulo')}
+            {org?.pageContent?.galeria?.heroSubtitle || org?.pageContent?.galeria?.subtitle || t('galeria.subtitulo')}
           </motion.p>
           <motion.div
             initial={{ opacity: 0, y: 20 }}

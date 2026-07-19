@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback, lazy } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect, useCallback, lazy, useMemo } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { container } from '../../di/container';
 import SEO from '../components/SEO';
@@ -36,12 +36,22 @@ const ReviewsTab = lazy(() => import('../components/admin/tabs/ReviewsTab'));
 const ActivityLogTab = lazy(() => import('../components/admin/tabs/ActivityLogTab'));
 const RolesTab = lazy(() => import('../components/admin/tabs/RolesTab'));
 
+const tabLabels: Record<string, string> = {
+  dashboard: 'Panel de Control', services: 'Servicios', news: 'Noticias y Eventos',
+  reservations: 'Reservas', chatbot: 'FAQ Chatbot', estadisticas: 'Estadísticas',
+  pages: 'Páginas', attractions: 'Atractivos', reviews: 'Reseñas',
+  mensajes: 'Mensajes', activity: 'Actividad', roles: 'Roles y Permisos',
+};
+
 export default function Admin() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
   const [user, setUser] = useState<User | null>(null);
-  const [tab, setTab] = useState('dashboard');
+  const tab = searchParams.get('tab') || 'dashboard';
+  const setTab = useCallback((t: string) => setSearchParams({ tab: t }), [setSearchParams]);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [globalSearch, setGlobalSearch] = useState('');
 
   const [services, setServices] = useState<TouristicService[]>([]);
   const [news, setNews] = useState<News[]>([]);
@@ -105,6 +115,9 @@ export default function Admin() {
         setLogoUrl(orgData?.logo || '');
         setOrgForm({
           name: orgData?.name || '',
+          legalName: orgData?.legalName || '',
+          ruc: orgData?.ruc || '',
+          website: orgData?.website || '',
           description: orgData?.description || '',
           mission: orgData?.mission || '',
           vision: orgData?.vision || '',
@@ -342,7 +355,7 @@ export default function Admin() {
     { id: 'reservations', label: 'Reservas', count: reservations.length, permission: 'reservations:list' },
     { id: 'chatbot', label: 'FAQ Chatbot', count: questions.length, permission: 'chatbot:list' },
     { id: 'estadisticas', label: 'Estadísticas', count: null, permission: null },
-    { id: 'pages', label: 'Páginas', count: 6, permission: 'organization:update' },
+    { id: 'pages', label: 'Páginas', count: 13, permission: 'organization:update' },
     { id: 'attractions', label: 'Atractivos', count: attractions.length, permission: 'attractions:list' },
     { id: 'reviews', label: 'Reseñas', count: null, permission: 'reviews:list' },
 
@@ -377,16 +390,18 @@ export default function Admin() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={sidebarOpen ? 'M11 19l-7-7 7-7m8 14l-7-7 7-7' : 'M13 5l7 7-7 7M5 5l7 7-7 7'} />
             </svg>
           </button>
-          {sidebarOpen && <span className="font-bold text-gray-800 text-sm truncate">ASOTURLASROCAS</span>}
+          {sidebarOpen && <span className="font-bold text-gray-800 text-sm truncate">Admin</span>}
         </div>
-        <nav className="flex-1 py-3 overflow-y-auto">
-          {tabs.map((t) => (
+        <nav className="flex-1 py-2 overflow-y-auto">
+          {tabs.map((t, idx) => {
+            const shortcut = idx < 10 ? `Ctrl+${idx === 9 ? 0 : idx + 1}` : null;
+            return (
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
-              className={`w-full flex items-center gap-3 px-4 py-3 text-sm transition-colors relative ${
+              className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-all relative group ${
                 tab === t.id
-                  ? 'text-primary-700 bg-primary-50 font-medium'
+                  ? 'text-primary-700 bg-primary-50 font-semibold'
                   : 'text-gray-600 hover:bg-gray-50 hover:text-gray-800'
               } ${sidebarOpen ? '' : 'justify-center px-0'}`}
             >
@@ -397,42 +412,66 @@ export default function Admin() {
               {sidebarOpen && (
                 <>
                   <span className="flex-1 text-left">{t.label}</span>
-                  {t.count !== null && (
-                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                      tab === t.id ? 'bg-primary-100 text-primary-700' : 'bg-gray-100 text-gray-500'
-                    }`}>{t.count}</span>
-                  )}
+                  <div className="flex items-center gap-2">
+                    {t.count !== null && (
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                        tab === t.id ? 'bg-primary-100 text-primary-700' : 'bg-gray-100 text-gray-500'
+                      }`}>{t.count}</span>
+                    )}
+                    {shortcut && (
+                      <span className="text-[10px] text-gray-300 group-hover:text-gray-400 font-mono hidden lg:inline">{shortcut}</span>
+                    )}
+                  </div>
                 </>
               )}
             </button>
-          ))}
+          );
+          })}
         </nav>
+        {sidebarOpen && (
+          <div className="p-3 border-t border-gray-100">
+            <div className="flex items-center gap-2 text-xs text-gray-400">
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+              <span>Ctrl + número para navegar rápido</span>
+            </div>
+          </div>
+        )}
       </aside>
 
       <div className="flex-1 flex flex-col min-w-0">
         <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 md:px-6 sticky top-0 z-30">
-          <div className="flex items-center gap-3">
-            <button onClick={() => setSidebarOpen(!sidebarOpen)} className="md:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-500">
+          <div className="flex items-center gap-3 min-w-0">
+            <button onClick={() => setSidebarOpen(!sidebarOpen)} className="md:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-500 flex-shrink-0">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             </button>
-            <h1 className="text-lg font-bold text-gray-800 hidden sm:block">Panel de Administración</h1>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="text-sm text-gray-500 hidden sm:block">
-              <span className="text-gray-400">Bienvenido,</span>{' '}
-              <span className="font-semibold text-gray-700">{user.firstName} {user.lastName}</span>
-            </span>
-            <div className="w-8 h-8 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center text-sm font-bold sm:hidden">
-              {user.firstName?.charAt(0)}{user.lastName?.charAt(0)}
+            <div className="hidden sm:flex items-center gap-2 text-sm text-gray-400 min-w-0">
+              <span className="font-semibold text-gray-800">Admin</span>
+              <svg className="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+              <span className="text-gray-700 truncate">{tabLabels[tab] || tab}</span>
             </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="hidden md:flex items-center bg-gray-100 rounded-lg px-3 py-1.5 text-sm text-gray-400 gap-1">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+              <span className="text-xs text-gray-400">{services.length} servicios · {reservations.filter(r => r.status === 'pendiente').length} pendientes · {unreadMessages} mensajes</span>
+            </div>
+            <div className="hidden md:flex items-center gap-1 px-3 py-1.5">
+              <span className="text-xs text-gray-400">Bienvenido,</span>
+              <span className="text-xs font-semibold text-gray-700">{user.firstName}</span>
+            </div>
+            <a href="/" target="_blank" rel="noopener noreferrer"
+              className="flex items-center gap-1.5 px-3 py-2 text-xs text-gray-500 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors" title="Ver sitio público">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+              <span className="hidden lg:inline">Vista previa</span>
+            </a>
             <button onClick={handleLogout}
-              className="flex items-center gap-2 px-3 py-3 text-sm text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Cerrar Sesión">
+              className="flex items-center gap-2 px-3 py-2 text-xs text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Cerrar Sesión">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
               </svg>
-              <span className="hidden sm:inline">Salir</span>
+              <span className="hidden lg:inline">Salir</span>
             </button>
           </div>
         </header>
