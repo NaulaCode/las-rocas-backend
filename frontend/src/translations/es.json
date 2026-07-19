@@ -326,6 +326,7 @@
     "teInteresa": "¿Te interesa?",
     "contactanos": "Contáctanos para más información sobre este atractivo turístico.",
     "consultarWA": "Consultar por WhatsApp",
+    "consultaMsg": "Hola, me interesa el atractivo turístico: {{nombre}}",
     "noEncontrado": "Atractivo no encontrado",
     "noEncontradoDesc": "El atractivo que buscas no existe o ha sido eliminado."
   },

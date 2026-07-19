@@ -370,6 +370,7 @@ export default function ServicioDetalle() {
                         <p className="text-green-700 font-bold text-sm">{t('serviceDetail.reservaExitosa')}</p>
                         <p className="text-gray-400 text-xs mt-1">{t('serviceDetail.reservaExitosaDesc')}</p>
                         <motion.button
+                          type="button"
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
                           transition={{ delay: 0.5 }}

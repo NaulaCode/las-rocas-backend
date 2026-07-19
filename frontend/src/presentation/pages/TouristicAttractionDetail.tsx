@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { container } from '../../di/container';
 import SEO from '../components/SEO';
 import type { TouristicAttraction } from '../../domain/entities/TouristicAttraction';
+import type { Organization } from '../../domain/entities/Organization';
 import ImageLightbox from '../components/ImageLightbox';
 
 const categoryGradients: Record<string, string> = {
@@ -31,14 +32,23 @@ export default function TouristicAttractionDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [attraction, setAttraction] = useState<TouristicAttraction | null>(null);
+  const [org, setOrg] = useState<Organization | null>(null);
   const [loading, setLoading] = useState(true);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+
+  const whatsapp = org?.pageContent?.contacto?.whatsappNumber || '593999999999';
 
   useEffect(() => {
     if (!id) return;
     setLoading(true);
-    container.attractions.getById(id)
-      .then(setAttraction)
+    Promise.all([
+      container.attractions.getById(id),
+      container.organization.get(),
+    ])
+      .then(([attractionData, orgData]) => {
+        setAttraction(attractionData);
+        setOrg(orgData);
+      })
       .catch(() => navigate('/atractivos'))
       .finally(() => setLoading(false));
   }, [id, navigate]);
@@ -183,7 +193,7 @@ export default function TouristicAttractionDetail() {
               <h3 className="font-bold text-lg mb-2">{t('attractionDetail.teInteresa')}</h3>
               <p className="text-emerald-100 text-sm mb-4">{t('attractionDetail.contactanos')}</p>
               <a
-                href="https://wa.me/"
+                href={`https://wa.me/${whatsapp}?text=${encodeURIComponent(t('attractionDetail.consultaMsg', { nombre: attraction.name }))}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center justify-center gap-2 w-full bg-white text-emerald-700 font-semibold py-3 px-4 rounded-xl hover:bg-emerald-50 transition-colors"
