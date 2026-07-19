@@ -81,15 +81,31 @@ export default function Contact() {
   const [org, setOrg] = useState<Organization | null>(null);
   const [contactTab, setContactTab] = useState<'reserva' | 'consulta'>('reserva');
 
-  const [form, setForm] = useState({
-    serviceId: '',
-    serviceName: '',
-    userName: '',
-    userEmail: '',
-    userPhone: '',
-    numberOfPeople: 1,
-    preferredDate: '',
-    message: '',
+  const [form, setForm] = useState(() => {
+    try {
+      const saved = sessionStorage.getItem('reservationForm');
+      return saved ? JSON.parse(saved) : {
+        serviceId: '',
+        serviceName: '',
+        userName: '',
+        userEmail: '',
+        userPhone: '',
+        numberOfPeople: 1,
+        preferredDate: '',
+        message: '',
+      };
+    } catch {
+      return {
+        serviceId: '',
+        serviceName: '',
+        userName: '',
+        userEmail: '',
+        userPhone: '',
+        numberOfPeople: 1,
+        preferredDate: '',
+        message: '',
+      };
+    }
   });
   const [services, setServices] = useState<TouristicService[]>([]);
   const [loading, setLoading] = useState(false);
@@ -99,12 +115,21 @@ export default function Contact() {
   const [availability, setAvailability] = useState<{ available: boolean; booked: number } | null>(null);
   const [checkingAvail, setCheckingAvail] = useState(false);
 
-  const [contactForm, setContactForm] = useState({ name: '', email: '', phone: '', subject: '', message: '' });
+  const [contactForm, setContactForm] = useState(() => {
+    try {
+      const saved = sessionStorage.getItem('contactForm');
+      return saved ? JSON.parse(saved) : { name: '', email: '', phone: '', subject: '', message: '' };
+    } catch { return { name: '', email: '', phone: '', subject: '', message: '' }; }
+  });
   const [turnstileToken, setTurnstileToken] = useState('');
   const [contactTurnstileToken, setContactTurnstileToken] = useState('');
   const turnstileRef = useRef<TurnstileHandle>(null);
   const contactTurnstileRef = useRef<TurnstileHandle>(null);
   const siteKey = import.meta.env['VITE_TURNSTILE_SITE_KEY'] as string | undefined;
+
+  useEffect(() => {
+    sessionStorage.setItem('contactForm', JSON.stringify(contactForm));
+  }, [contactForm]);
 
   useEffect(() => {
     Promise.all([
@@ -123,6 +148,10 @@ export default function Contact() {
       setBookedDates(taken);
     });
   }, []);
+
+  useEffect(() => {
+    sessionStorage.setItem('reservationForm', JSON.stringify(form));
+  }, [form]);
 
   useEffect(() => {
     if (form.serviceId && form.preferredDate) {
@@ -170,6 +199,7 @@ export default function Contact() {
         preferredDate: '',
         message: '',
       });
+      sessionStorage.removeItem('reservationForm');
       setTurnstileToken('');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al enviar');
@@ -192,6 +222,7 @@ export default function Contact() {
       await container.contact.send({ ...contactForm, turnstileToken: contactTurnstileToken } as CreateContactMessageData);
       setSuccess(true);
       setContactForm({ name: '', email: '', phone: '', subject: '', message: '' });
+      sessionStorage.removeItem('contactForm');
       setContactTurnstileToken('');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al enviar');

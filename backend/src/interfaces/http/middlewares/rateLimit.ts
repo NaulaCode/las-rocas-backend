@@ -38,7 +38,7 @@ export const reservationLimiter = rateLimit({
 
 export const uploadLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
-  max: 2000,
+  max: 60,
   standardHeaders: true,
   legacyHeaders: false,
   message: {
@@ -62,7 +62,7 @@ export const forgotPasswordLimiter = rateLimit({
 
 export const publicPostLimiter = rateLimit({
   windowMs: 60 * 1000,
-  max: 1000,
+  max: 10,
   standardHeaders: true,
   legacyHeaders: false,
   message: {
@@ -86,7 +86,7 @@ export const chatLimiter = rateLimit({
 
 export const reservationPostLimiter = rateLimit({
   windowMs: 60 * 1000,
-  max: 500,
+  max: 5,
   standardHeaders: true,
   legacyHeaders: false,
   message: {

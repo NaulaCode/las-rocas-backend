@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import i18n from '../../i18n';
 import SEO from '../components/SEO';
+import SafeImage from '../components/SafeImage';
 import { container } from '../../di/container';
 import type { News, NewsType } from '../../domain/entities/News';
 import EmptyState from '../components/EmptyState';
@@ -154,7 +155,7 @@ export default function News() {
                 >
                   <div className={`md:w-80 h-56 md:h-auto relative overflow-hidden ${index % 2 === 1 ? 'md:order-last' : ''}`}>
                     {item.image ? (
-                      <img src={item.image} alt={item.title} className="w-full h-full object-cover hover:scale-110 transition-transform duration-500" loading="lazy" />
+                      <SafeImage src={item.image} alt={item.title} className="w-full h-full object-cover hover:scale-110 transition-transform duration-500" />
                     ) : (
                       <div className={`w-full h-full bg-gradient-to-br ${typeGradients[item.type] || 'from-primary-400 to-primary-600'} flex items-center justify-center`}>
                         <span className="text-7xl font-bold text-white/20">{item.title.charAt(0)}</span>

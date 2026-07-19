@@ -6,6 +6,7 @@ import type { Organization } from '../../domain/entities/Organization';
 import type { TouristicService } from '../../domain/entities/TouristicService';
 import type { News } from '../../domain/entities/News';
 import SEO from '../components/SEO';
+import SafeImage from '../components/SafeImage';
 import ImageLightbox from '../components/ImageLightbox';
 import AnimatedPrice from '../components/AnimatedPrice';
 import EmptyState from '../components/EmptyState';
@@ -383,7 +384,7 @@ export default function Home() {
               transition={{ duration: 0.7, type: 'spring', damping: 15 }}
               className="mb-6"
             >
-              <img src={org.logo} alt={org?.name || 'Las Rocas'} className="h-24 md:h-32 w-auto mx-auto drop-shadow-2xl" loading="lazy" />
+              <SafeImage src={org.logo} alt={org?.name || 'Las Rocas'} className="h-24 md:h-32 w-auto mx-auto drop-shadow-2xl" />
             </motion.div>
           )}
           <div>
@@ -636,7 +637,7 @@ export default function Home() {
                     <Link to={`/servicios/${service.id}`} className="block">
                       <div className="relative h-52 overflow-hidden">
                         {service.image ? (
-                          <img src={service.image} alt={service.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" loading="lazy" />
+                          <SafeImage src={service.image} alt={service.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                         ) : (
                           <div className={`w-full h-full bg-gradient-to-br ${categoryGradients[service.category] || 'from-primary-400 to-primary-600'} flex items-center justify-center`}>
                             <span className="text-7xl opacity-30">{categoryIcons[service.category] || '🏖️'}</span>
@@ -966,7 +967,7 @@ export default function Home() {
                           <svg className="w-6 h-6 text-white/60" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
                         </div>
                       ) : (
-                        <img src={entry.url} alt="" className="w-full h-full object-cover" loading="lazy" />
+                        <SafeImage src={entry.url} alt="" className="w-full h-full object-cover" />
                       )}
                       {isVideo(entry) && (
                         <div className="absolute top-1 right-1 bg-black/60 text-white text-[8px] px-1.5 py-0.5 rounded-full">
@@ -1033,7 +1034,7 @@ export default function Home() {
                 <motion.div key={n.id} variants={item} className="group bg-white/5 backdrop-blur-sm rounded-2xl overflow-hidden hover:bg-white/10 transition-all duration-300 hover:-translate-y-2 border border-white/10">
                   <div className="h-48 overflow-hidden relative">
                     {n.image ? (
-                      <img src={n.image} alt={n.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" loading="lazy" />
+                      <SafeImage src={n.image} alt={n.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                     ) : (
                       <div className="w-full h-full bg-primary-500/30 flex items-center justify-center">
                         <span className="text-5xl font-bold text-white/20">{n.title.charAt(0)}</span>

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import SEO from '../components/SEO';
+import SafeImage from '../components/SafeImage';
 import { container } from '../../di/container';
 import type { TouristicAttraction } from '../../domain/entities/TouristicAttraction';
 import EmptyState from '../components/EmptyState';
@@ -166,7 +167,7 @@ export default function TouristicAttractions() {
                   <Link to={`/atractivos/${attraction.id}`} className="block relative bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border border-gray-100">
                     <div className="relative h-48 overflow-hidden">
                       {attraction.image ? (
-                        <img src={attraction.image} alt={attraction.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" loading="lazy" />
+                        <SafeImage src={attraction.image} alt={attraction.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                       ) : (
                         <div className={`w-full h-full bg-gradient-to-br ${categoryGradients[attraction.category] || 'from-emerald-400 to-emerald-600'} flex items-center justify-center`}>
                           <span className="text-5xl font-bold text-white/20">{attraction.name?.charAt(0)}</span>

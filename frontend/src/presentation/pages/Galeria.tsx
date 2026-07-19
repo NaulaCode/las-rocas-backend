@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { container as di } from '../../di/container';
 import SEO from '../components/SEO';
+import SafeImage from '../components/SafeImage';
 import ImageLightbox from '../components/ImageLightbox';
 import { Organization } from '../../domain/entities/Organization';
 import EmptyState from '../components/EmptyState';
@@ -159,11 +160,10 @@ export default function Galeria() {
                       />
                     )
                   ) : (
-                    <img
+                    <SafeImage
                       src={entry.url}
                       alt={entry.caption || ''}
                       className="w-full h-auto object-cover group-hover:scale-110 transition-transform duration-700"
-                      loading="lazy"
                     />
                   )}
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-500 flex items-center justify-center">

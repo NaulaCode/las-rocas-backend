@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import SEO from '../components/SEO';
+import SafeImage from '../components/SafeImage';
 import { container } from '../../di/container';
 import type { TouristicService } from '../../domain/entities/TouristicService';
 import type { Organization } from '../../domain/entities/Organization';
@@ -204,7 +205,7 @@ export default function Services() {
                   <div className="relative bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-2 group-hover:border-transparent border border-gray-100">
                     <div className="relative h-48 overflow-hidden">
                       {service.image ? (
-                        <img src={service.image} alt={service.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" loading="lazy" />
+                        <SafeImage src={service.image} alt={service.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                       ) : (
                         <div className={`w-full h-full bg-gradient-to-br ${categoryGradients[service.category] || 'from-primary-400 to-primary-600'} flex items-center justify-center`}>
                           <span className="text-5xl font-bold text-white/20">{service.name?.charAt(0)}</span>

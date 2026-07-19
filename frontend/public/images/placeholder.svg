@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300">
+  <rect width="400" height="300" fill="#f3f4f6"/>
+  <g transform="translate(160, 110)" fill="#9ca3af">
+    <path d="M40 0C17.9 0 0 17.9 0 40v40c0 22.1 17.9 40 40 40h40c22.1 0 40-17.9 40-40V40c0-22.1-17.9-40-40-40H40zm0 10h40c16.6 0 30 13.4 30 30v40c0 16.6-13.4 30-30 30H40c-16.6 0-30-13.4-30-30V40c0-16.6 13.4-30 30-30zm5 20c-8.3 0-15 6.7-15 15s6.7 15 15 15 15-6.7 15-15-6.7-15-15-15zm-5 45l18 20 10-8 14 16 22-28 26 32H25l15-32z"/>
+  </g>
+  <text x="200" y="230" text-anchor="middle" font-family="sans-serif" font-size="14" fill="#9ca3af">Imagen no disponible</text>
+</svg>

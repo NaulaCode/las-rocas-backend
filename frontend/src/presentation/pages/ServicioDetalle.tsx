@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { container } from '../../di/container';
 import SEO from '../components/SEO';
+import SafeImage from '../components/SafeImage';
 import ImageLightbox from '../components/ImageLightbox';
 import type { TouristicService } from '../../domain/entities/TouristicService';
 import type { Reservation } from '../../domain/entities/Reservation';
@@ -243,11 +244,10 @@ export default function ServicioDetalle() {
                     className="relative rounded-xl overflow-hidden cursor-pointer group bg-gray-100"
                     onClick={() => setLightboxIndex(0)}
                   >
-                    <img
+                    <SafeImage
                       src={service.image}
                       alt={service.name}
                       className="w-full h-72 md:h-96 object-cover group-hover:scale-105 transition-transform duration-700"
-                      loading="lazy"
                     />
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
                       <div className="opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-4 group-hover:translate-y-0 w-14 h-14 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center">
@@ -514,7 +514,7 @@ export default function ServicioDetalle() {
                     <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden transition-all duration-300 group-hover:shadow-xl group-hover:-translate-y-1">
                       <div className="aspect-[16/10] overflow-hidden bg-gray-100">
                         {r.image ? (
-                          <img src={r.image} alt={r.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" loading="lazy" />
+                          <SafeImage src={r.image} alt={r.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                         ) : (
                           <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
                             <span className="text-4xl font-bold text-gray-300">{r.name.charAt(0)}</span>
