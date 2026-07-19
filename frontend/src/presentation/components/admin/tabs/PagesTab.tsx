@@ -737,6 +737,11 @@ export default function PagesTab({ org, orgForm, setOrgForm, pageContent, setPag
             <Field label="Subtítulo del Hero" value={content.heroSubtitle || content.subtitle || ''} onChange={(v) => { setContent('heroSubtitle', v); setContent('subtitle', v); }} type="textarea" />
           </div>
         </div>
+        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+          <h3 className="text-sm font-semibold text-gray-700 mb-4">Imagen de Portada</h3>
+          <p className="text-xs text-gray-400 mb-3">Imagen de fondo del encabezado de la página de {label.toLowerCase()}</p>
+          <ImageUpload value={content.coverImage || ''} onChange={(v) => setContent('coverImage', v)} />
+        </div>
       </div>
     );
   };
