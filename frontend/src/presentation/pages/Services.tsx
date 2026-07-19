@@ -109,20 +109,27 @@ export default function Services() {
   return (
     <div className="bg-gray-50 min-h-screen">
       <SEO title={t('services.titulo')} description={t('services.subtitulo')} />
-      <div className="bg-gradient-to-br from-primary-700 via-primary-600 to-primary-500 py-16 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10 pointer-events-none">
-          <div className="absolute top-10 left-10 w-48 h-48 bg-white rounded-full blur-3xl" />
-          <div className="absolute bottom-10 right-10 w-64 h-64 bg-accent-500 rounded-full blur-3xl" />
+      <section className="relative min-h-[50vh] flex items-center justify-center overflow-hidden">
+        <div className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: `url(${org?.coverImage || 'https://images.unsplash.com/photo-1504457047772-27faf9c0f3e9?w=1920&h=1080&fit=crop'})` }}>
+          <div className="absolute inset-0 bg-gradient-to-b from-primary-900/80 via-primary-800/70 to-primary-900/90" />
         </div>
-        <div className="container mx-auto px-4 text-center relative z-10">
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
+        <div className="absolute inset-0 pointer-events-none">
+          <motion.div animate={{ x: [0, 40, 0], y: [0, -30, 0] }} transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
+            className="absolute top-1/4 left-1/5 w-96 h-96 bg-emerald-400/10 rounded-full blur-3xl" />
+          <motion.div animate={{ x: [0, -30, 0], y: [0, 40, 0] }} transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
+            className="absolute bottom-1/4 right-1/5 w-[500px] h-[500px] bg-accent-500/10 rounded-full blur-3xl" />
+        </div>
+        <div className="relative z-10 text-center text-white px-4 max-w-4xl mx-auto">
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">
             {t('services.titulo')}
           </h1>
           <p className="text-primary-100 text-lg max-w-2xl mx-auto">
             {t('services.subtitulo')}
           </p>
         </div>
-      </div>
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-gray-50 to-transparent" />
+      </section>
 
       <div className="container mx-auto px-4 -mt-6">
         <div className="bg-white rounded-2xl shadow-lg p-4 mb-6">
