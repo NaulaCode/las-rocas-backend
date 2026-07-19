@@ -81,7 +81,7 @@ export default function News() {
       <SEO title={t('news.titulo')} description={t('news.seoDescripcion')} />
       <section className="relative min-h-[50vh] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: `url(${org?.coverImage || 'https://images.unsplash.com/photo-1504457047772-27faf9c0f3e9?w=1920&h=1080&fit=crop'})` }}>
+          style={{ backgroundImage: `url(${org?.pageContent?.news?.coverImage || org?.coverImage || 'https://images.unsplash.com/photo-1504457047772-27faf9c0f3e9?w=1920&h=1080&fit=crop'})` }}>
           <div className="absolute inset-0 bg-gradient-to-b from-primary-900/80 via-primary-800/70 to-primary-900/90" />
         </div>
         <div className="absolute inset-0 pointer-events-none">
