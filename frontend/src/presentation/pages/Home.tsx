@@ -901,11 +901,11 @@ export default function Home() {
                           title={gallery[galleryIndex].caption || ''}
                         />
                       ) : (
-                        <video
-                          src={gallery[galleryIndex].url}
-                          className="absolute inset-0 w-full h-full object-contain bg-black"
-                          controls
-                          playsInline
+                          <video
+                            src={gallery[galleryIndex].url}
+                            className="absolute inset-0 w-full h-full object-cover bg-gray-900"
+                            controls
+                            playsInline
                           preload="auto"
                           title={gallery[galleryIndex].caption || ''}
                         />
@@ -995,10 +995,10 @@ export default function Home() {
                     <button
                       key={i}
                       onClick={() => setGalleryIndex(i)}
-                      className={`group relative overflow-hidden rounded-2xl transition-all duration-500 flex-shrink-0 ${
+                      className={`group relative overflow-hidden rounded-2xl transition-all duration-500 flex-shrink-0 w-24 h-16 md:w-32 md:h-20 ${
                         i === galleryIndex
-                          ? 'w-28 h-20 md:w-36 md:h-24 ring-2 ring-accent-500 ring-offset-2 ring-offset-cream shadow-xl scale-105'
-                          : 'w-20 h-14 md:w-28 md:h-18 opacity-60 hover:opacity-90 hover:scale-102'
+                          ? 'ring-2 ring-accent-500 ring-offset-2 ring-offset-cream shadow-xl scale-105'
+                          : 'opacity-60 hover:opacity-90 hover:scale-102'
                       }`}
                     >
                       {isVideo(entry) ? (
