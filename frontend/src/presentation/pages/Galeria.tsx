@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { container as di } from '../../di/container';
 import SEO from '../components/SEO';
@@ -220,9 +221,9 @@ export default function Galeria() {
                   {t('galeria.hashtag')}
                 </span>
               </a>
-              <a href="/contacto" className="px-6 py-3 border border-gray-300 text-gray-700 rounded-full font-semibold hover:bg-gray-50 transition-all text-sm">
+              <Link to="/contacto" className="px-6 py-3 border border-gray-300 text-gray-700 rounded-full font-semibold hover:bg-gray-50 transition-all text-sm">
                 {t('common.contactar')}
-              </a>
+              </Link>
             </div>
           </motion.div>
         </div>
