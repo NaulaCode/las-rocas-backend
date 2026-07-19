@@ -833,21 +833,33 @@ export default function Contact() {
                   <h3 className="text-lg font-bold text-gray-800">{t('contact.redesSociales')}</h3>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
-                  {socialLinks.map((sl) => {
+                  {(() => {
                     const contacto = org?.pageContent?.contacto || {};
-                    const url = sl.key === 'whatsappUrl'
-                      ? `https://wa.me/${whatsappNumber}`
-                      : contacto[sl.key as keyof typeof contacto] as string || '#';
-                    return (
-                      <a key={sl.key} href={url} target="_blank" rel="noopener noreferrer"
-                        className={`flex items-center gap-2.5 px-4 py-3.5 bg-gray-50 rounded-xl text-gray-500 transition-all duration-300 text-sm font-medium ${sl.hover} group/social`}>
-                        <svg className="w-5 h-5 group-hover/social:scale-110 transition-transform" fill="currentColor" viewBox="0 0 24 24">
-                          <path d={sl.icon} />
-                        </svg>
-                        <span>{sl.label}</span>
-                      </a>
-                    );
-                  })}
+                    const socialMedia = contacto.socialMedia as Array<{ platform: string; url: string; icon?: string }> | undefined;
+                    if (socialMedia && socialMedia.length > 0) {
+                      return socialMedia.map((s, i) => (
+                        <a key={i} href={s.url} target="_blank" rel="noopener noreferrer"
+                          className="flex items-center gap-2.5 px-4 py-3.5 bg-gray-50 rounded-xl text-gray-500 hover:bg-primary-50 hover:text-primary-700 transition-all duration-300 text-sm font-medium group/social">
+                          {s.icon && <svg className="w-5 h-5 group-hover/social:scale-110 transition-transform" fill="currentColor" viewBox="0 0 24 24"><path d={s.icon} /></svg>}
+                          <span>{s.platform}</span>
+                        </a>
+                      ));
+                    }
+                    return socialLinks.map((sl) => {
+                      const url = sl.key === 'whatsappUrl'
+                        ? `https://wa.me/${whatsappNumber}`
+                        : contacto[sl.key as keyof typeof contacto] as string || '#';
+                      return (
+                        <a key={sl.key} href={url} target="_blank" rel="noopener noreferrer"
+                          className={`flex items-center gap-2.5 px-4 py-3.5 bg-gray-50 rounded-xl text-gray-500 transition-all duration-300 text-sm font-medium ${sl.hover} group/social`}>
+                          <svg className="w-5 h-5 group-hover/social:scale-110 transition-transform" fill="currentColor" viewBox="0 0 24 24">
+                            <path d={sl.icon} />
+                          </svg>
+                          <span>{sl.label}</span>
+                        </a>
+                      );
+                    });
+                  })()}
                 </div>
               </div>
             </motion.div>

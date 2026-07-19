@@ -36,10 +36,11 @@ interface Props {
   toast: any;
 }
 
-const pageSubTabs = ['general', 'home', 'conocenos', 'contacto', 'galeria', 'categorias', 'resenas', 'notificaciones', 'fechas-bloqueadas', 'usuarios-admin'];
+const pageSubTabs = ['general', 'home', 'servicios', 'atractivos', 'noticias', 'conocenos', 'contacto', 'galeria', 'categorias', 'resenas', 'notificaciones', 'fechas-bloqueadas', 'usuarios-admin'];
 
 const subTabLabels: Record<string, string> = {
-  general: 'General', home: 'Inicio', conocenos: 'Conócenos', contacto: 'Contacto',
+  general: 'General', home: 'Inicio', servicios: 'Servicios', atractivos: 'Atractivos',
+  noticias: 'Noticias', conocenos: 'Conócenos', contacto: 'Contacto',
   galeria: 'Galería', categorias: 'Categorías', resenas: 'Reseñas',
   notificaciones: 'Notificaciones', 'fechas-bloqueadas': 'Fechas Bloqueadas', 'usuarios-admin': 'Usuarios Admin',
 };
@@ -98,9 +99,12 @@ export default function PagesTab({ org, orgForm, setOrgForm, pageContent, setPag
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
         <h3 className="text-sm font-semibold text-gray-700 mb-4">Información General</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Field label="Nombre de la Organización" value={orgForm.name || ''} onChange={(v) => setOrgForm({...orgForm, name: v})} />
+          <Field label="Nombre Comercial" value={orgForm.name || ''} onChange={(v) => setOrgForm({...orgForm, name: v})} />
+          <Field label="Razón Social" value={orgForm.legalName || ''} onChange={(v) => setOrgForm({...orgForm, legalName: v})} />
+          <Field label="RUC" value={orgForm.ruc || ''} onChange={(v) => setOrgForm({...orgForm, ruc: v})} />
           <Field label="Teléfono" value={orgForm.phone || ''} onChange={(v) => setOrgForm({...orgForm, phone: v})} />
           <Field label="Email" value={orgForm.email || ''} onChange={(v) => setOrgForm({...orgForm, email: v})} />
+          <Field label="Sitio Web" value={orgForm.website || ''} onChange={(v) => setOrgForm({...orgForm, website: v})} />
           <Field label="Dirección" value={orgForm.address || ''} onChange={(v) => setOrgForm({...orgForm, address: v})} />
         </div>
         <div className="mt-4">
@@ -721,10 +725,29 @@ export default function PagesTab({ org, orgForm, setOrgForm, pageContent, setPag
     );
   };
 
+  const renderPageContentTab = (pageKey: string, label: string) => {
+    const content = pageContent[pageKey] || {};
+    const setContent = (key: string, value: any) => updatePC(pageKey, { ...content, [key]: value });
+    return (
+      <div className="space-y-4">
+        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+          <h3 className="text-sm font-semibold text-gray-700 mb-4">Hero de {label}</h3>
+          <div className="grid grid-cols-1 gap-4">
+            <Field label="Título del Hero" value={content.heroTitle || content.title || ''} onChange={(v) => { setContent('heroTitle', v); setContent('title', v); }} />
+            <Field label="Subtítulo del Hero" value={content.heroSubtitle || content.subtitle || ''} onChange={(v) => { setContent('heroSubtitle', v); setContent('subtitle', v); }} type="textarea" />
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const renderSubTabContent = () => {
     switch (subTab) {
       case 'general': return renderGeneralTab();
       case 'home': return renderHomeTab();
+      case 'servicios': return renderPageContentTab('services', 'Servicios');
+      case 'atractivos': return renderPageContentTab('attractions', 'Atractivos');
+      case 'noticias': return renderPageContentTab('news', 'Noticias');
       case 'conocenos': return renderConocenosTab();
       case 'contacto': return renderContactoTab();
       case 'galeria': return renderGaleriaTab();

@@ -122,10 +122,10 @@ export default function Services() {
         </div>
         <div className="relative z-10 text-center text-white px-4 max-w-4xl mx-auto">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            {t('services.titulo')}
+            {org?.pageContent?.services?.heroTitle || org?.pageContent?.services?.title || t('services.titulo')}
           </h1>
           <p className="text-primary-100 text-lg max-w-2xl mx-auto">
-            {t('services.subtitulo')}
+            {org?.pageContent?.services?.heroSubtitle || org?.pageContent?.services?.subtitle || t('services.subtitulo')}
           </p>
         </div>
         <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-gray-50 to-transparent" />
