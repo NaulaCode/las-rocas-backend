@@ -41,7 +41,7 @@ export class NewsRepositoryImpl implements NewsRepository {
         summary: data.summary ?? undefined,
         type: data.type,
         image: data.image ?? undefined,
-        eventDate: data.eventDate ?? undefined,
+        eventDate: data.eventDate ? new Date(data.eventDate) : undefined,
         location: data.location ?? undefined,
         isPublished: data.isPublished ?? true,
       },
@@ -60,7 +60,7 @@ export class NewsRepositoryImpl implements NewsRepository {
     if (data.summary !== undefined) updateData.summary = data.summary;
     if (data.type !== undefined) updateData.type = data.type;
     if (data.image !== undefined) updateData.image = data.image;
-    if (data.eventDate !== undefined) updateData.eventDate = data.eventDate;
+    if (data.eventDate !== undefined) updateData.eventDate = data.eventDate ? new Date(data.eventDate) : null;
     if (data.location !== undefined) updateData.location = data.location;
     if (data.isPublished !== undefined) updateData.isPublished = data.isPublished;
 
