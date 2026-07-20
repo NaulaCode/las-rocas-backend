@@ -54,6 +54,7 @@ export const config = {
     user: process.env['MAIL_USER'] ?? '',
     pass: process.env['MAIL_PASS'] ?? '',
     from: process.env['MAIL_FROM'] ?? 'noreply@lasrocas',
+    brevoApiKey: process.env['BREVO_API_KEY'] ?? '',
   },
 
   app: {

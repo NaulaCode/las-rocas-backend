@@ -24,6 +24,40 @@ export class NodemailerMailService implements IMailService {
   }
 
   async send(to: string, subject: string, html: string): Promise<void> {
+    if (config.mail.brevoApiKey) {
+      await this.sendViaBrevoApi(to, subject, html);
+    } else {
+      await this.sendViaSmtp(to, subject, html);
+    }
+  }
+
+  private async sendViaBrevoApi(to: string, subject: string, html: string): Promise<void> {
+    try {
+      const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+        method: 'POST',
+        headers: {
+          'api-key': config.mail.brevoApiKey,
+          'content-type': 'application/json',
+          'accept': 'application/json',
+        },
+        body: JSON.stringify({
+          sender: { name: 'Las Rocas', email: config.mail.from || 'noreply@lasrocas' },
+          to: [{ email: to }],
+          subject,
+          htmlContent: html,
+        }),
+      });
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(`Brevo API error ${response.status}: ${text}`);
+      }
+      logger.info(`Email sent via Brevo API to ${to}: ${subject}`);
+    } catch (error) {
+      logger.error(`Error sending email to ${to}: ${(error as Error).message}`);
+    }
+  }
+
+  private async sendViaSmtp(to: string, subject: string, html: string): Promise<void> {
     try {
       const transporter = await this.getTransporter();
       const info = await transporter.sendMail({
