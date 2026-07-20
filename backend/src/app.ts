@@ -24,6 +24,9 @@ import roleRoutes from './interfaces/http/routes/roleRoutes';
 
 const app: Application = express();
 
+// Confiar en proxy inverso (Render, Nginx, etc.)
+app.set('trust proxy', 1);
+
 // Seguridad HTTP
 app.use(helmet());
 
