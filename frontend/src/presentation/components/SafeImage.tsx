@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 
 const FALLBACK_IMAGE = '/images/placeholder.svg';
 
@@ -7,10 +7,18 @@ interface SafeImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
 }
 
 export default function SafeImage({ src, alt, fallback = FALLBACK_IMAGE, className, ...props }: SafeImageProps) {
-  const [imgSrc, setImgSrc] = useState(src);
-  const [hasError, setHasError] = useState(false);
+  const [imgSrc, setImgSrc] = useState<string | undefined>(src);
+  const [failed, setFailed] = useState(false);
 
-  if (!src || hasError) {
+  const handleError = useCallback(() => {
+    if (imgSrc === fallback) {
+      setFailed(true);
+    } else {
+      setImgSrc(fallback);
+    }
+  }, [imgSrc, fallback]);
+
+  if (!src || failed) {
     return (
       <div className={`flex items-center justify-center bg-gray-100 text-gray-400 ${className ?? ''}`}>
         <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -26,12 +34,7 @@ export default function SafeImage({ src, alt, fallback = FALLBACK_IMAGE, classNa
       alt={alt}
       className={className}
       loading="lazy"
-      onError={() => {
-        if (!hasError) {
-          setHasError(true);
-          setImgSrc(fallback);
-        }
-      }}
+      onError={handleError}
       {...props}
     />
   );

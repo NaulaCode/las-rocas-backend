@@ -94,7 +94,7 @@ export default function PagesTab({ org, orgForm, setOrgForm, pageContent, setPag
     <div className="space-y-4">
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
         <h3 className="text-sm font-semibold text-gray-700 mb-4">Logo de la Organización</h3>
-        <ImageUpload value={logoUrl} onChange={setLogoUrl} />
+        <ImageUpload value={logoUrl} onChange={setLogoUrl} previewClass="w-48 h-32 object-contain rounded border" />
       </div>
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
         <h3 className="text-sm font-semibold text-gray-700 mb-4">Información General</h3>
@@ -359,7 +359,7 @@ export default function PagesTab({ org, orgForm, setOrgForm, pageContent, setPag
           {gallery.map((item: any, i: number) => (
             <div key={i} className="border border-gray-200 rounded-lg p-3">
               {item.url ? (
-                item.type === 'video' ? (
+                item.type === 'video' || item.type === 'facebook' || item.type === 'tiktok' || item.type === 'youtube' ? (
                   <div className="w-full h-24 bg-gray-900 rounded-lg flex items-center justify-center mb-2">
                     <svg className="w-8 h-8 text-white/60" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
                   </div>
@@ -381,6 +381,8 @@ export default function PagesTab({ org, orgForm, setOrgForm, pageContent, setPag
                 <option value="image">Imagen</option>
                 <option value="video">Video directo</option>
                 <option value="youtube">YouTube</option>
+                <option value="facebook">Facebook</option>
+                <option value="tiktok">TikTok</option>
               </select>
               <button onClick={() => { const ng = gallery.filter((_: any, j: number) => j !== i); updatePC('gallery', ng); }}
                 className="text-xs text-red-500 hover:text-red-700 font-medium">Eliminar</button>

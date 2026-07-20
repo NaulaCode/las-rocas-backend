@@ -156,7 +156,7 @@ export default function Conocenos() {
   const defaultStats = [
     { value: '10', label: 'Socios fundadores' },
     { value: '14', label: 'Servicios turísticos' },
-    { value: '2013', label: 'Años de experiencia' },
+    { value: '13', label: 'Años de experiencia' },
   ];
 
   useEffect(() => {

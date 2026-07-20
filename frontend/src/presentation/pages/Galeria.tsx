@@ -8,6 +8,7 @@ import SafeImage from '../components/SafeImage';
 import ImageLightbox from '../components/ImageLightbox';
 import { Organization } from '../../domain/entities/Organization';
 import EmptyState from '../components/EmptyState';
+import { getYouTubeEmbedUrl, getFacebookEmbedUrl, getTikTokEmbedUrl, getEmbedType } from '../utils/video';
 
 const galleryContainer = {
   hidden: { opacity: 0 },
@@ -28,24 +29,20 @@ export default function Galeria() {
 
   const gallery: { url: string; caption?: string; type?: string }[] = org?.pageContent?.gallery || [];
 
-  const isVideoUrl = (url: string) =>
+  const isDirectVideoUrl = (url: string) =>
     /\.(mp4|webm|ogg|mov|avi|mkv)(\?|$)/i.test(url) || /\/video\/upload\//i.test(url);
 
-  const isYouTubeUrl = (url: string) =>
-    /youtube\.com|youtu\.be/i.test(url);
+  const isEmbedVideo = (entry: { url: string; type?: string }) =>
+    !!getEmbedType(entry.url) || entry.type === 'youtube' || entry.type === 'facebook' || entry.type === 'tiktok';
+
+  const isDirectVideo = (entry: { url: string; type?: string }) =>
+    entry.type === 'video' || (isDirectVideoUrl(entry.url) && !getEmbedType(entry.url));
 
   const isVideo = (entry: { url: string; type?: string }) =>
-    entry.type === 'video' || entry.type === 'youtube' || isVideoUrl(entry.url) || isYouTubeUrl(entry.url);
+    isEmbedVideo(entry) || isDirectVideo(entry);
 
-  const isYouTube = (entry: { url: string; type?: string }) =>
-    entry.type === 'youtube' || isYouTubeUrl(entry.url);
-
-  const getEmbedUrl = (url: string) =>
-    url.includes('watch?v=')
-      ? url.replace('watch?v=', 'embed/').split('&')[0]
-      : url.includes('youtu.be/')
-        ? url.replace('youtu.be/', 'www.youtube.com/embed/')
-        : url;
+  const embedSrc = (url: string) =>
+    getYouTubeEmbedUrl(url) || getFacebookEmbedUrl(url) || getTikTokEmbedUrl(url) || url;
 
   const openLightbox = useCallback((index: number) => {
     setLightboxIndex(index);
@@ -141,10 +138,10 @@ export default function Galeria() {
               >
                 <div className="relative overflow-hidden bg-gray-900">
                   {isVideo(entry) ? (
-                    isYouTube(entry) ? (
+                    isEmbedVideo(entry) ? (
                       <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
                         <iframe
-                          src={getEmbedUrl(entry.url)}
+                          src={embedSrc(entry.url)}
                           className="absolute inset-0 w-full h-full"
                           allowFullScreen
                           title={entry.caption || ''}

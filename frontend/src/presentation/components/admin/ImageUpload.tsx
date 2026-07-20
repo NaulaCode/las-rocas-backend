@@ -5,7 +5,7 @@ import { container } from '../../../di/container';
 const isVideoUrl = (url: string) =>
   /\.(mp4|webm|ogg|mov)(\?|$)/i.test(url) || url.includes('blob:');
 
-export default function ImageUpload({ value, onChange }: { value: string; onChange: (url: string) => void }) {
+export default function ImageUpload({ value, onChange, previewClass }: { value: string; onChange: (url: string) => void; previewClass?: string }) {
   const { toast } = useToast();
   const [uploading, setUploading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -48,9 +48,9 @@ export default function ImageUpload({ value, onChange }: { value: string; onChan
       />
       {value && (
         isVideo ? (
-          <video src={value} className="w-32 h-20 object-cover rounded border" controls />
+          <video src={value} className={previewClass || "w-32 h-20 object-cover rounded border"} controls />
         ) : (
-          <img src={value} alt="Preview" className="w-32 h-20 object-cover rounded border" loading="lazy" />
+          <img src={value} alt="Preview" className={previewClass || "w-32 h-20 object-cover rounded border"} loading="lazy" />
         )
       )}
     </div>

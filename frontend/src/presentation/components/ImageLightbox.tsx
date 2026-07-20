@@ -1,5 +1,6 @@
 import { useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getYouTubeEmbedUrl, getFacebookEmbedUrl, getTikTokEmbedUrl } from '../utils/video';
 
 interface GalleryImage {
   url: string;
@@ -15,16 +16,12 @@ interface Props {
   onNext: () => void;
 }
 
-function isVideo(url: string, type?: string) {
-  return type === 'video' || /youtube\.com|youtu\.be/i.test(url);
+function isEmbedVideo(url: string, type?: string) {
+  return type === 'youtube' || type === 'facebook' || type === 'tiktok' || !!getYouTubeEmbedUrl(url) || !!getFacebookEmbedUrl(url) || !!getTikTokEmbedUrl(url);
 }
 
-function getEmbedUrl(url: string) {
-  if (url.includes('watch?v='))
-    return url.replace('watch?v=', 'embed/').split('&')[0];
-  if (url.includes('youtu.be/'))
-    return url.replace('youtu.be/', 'www.youtube.com/embed/');
-  return url;
+function embedSrc(url: string) {
+  return getYouTubeEmbedUrl(url) || getFacebookEmbedUrl(url) || getTikTokEmbedUrl(url) || url;
 }
 
 export default function ImageLightbox({ images, index, onClose, onPrev, onNext }: Props) {
@@ -45,7 +42,7 @@ export default function ImageLightbox({ images, index, onClose, onPrev, onNext }
     };
   }, [handleKeyDown]);
 
-  const isVid = isVideo(image.url, image.type);
+  const isVid = isEmbedVideo(image.url, image.type);
 
   return (
     <AnimatePresence>
@@ -104,7 +101,7 @@ export default function ImageLightbox({ images, index, onClose, onPrev, onNext }
             {isVid ? (
               <div className="relative w-full" style={{ maxWidth: 800, paddingBottom: '56.25%' }}>
                 <iframe
-                  src={getEmbedUrl(image.url)}
+                  src={embedSrc(image.url)}
                   className="absolute inset-0 w-full h-full rounded-2xl shadow-2xl"
                   allowFullScreen
                   title={image.caption || ''}

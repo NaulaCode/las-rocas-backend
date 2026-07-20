@@ -76,9 +76,9 @@ export default function Layout() {
           <div className="flex items-center justify-between h-16 md:h-20">
             <Link to="/" className="flex items-center gap-2 group">
               {org?.logo ? (
-                <img src={org.logo} alt={org?.name || 'Las Rocas'} className="h-10 w-auto object-contain" loading="lazy" />
+                <img src={org.logo} alt={org?.name || 'Las Rocas'} className="h-12 w-auto object-contain drop-shadow-sm transition-all duration-300 group-hover:scale-110 group-hover:drop-shadow-md" loading="lazy" />
               ) : (
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-lg transition-all duration-300 ${
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-bold text-lg transition-all duration-300 ${
                   scrolled
                     ? 'bg-primary-600 text-white group-hover:bg-primary-700'
                     : 'bg-white/20 text-white group-hover:bg-white/30'

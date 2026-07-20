@@ -11,7 +11,7 @@ import ImageLightbox from '../components/ImageLightbox';
 import AnimatedPrice from '../components/AnimatedPrice';
 import EmptyState from '../components/EmptyState';
 import { HeroSkeleton, CardSkeleton, NewsCardSkeleton } from '../components/Skeleton';
-import { getYouTubeEmbedUrl } from '../utils/video';
+import { getYouTubeEmbedUrl, getFacebookEmbedUrl, getTikTokEmbedUrl, getEmbedType } from '../utils/video';
 import { useTranslation } from 'react-i18next';
 import i18n from '../../i18n';
 
@@ -162,24 +162,22 @@ export default function Home() {
 
   const gallery: { url: string; caption?: string; type?: string }[] = org?.pageContent?.gallery || [];
 
-  const isVideoUrl = (url: string) =>
+  const isDirectVideoUrl = (url: string) =>
     /\.(mp4|webm|ogg|mov|avi|mkv)(\?|$)/i.test(url) || /\/video\/upload\//i.test(url);
 
-  const isYouTubeUrl = (url: string) =>
-    /youtube\.com|youtu\.be/i.test(url);
+  const isEmbedVideo = (entry: { url: string; type?: string }) =>
+    !!getEmbedType(entry.url) || entry.type === 'youtube' || entry.type === 'facebook' || entry.type === 'tiktok';
+
+  const isDirectVideo = (entry: { url: string; type?: string }) =>
+    entry.type === 'video' || (isDirectVideoUrl(entry.url) && !getEmbedType(entry.url));
 
   const isVideo = (entry: { url: string; type?: string }) =>
-    entry.type === 'video' || entry.type === 'youtube' || isVideoUrl(entry.url) || isYouTubeUrl(entry.url);
+    isEmbedVideo(entry) || isDirectVideo(entry);
 
-  const isYouTube = (entry: { url: string; type?: string }) =>
-    entry.type === 'youtube' || isYouTubeUrl(entry.url);
+  const isYouTubeUrl = (url: string) => /youtube\.com|youtu\.be/i.test(url);
 
-  const getEmbedUrl = (url: string) =>
-    url.includes('watch?v=')
-      ? url.replace('watch?v=', 'embed/').split('&')[0]
-      : url.includes('youtu.be/')
-        ? url.replace('youtu.be/', 'www.youtube.com/embed/')
-        : url;
+  const embedSrc = (url: string) =>
+    getYouTubeEmbedUrl(url) || getFacebookEmbedUrl(url) || getTikTokEmbedUrl(url) || url;
   const heroImages: string[] = gallery.map((g) => g.url).slice(0, 5);
   const heroBg = heroImages.length > 0 ? heroImages : [org?.coverImage || 'https://images.unsplash.com/photo-1504457047772-27faf9c0f3e9?w=1920&h=1080&fit=crop'];
   const reviews: { name: string; text: string; rating: number; role?: string }[] = (org?.pageContent?.reviews || []).filter((r) => r.approved);
@@ -403,9 +401,15 @@ export default function Home() {
               initial={{ opacity: 0, scale: 0.8, y: -20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               transition={{ duration: 0.7, type: 'spring', damping: 15 }}
-              className="mb-6"
+              className="mb-6 relative"
             >
-              <SafeImage src={org.logo} alt={org?.name || 'Las Rocas'} className="h-24 md:h-32 w-auto mx-auto drop-shadow-2xl" />
+              <div className="absolute inset-0 blur-3xl bg-white/10 rounded-full scale-150" />
+              <motion.div
+                animate={{ y: [0, -6, 0] }}
+                transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+              >
+                <SafeImage src={org.logo} alt={org?.name || 'Las Rocas'} className="h-24 md:h-32 w-auto mx-auto drop-shadow-2xl relative" />
+              </motion.div>
             </motion.div>
           )}
           <div>
@@ -893,9 +897,9 @@ export default function Home() {
                     onClick={() => !isVideo(gallery[galleryIndex]) && openLightbox(galleryIndex)}
                   >
                     {isVideo(gallery[galleryIndex]) ? (
-                      isYouTube(gallery[galleryIndex]) ? (
+                      isEmbedVideo(gallery[galleryIndex]) ? (
                         <iframe
-                          src={getEmbedUrl(gallery[galleryIndex].url)}
+                          src={embedSrc(gallery[galleryIndex].url)}
                           className="absolute inset-0 w-full h-full"
                           allowFullScreen
                           title={gallery[galleryIndex].caption || ''}

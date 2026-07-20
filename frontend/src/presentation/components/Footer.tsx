@@ -15,7 +15,12 @@ export default function Footer({ org }: { org?: Organization }) {
       <div className="container mx-auto px-4 py-12">
         <div className="grid md:grid-cols-4 gap-8 mb-10">
           <div className="md:col-span-2">
-            <h3 className="text-xl font-bold mb-3">{org?.name || 'Asociación Turística Las Rocas'}</h3>
+            <div className="flex items-center gap-3 mb-3">
+              {org?.logo && (
+                <img src={org.logo} alt={org?.name || 'Las Rocas'} className="h-10 w-auto object-contain brightness-0 invert opacity-80" loading="lazy" />
+              )}
+              <h3 className="text-xl font-bold">{org?.name || 'Asociación Turística Las Rocas'}</h3>
+            </div>
             <p className="text-gray-400 leading-relaxed max-w-md">
               {org?.description || t('footer.descripcion')}
             </p>
