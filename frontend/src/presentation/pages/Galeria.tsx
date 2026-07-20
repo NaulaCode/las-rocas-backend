@@ -133,7 +133,7 @@ export default function Galeria() {
               <motion.div
                 key={i}
                 variants={item}
-                className={`group relative rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-500 ${isVideo(entry) ? 'cursor-pointer' : ''}`}
+                className={`group relative rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-500 ${!isVideo(entry) ? 'cursor-pointer' : ''}`}
                 onClick={() => !isVideo(entry) && openLightbox(i)}
               >
                 <div className="relative overflow-hidden bg-gray-900">
@@ -164,8 +164,8 @@ export default function Galeria() {
                       className="w-full h-auto object-cover group-hover:scale-110 transition-transform duration-700"
                     />
                   )}
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-500 flex items-center justify-center">
-                    <div className="opacity-0 group-hover:opacity-100 transition-all duration-500 transform scale-0 group-hover:scale-100">
+                  <div className={`absolute inset-0 transition-all duration-500 flex items-center justify-center ${isVideo(entry) ? 'pointer-events-none' : 'bg-black/0 group-hover:bg-black/40'}`}>
+                    <div className={`${isVideo(entry) ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} transition-all duration-500 transform ${isVideo(entry) ? 'scale-100' : 'scale-0 group-hover:scale-100'}`}>
                       <div className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
                         {isVideo(entry) ? (
                           <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
