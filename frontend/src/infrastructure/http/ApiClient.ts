@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_API_URL || '/api/v1';
+const API_URL = import.meta.env.VITE_API_URL || (typeof window !== 'undefined' && !window.location.hostname.includes('localhost') ? 'https://las-rocas-backend.onrender.com/api/v1' : '/api/v1');
 
 export class ApiError extends Error {
   statusCode: number;
