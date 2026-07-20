@@ -46,6 +46,6 @@ services:
       - key: MAIL_PASS
         sync: false
       - key: MAIL_FROM
-        value: noreply@lasrocas
+        sync: false
       - key: LOG_LEVEL
         value: info
