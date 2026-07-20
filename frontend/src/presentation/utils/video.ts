@@ -31,7 +31,15 @@ export function getEmbedUrl(url: string): string | null {
 
 export function isVideoUrl(url: string): boolean {
   if (getEmbedUrl(url)) return true;
-  return /\.(mp4|webm|ogg|mov)(\?|$)/i.test(url);
+  return /\.(mp4|webm|ogg|mov|avi|mkv)(\?|$)/i.test(url) || /\/video\/upload\//i.test(url);
+}
+
+export function detectMediaType(url: string): 'image' | 'video' | 'youtube' | 'facebook' | 'tiktok' {
+  if (getYouTubeEmbedUrl(url)) return 'youtube';
+  if (getFacebookEmbedUrl(url)) return 'facebook';
+  if (getTikTokEmbedUrl(url)) return 'tiktok';
+  if (/\.(mp4|webm|ogg|mov|avi|mkv)(\?|$)/i.test(url) || /\/video\/upload\//i.test(url)) return 'video';
+  return 'image';
 }
 
 export type EmbedType = 'youtube' | 'facebook' | 'tiktok' | null;

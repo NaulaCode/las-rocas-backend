@@ -3,7 +3,7 @@ import { useToast } from '../Toast';
 import { container } from '../../../di/container';
 
 const isVideoUrl = (url: string) =>
-  /\.(mp4|webm|ogg|mov)(\?|$)/i.test(url) || url.includes('blob:');
+  /\.(mp4|webm|ogg|mov|avi|mkv)(\?|$)/i.test(url) || /\/video\/upload\//i.test(url) || url.includes('blob:');
 
 export default function ImageUpload({ value, onChange, previewClass }: { value: string; onChange: (url: string) => void; previewClass?: string }) {
   const { toast } = useToast();

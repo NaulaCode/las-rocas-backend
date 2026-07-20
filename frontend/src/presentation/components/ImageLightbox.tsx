@@ -20,6 +20,10 @@ function isEmbedVideo(url: string, type?: string) {
   return type === 'youtube' || type === 'facebook' || type === 'tiktok' || !!getYouTubeEmbedUrl(url) || !!getFacebookEmbedUrl(url) || !!getTikTokEmbedUrl(url);
 }
 
+function isDirectVideoUrl(url: string) {
+  return /\.(mp4|webm|ogg|mov|avi|mkv)(\?|$)/i.test(url) || /\/video\/upload\//i.test(url);
+}
+
 function embedSrc(url: string) {
   return getYouTubeEmbedUrl(url) || getFacebookEmbedUrl(url) || getTikTokEmbedUrl(url) || url;
 }
@@ -42,7 +46,7 @@ export default function ImageLightbox({ images, index, onClose, onPrev, onNext }
     };
   }, [handleKeyDown]);
 
-  const isVid = isEmbedVideo(image.url, image.type);
+  const isVid = isEmbedVideo(image.url, image.type) || isDirectVideoUrl(image.url) || image.type === 'video';
 
   return (
     <AnimatePresence>
@@ -99,14 +103,23 @@ export default function ImageLightbox({ images, index, onClose, onPrev, onNext }
         >
           <div className="relative w-full max-h-[75vh] flex items-center justify-center">
             {isVid ? (
-              <div className="relative w-full" style={{ maxWidth: 800, paddingBottom: '56.25%' }}>
-                <iframe
-                  src={embedSrc(image.url)}
-                  className="absolute inset-0 w-full h-full rounded-2xl shadow-2xl"
-                  allowFullScreen
-                  title={image.caption || ''}
+              isEmbedVideo(image.url, image.type) ? (
+                <div className="relative w-full" style={{ maxWidth: 800, paddingBottom: '56.25%' }}>
+                  <iframe
+                    src={embedSrc(image.url)}
+                    className="absolute inset-0 w-full h-full rounded-2xl shadow-2xl"
+                    allowFullScreen
+                    title={image.caption || ''}
+                  />
+                </div>
+              ) : (
+                <video
+                  src={image.url}
+                  className="max-w-full max-h-[75vh] object-contain rounded-2xl shadow-2xl"
+                  controls
+                  playsInline
                 />
-              </div>
+              )
             ) : (
               <img
                 src={image.url}

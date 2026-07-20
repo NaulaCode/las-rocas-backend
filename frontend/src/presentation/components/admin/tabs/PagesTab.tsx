@@ -6,6 +6,7 @@ import { Role } from '../../../../domain/entities/Role';
 import ImageUpload from '../ImageUpload';
 import { container } from '../../../../di/container';
 import SEO from '../../SEO';
+import { detectMediaType } from '../../../utils/video';
 
 function Field({ label, value, onChange, type = 'text', placeholder }: { label: string; value: string; onChange: (v: string) => void; type?: string; placeholder?: string }) {
   return (
@@ -372,7 +373,7 @@ export default function PagesTab({ org, orgForm, setOrgForm, pageContent, setPag
                 </div>
               )}
               <div className="mb-1">
-                <ImageUpload value={item.url || ''} onChange={(url) => { const ng = [...gallery]; ng[i] = { ...ng[i], url }; updatePC('gallery', ng); }} />
+                <ImageUpload value={item.url || ''} onChange={(url) => { const detected = detectMediaType(url); const ng = [...gallery]; ng[i] = { ...ng[i], url, type: item.type === 'image' ? detected : item.type }; updatePC('gallery', ng); }} />
               </div>
               <input value={item.caption || ''} onChange={(e) => { const ng = [...gallery]; ng[i] = { ...ng[i], caption: e.target.value }; updatePC('gallery', ng); }}
                 className="w-full px-2 py-1 border border-gray-200 rounded text-xs mb-1" placeholder="Descripción" />
