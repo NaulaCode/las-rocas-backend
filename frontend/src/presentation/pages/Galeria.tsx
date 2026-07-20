@@ -148,14 +148,16 @@ export default function Galeria() {
                         />
                       </div>
                     ) : (
-                      <video
-                        src={entry.url}
-                        className="w-full h-auto max-h-96 object-contain bg-black"
-                        controls
-                        playsInline
-                        preload="metadata"
-                        title={entry.caption || ''}
-                      />
+                      <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+                        <video
+                          src={entry.url}
+                          className="absolute inset-0 w-full h-full object-contain bg-black"
+                          controls
+                          playsInline
+                          preload="metadata"
+                          title={entry.caption || ''}
+                        />
+                      </div>
                     )
                   ) : (
                     <SafeImage
