@@ -18,9 +18,6 @@ router.get('/availability', (req, res, next) =>
 router.get('/by-email/:email', (req, res, next) =>
   reservationController.getByEmail(req, res, next)
 );
-router.get('/:id', (req, res, next) =>
-  reservationController.getById(req, res, next)
-);
 router.post('/', reservationPostLimiter, validateTurnstile, (req, res, next) =>
   reservationController.create(req, res, next)
 );
@@ -28,7 +25,7 @@ router.post('/cancel', (req, res, next) =>
   reservationController.cancel(req, res, next)
 );
 
-// Admin
+// Admin (specific routes BEFORE /:id to avoid shadowing)
 router.get('/', authenticate, loadPermissions, createRequirePermission('reservations:list'), reservationLimiter, (req, res, next) =>
   reservationController.getAll(req, res, next)
 );
@@ -41,6 +38,12 @@ router.get('/monthly', authenticate, loadPermissions, createRequirePermission('r
 router.get('/top-services', authenticate, loadPermissions, createRequirePermission('reservations:list'), (req, res, next) =>
   reservationController.getTopServices(req, res, next)
 );
+
+// Pública con parámetro (va al final para no robar rutas específicas)
+router.get('/:id', (req, res, next) =>
+  reservationController.getById(req, res, next)
+);
+
 router.put('/:id', authenticate, loadPermissions, createRequirePermission('reservations:update'), (req, res, next) =>
   reservationController.update(req, res, next)
 );
