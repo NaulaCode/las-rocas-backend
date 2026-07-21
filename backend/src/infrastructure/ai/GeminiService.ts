@@ -26,7 +26,7 @@ export class GeminiService implements IAiService {
   }
 
   async chatStream(
-    options: ChatOptions & { onToken: (token: string) => void; onFunctionCall?: (call: FunctionCall) => void }
+    options: ChatOptions & { onToken: (token: string) => void; onFunctionCall?: (call: FunctionCall) => void; onStreamEnd?: () => void }
   ): Promise<void> {
     const body = this.buildRequestBody(options);
     const url = `/v1beta/models/${CHAT_MODEL}:streamGenerateContent?alt=sse`;
@@ -77,7 +77,10 @@ export class GeminiService implements IAiService {
               }
             }
           });
-          res.on('end', () => resolve());
+          res.on('end', () => {
+            options.onStreamEnd?.();
+            resolve();
+          });
         }
       );
       req.on('error', reject);

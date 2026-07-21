@@ -10,6 +10,7 @@ export interface ChatbotEmbeddingData {
 }
 
 export class ChatbotEmbeddingRepositoryImpl implements IChatbotEmbeddingRepository {
+  private pgvectorAvailable: boolean | null = null;
 
   async save(id: string, content: string, embedding: number[]): Promise<void> {
     const prisma = getPrisma();
@@ -25,6 +26,15 @@ export class ChatbotEmbeddingRepositoryImpl implements IChatbotEmbeddingReposito
         embedding: embedding as any,
       },
     });
+    try {
+      const vectorStr = `[${embedding.join(',')}]`;
+      await prisma.$executeRawUnsafe(
+        `UPDATE chatbot_embeddings SET vector = $1::vector WHERE id = $2`,
+        vectorStr, id
+      );
+    } catch {
+      // pgvector column may not exist
+    }
   }
 
   async findByContent(content: string): Promise<ChatbotEmbeddingData | null> {
@@ -66,12 +76,42 @@ export class ChatbotEmbeddingRepositoryImpl implements IChatbotEmbeddingReposito
   }
 
   async searchSimilar(embedding: number[], topK: number = 10): Promise<SemanticSearchResult[]> {
+    if (this.pgvectorAvailable !== false) {
+      try {
+        return await this.searchWithPgvector(embedding, topK);
+      } catch {
+        this.pgvectorAvailable = false;
+      }
+    }
+    return this.searchWithJs(embedding, topK);
+  }
+
+  private async searchWithPgvector(embedding: number[], topK: number): Promise<SemanticSearchResult[]> {
+    const prisma = getPrisma();
+    const vectorStr = `[${embedding.join(',')}]`;
+    const rows = await prisma.$queryRawUnsafe<{ id: string; content: string; similarity: number }[]>(
+      `SELECT id, content, 1 - (vector <=> $1::vector) as similarity
+       FROM chatbot_embeddings
+       WHERE vector IS NOT NULL
+       ORDER BY vector <=> $1::vector
+       LIMIT $2`,
+      vectorStr, topK
+    );
+    return rows.map(r => ({
+      id: r.id,
+      content: r.content,
+      ...this.parseId(r.id),
+      similarity: Number(Number(r.similarity).toFixed(4)),
+    }));
+  }
+
+  private async searchWithJs(embedding: number[], topK: number): Promise<SemanticSearchResult[]> {
     const prisma = getPrisma();
     const rows = await prisma.chatbotEmbedding.findMany({
       select: { id: true, content: true, embedding: true },
     });
 
-    const results = rows
+    return rows
       .map((row) => {
         const stored = Array.isArray(row.embedding) ? (row.embedding as unknown as number[]) : [];
         const similarity = this.cosineSimilarity(embedding, stored);
@@ -85,8 +125,6 @@ export class ChatbotEmbeddingRepositoryImpl implements IChatbotEmbeddingReposito
       .filter((r) => r.similarity > 0)
       .sort((a, b) => b.similarity - a.similarity)
       .slice(0, topK);
-
-    return results;
   }
 
   private cosineSimilarity(a: number[], b: number[]): number {

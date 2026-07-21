@@ -33,6 +33,6 @@ export interface ChatResult {
 export interface IAiService {
   ask(prompt: string): Promise<string>;
   chat(options: ChatOptions): Promise<ChatResult>;
-  chatStream(options: ChatOptions & { onToken: (token: string) => void; onFunctionCall?: (call: FunctionCall) => void }): Promise<void>;
+  chatStream(options: ChatOptions & { onToken: (token: string) => void; onFunctionCall?: (call: FunctionCall) => void; onStreamEnd?: () => void }): Promise<void>;
   embed(text: string): Promise<number[]>;
 }

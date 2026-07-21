@@ -3,13 +3,15 @@ import { config } from './shared/config/config';
 import { log } from './shared/logger/logger';
 import { testPrismaConnection, disconnectPrisma } from './infrastructure/database/postgres/PrismaService';
 import { wsManager } from './infrastructure/websocket/WebSocketManager';
-import { reminderScheduler } from './di/container';
+import { reminderScheduler, sessionCleanupScheduler } from './di/container';
+import { ensurePgvector } from './infrastructure/database/postgres/enablePgvector';
 
 const startServer = async (): Promise<void> => {
   try {
     // 1. Verificar conexión a PostgreSQL
     log.info('🔌 Conectando a PostgreSQL...');
     await testPrismaConnection();
+    await ensurePgvector();
 
     // 2. Iniciar el servidor HTTP
     const server = app.listen(config.server.port, () => {
@@ -17,6 +19,7 @@ const startServer = async (): Promise<void> => {
       wsManager.initialize(server);
       
       reminderScheduler.start();
+      sessionCleanupScheduler.start();
 
       log.info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
       log.info('🌿 Las Rocas - Servidor iniciado');

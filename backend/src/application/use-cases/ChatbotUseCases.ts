@@ -80,12 +80,19 @@ const TOOLS: FunctionDeclaration[] = [
       required: ['date'],
     },
   },
+  {
+    name: 'contact_human',
+    description: 'Cuando el usuario insista en hablar con un agente humano, persona real, asesor, o cuando no puedas resolver su consulta y necesite atención personalizada.',
+    parameters: {
+      type: 'object',
+      properties: {},
+    },
+  },
 ];
 
 export class ChatbotUseCases {
   private sessions = new Map<string, ChatbotSession>();
   private contextCache: { org: string; faqs: string; services: string; timestamp: number } | null = null;
-  private pendingFunctionCall: FunctionCall | null = null;
 
   constructor(
     private chatbotRepository: ChatbotRepository,
@@ -119,6 +126,41 @@ export class ChatbotUseCases {
   async addFeedback(logId: string, feedback: 'like' | 'dislike'): Promise<void> {
     if (!this.logRepository) return;
     await this.logRepository.updateFeedback(logId, feedback);
+    if (feedback === 'dislike') {
+      await this.enrichFaqFromDislike(logId);
+    }
+  }
+
+  private async enrichFaqFromDislike(logId: string): Promise<void> {
+    try {
+      const log = await this.logRepository!.findById(logId);
+      if (!log) return;
+      const query = log.query;
+      const results = await this.chatbotRepository.search(query);
+      const bestMatch = results.find(q => (q.relevance ?? 0) >= 10);
+      if (!bestMatch) return;
+
+      const queryWords = query.toLowerCase()
+        .replace(/[¿?!¡.,;:]/g, '')
+        .split(/\s+/)
+        .filter(w => w.length > 3)
+        .filter(w => !bestMatch.keywords.some(k => k.toLowerCase() === w));
+
+      if (queryWords.length === 0) return;
+
+      const newKeywords = [...new Set([...bestMatch.keywords, ...queryWords])];
+      if (newKeywords.length > bestMatch.keywords.length) {
+        this.logger.info('Enriqueciendo keywords de FAQ por dislike', {
+          faqId: bestMatch.id,
+          query,
+          addedWords: queryWords,
+        });
+        await this.chatbotRepository.update(bestMatch.id, { keywords: newKeywords });
+        this.contextCache = null;
+      }
+    } catch (e) {
+      this.logger.warn('Error en enrichFaqFromDislike', e);
+    }
   }
 
   async chat(query: string, sessionId?: string): Promise<ChatResult> {
@@ -170,18 +212,24 @@ export class ChatbotUseCases {
       let usedFunction: string | undefined;
 
       if (result.functionCalls && result.functionCalls.length > 0) {
-        const fnCall = result.functionCalls[0];
-        usedFunction = fnCall.name;
-        this.logger.info(`Function call: ${fnCall.name}`, { args: fnCall.args });
-        const fnResult = await this.executeFunction(fnCall);
+        usedFunction = result.functionCalls.map(f => f.name).join(',');
+        this.logger.info(`Function calls: ${usedFunction}`, { count: result.functionCalls.length });
+
+        const fnResults: { call: FunctionCall; result: Record<string, any> }[] = [];
+        for (const fnCall of result.functionCalls) {
+          const fnResult = await this.executeFunction(fnCall);
+          fnResults.push({ call: fnCall, result: fnResult });
+        }
+
+        const fnMessages: AiChatMessage[] = [];
+        for (const { call, result: res } of fnResults) {
+          fnMessages.push({ role: 'model', content: JSON.stringify({ functionCall: call }) });
+          fnMessages.push({ role: 'user', content: JSON.stringify({ functionResponse: res }) });
+        }
 
         const followUp = await this.aiService.chat({
           systemPrompt,
-          messages: [
-            ...aiMessages,
-            { role: 'model', content: JSON.stringify({ functionCall: fnCall }) },
-            { role: 'user', content: JSON.stringify({ functionResponse: fnResult }) },
-          ],
+          messages: [...aiMessages, ...fnMessages],
           tools: TOOLS,
         });
         finalAnswer = followUp.text || '';
@@ -258,7 +306,7 @@ export class ChatbotUseCases {
       const ai = this.aiService!;
 
       let accumulatedText = '';
-      let functionCallName: string | undefined;
+      const functionCalls: FunctionCall[] = [];
 
       await ai.chatStream({
         systemPrompt,
@@ -268,18 +316,31 @@ export class ChatbotUseCases {
           accumulatedText += token;
           onToken(token);
         },
-        onFunctionCall: async (call) => {
-          functionCallName = call.name;
-          const fnResult = await this.executeFunction(call);
-          accumulatedText = '';
+        onFunctionCall: (call) => {
+          functionCalls.push(call);
+        },
+        onStreamEnd: async () => {
+          if (functionCalls.length === 0) return;
 
+          const names = functionCalls.map(f => f.name).join(',');
+          this.logger.info(`Function calls (stream): ${names}`, { count: functionCalls.length });
+
+          const fnResults: { call: FunctionCall; result: Record<string, any> }[] = [];
+          for (const fnCall of functionCalls) {
+            const fnResult = await this.executeFunction(fnCall);
+            fnResults.push({ call: fnCall, result: fnResult });
+          }
+
+          const fnMessages: AiChatMessage[] = [];
+          for (const { call, result } of fnResults) {
+            fnMessages.push({ role: 'model', content: JSON.stringify({ functionCall: call }) });
+            fnMessages.push({ role: 'user', content: JSON.stringify({ functionResponse: result }) });
+          }
+
+          accumulatedText = '';
           await ai.chatStream({
             systemPrompt,
-            messages: [
-              ...aiMessages,
-              { role: 'model', content: JSON.stringify({ functionCall: call }) },
-              { role: 'user', content: JSON.stringify({ functionResponse: fnResult }) },
-            ],
+            messages: [...aiMessages, ...fnMessages],
             tools: TOOLS,
             onToken: (token) => {
               accumulatedText += token;
@@ -295,11 +356,12 @@ export class ChatbotUseCases {
       await this.persistSession(session);
 
       const elapsed = Date.now() - startTime;
+      const usedFn = functionCalls.length > 0 ? functionCalls.map(f => f.name).join(',') : undefined;
       this.logger.info('ChatStream completado', {
         query,
         elapsedMs: elapsed,
         usedRag: ragResult.usedRag,
-        usedFunction: functionCallName,
+        usedFunction: usedFn,
         sourcesCount: ragResult.sources.length,
         answerLength: finalAnswer.length,
       });
@@ -628,19 +690,20 @@ ABSOLUTE RULE: NEVER invent services, prices, or contact info. Only use the data
 CONTEXT DATA:
 ${context}
 
-FUNCTION CALLING: You have tools available (get_services, get_contact_info, get_faq_answer, check_availability). USE THEM when users ask specific questions about services, prices, availability, or contact. This gives them REAL, up-to-date data.
+FUNCTION CALLING: You have tools available (get_services, get_contact_info, get_faq_answer, check_availability, contact_human). USE THEM when users ask specific questions about services, prices, availability, or contact. This gives them REAL, up-to-date data.
 
 RULES:
 1. When asked about services/activities/prices → use get_services to fetch real data
 2. When asked about contact/hours/location → use get_contact_info
 3. When asked common questions → use get_faq_answer
 4. When asked about availability/capacity → use check_availability
-5. You may use your general knowledge about Ecuador tourism and nearby attractions
-6. Answer warmly as a local tour guide, 3-5 paragraphs max
-7. When mentioning a service or attraction ALWAYS include: name, short description, price (if available), and a suggested action (e.g., "check availability", "make a reservation", "visit our services page")
-8. If a service doesn't exist, say so honestly and suggest similar alternatives
-9. If the question is completely unrelated to tourism in Ecuador or Las Rocas (e.g., capital cities, math, politics), respond politely that you specialize in tourism information about Las Rocas and nearby attractions, and ask if they have questions about our services
-10. LANGUAGE: You are answering in ENGLISH. Always respond in ENGLISH.`;
+5. If the user insists on speaking to a real person, human agent, or you cannot resolve their query → use contact_human to provide direct contact details
+6. You may use your general knowledge about Ecuador tourism and nearby attractions
+7. Answer warmly as a local tour guide, 3-5 paragraphs max
+8. When mentioning a service or attraction ALWAYS include: name, short description, price (if available), and a suggested action (e.g., "check availability", "make a reservation", "visit our services page")
+9. If a service doesn't exist, say so honestly and suggest similar alternatives
+10. If the question is completely unrelated to tourism in Ecuador or Las Rocas (e.g., capital cities, math, politics), respond politely that you specialize in tourism information about Las Rocas and nearby attractions, and ask if they have questions about our services
+11. LANGUAGE: You are answering in ENGLISH. Always respond in ENGLISH.`;
     }
 
     return `Eres el asistente turístico oficial de la "Asociación Turística Las Rocas" en Ecuador.
@@ -650,19 +713,20 @@ REGLAS ABSOLUTAS: NUNCA inventes servicios, precios ni información de contacto.
 DATOS DE CONTEXTO:
 ${context}
 
-TOOL CALLING: Tienes herramientas disponibles (get_services, get_contact_info, get_faq_answer, check_availability). ÚSALAS cuando el usuario pregunte sobre servicios, precios, disponibilidad o contacto. Así le das datos REALES y actualizados.
+TOOL CALLING: Tienes herramientas disponibles (get_services, get_contact_info, get_faq_answer, check_availability, contact_human). ÚSALAS cuando el usuario pregunte sobre servicios, precios, disponibilidad o contacto. Así le das datos REALES y actualizados.
 
 REGLAS:
 1. Cuando pregunten por servicios/precios/actividades → usa get_services para obtener datos reales
 2. Cuando pregunten por contacto/horario/ubicación → usa get_contact_info
 3. Cuando pregunten algo común → usa get_faq_answer
 4. Cuando pregunten por disponibilidad/cupo → usa check_availability
-5. Puedes usar tu conocimiento general sobre turismo en Ecuador y lugares cercanos
-6. Responde cálido como guía local, 3-5 párrafos máximo
-7. Al mencionar un servicio o atractivo SIEMPRE incluye: nombre, descripción breve, precio (si existe), y una acción sugerida (ej: "puedes consultar disponibilidad", "realizar una reserva", "visitar nuestra sección de servicios")
-8. Si un servicio no existe, dilo honestamente y sugiere alternativas similares
-9. Si la pregunta no tiene relación con turismo en Ecuador o Las Rocas (ej: capitales, matemáticas, política), responde amablemente que te especializas en información turística de Las Rocas y pregúntale si tiene dudas sobre nuestros servicios
-10. IDIOMA: Estás respondiendo en ESPAÑOL. Siempre responde en ESPAÑOL.`;
+5. Cuando el usuario insista en hablar con una persona real, agente humano, o no puedas resolver su consulta → usa contact_human para darle los datos de contacto directo
+6. Puedes usar tu conocimiento general sobre turismo en Ecuador y lugares cercanos
+7. Responde cálido como guía local, 3-5 párrafos máximo
+8. Al mencionar un servicio o atractivo SIEMPRE incluye: nombre, descripción breve, precio (si existe), y una acción sugerida (ej: "puedes consultar disponibilidad", "realizar una reserva", "visitar nuestra sección de servicios")
+9. Si un servicio no existe, dilo honestamente y sugiere alternativas similares
+10. Si la pregunta no tiene relación con turismo en Ecuador o Las Rocas (ej: capitales, matemáticas, política), responde amablemente que te especializas en información turística de Las Rocas y pregúntale si tiene dudas sobre nuestros servicios
+11. IDIOMA: Estás respondiendo en ESPAÑOL. Siempre responde en ESPAÑOL.`;
   }
 
   private buildChatHistory(session: ChatbotSession): AiChatMessage[] {
@@ -788,6 +852,16 @@ REGLAS:
           people,
           details,
           message: `Sí, existe disponibilidad para el ${dateStr}${people > 1 ? ` para ${people} personas` : ''}. Puedes continuar con el formulario de reserva para registrar tu visita.`,
+        };
+      }
+
+      case 'contact_human': {
+        const org = await this.organizationRepository.find();
+        return {
+          message: 'Puedes contactarnos directamente para atención personalizada.',
+          phone: org?.phone || '+593 99 999 9999',
+          email: org?.email || 'info@lasrocas.com',
+          whatsapp: `https://wa.me/${(org?.phone || '').replace(/[^0-9]/g, '')}`,
         };
       }
 

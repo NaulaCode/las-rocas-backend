@@ -26,6 +26,7 @@ import { ContactUseCases } from '../application/use-cases/ContactUseCases';
 import { ReviewUseCases } from '../application/use-cases/ReviewUseCases';
 import { RoleUseCases } from '../application/use-cases/RoleUseCases';
 import { ReminderScheduler } from '../infrastructure/scheduler/reminderScheduler';
+import { SessionCleanupScheduler } from '../infrastructure/scheduler/sessionCleanupScheduler';
 
 import { NodemailerMailService } from '../infrastructure/mail/NodemailerMailService';
 import { GeminiService } from '../infrastructure/ai/GeminiService';
@@ -105,3 +106,4 @@ export const roleController = new RoleController(roleUseCases, auditLogger);
 export const loadPermissions = createPermissionLoader(roleRepo);
 
 export const reminderScheduler = new ReminderScheduler(reservationRepo, mailService);
+export const sessionCleanupScheduler = new SessionCleanupScheduler(chatbotSessionRepo);

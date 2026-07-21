@@ -25,6 +25,23 @@ export class ChatbotLogRepositoryImpl implements ChatbotLogRepository {
     await prisma.chatbotLog.update({ where: { id }, data: { feedback } });
   }
 
+  async findById(id: string): Promise<ChatbotLog | null> {
+    const prisma = getPrisma();
+    const row = await prisma.chatbotLog.findUnique({ where: { id } });
+    if (!row) return null;
+    return {
+      id: row.id,
+      query: row.query,
+      answer: row.answer,
+      source: row.source as ChatbotLog['source'],
+      matchedQuestion: row.matchedQuestion ?? undefined,
+      confidence: row.confidence ?? undefined,
+      feedback: row.feedback as ChatbotLog['feedback'] ?? undefined,
+      sessionId: row.sessionId ?? undefined,
+      createdAt: row.createdAt.toISOString(),
+    };
+  }
+
   async getStats(): Promise<ChatbotStats> {
     const prisma = getPrisma();
 
