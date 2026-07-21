@@ -74,7 +74,7 @@ const roleDefinitions = [
     permissionNames: [
       'users:list', 'services:list', 'news:list', 'attractions:list',
       'reservations:list', 'chatbot:list', 'contact:list', 'reviews:list',
-      'audit:list', 'roles:list',
+      'roles:list',
     ],
   },
 ];
