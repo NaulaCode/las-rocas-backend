@@ -11,9 +11,8 @@ const startServer = async (): Promise<void> => {
     // 1. Verificar conexión a PostgreSQL
     log.info('🔌 Conectando a PostgreSQL...');
     await testPrismaConnection();
-    await ensurePgvector();
 
-    // 2. Iniciar el servidor HTTP
+    // 2. Iniciar el servidor HTTP (antes de pgvector para no bloquear el puerto)
     const server = app.listen(config.server.port, () => {
       // 3. Inicializar WebSocket sobre el mismo servidor HTTP
       wsManager.initialize(server);
@@ -28,6 +27,9 @@ const startServer = async (): Promise<void> => {
       log.info(`🔗 URL:      http://localhost:${config.server.port}/api/${config.server.apiVersion}`);
       log.info(`❤️  Health:  http://localhost:${config.server.port}/api/${config.server.apiVersion}/health`);
       log.info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
+      // pgvector se inicializa async después del listen (falla silenciosamente si no hay soporte)
+      ensurePgvector();
     });
 
     // 3. Cierre limpio al apagar el servidor
