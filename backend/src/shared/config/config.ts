@@ -58,7 +58,7 @@ export const config = {
   },
 
   app: {
-    frontendUrl: process.env['FRONTEND_URL'] ?? 'http://localhost:5173',
+    frontendUrl: process.env['FRONTEND_URL'] ?? 'https://plataforma-turisticas.vercel.app',
   },
 
   cloudinary: {
