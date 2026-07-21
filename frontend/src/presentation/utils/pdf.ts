@@ -81,6 +81,15 @@ function drawSummaryCards(doc: jsPDF, y: number, cards: { label: string; value: 
   return y + 32;
 }
 
+function fitText(doc: jsPDF, text: string, maxWidth: number): string {
+  if (doc.getTextWidth(text) <= maxWidth) return text;
+  let truncated = text;
+  while (doc.getTextWidth(truncated + '...') > maxWidth && truncated.length > 1) {
+    truncated = truncated.slice(0, -1);
+  }
+  return truncated + '...';
+}
+
 function drawTable(
   doc: jsPDF,
   startY: number,
@@ -115,7 +124,9 @@ function drawTable(
       const h = headers[ci];
       if (row.color && ci === row.cols.length - 1) doc.setTextColor(...row.color);
       else doc.setTextColor(...C.text);
-      doc.text(String(val), h.x + CELL_PAD, y);
+      const cellW = ci < headers.length - 1 ? h.w - CELL_PAD : 999;
+      const txt = fitText(doc, String(val), cellW);
+      doc.text(txt, h.x + CELL_PAD, y);
     });
     doc.setDrawColor(...C.border);
     doc.setLineWidth(0.3);
