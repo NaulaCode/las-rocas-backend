@@ -49,8 +49,8 @@ export class ServiceRepositoryImpl implements ServiceRepository {
         schedule: data.schedule ?? null,
         isActive: true,
         maxCapacity: data.maxCapacity ?? 5,
-        availableFrom: data.availableFrom ?? null,
-        availableUntil: data.availableUntil ?? null,
+        availableFrom: data.availableFrom ? new Date(data.availableFrom) : null,
+        availableUntil: data.availableUntil ? new Date(data.availableUntil) : null,
       },
     });
     return this.mapToService(result);

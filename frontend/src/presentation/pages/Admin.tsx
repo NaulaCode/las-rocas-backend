@@ -264,6 +264,7 @@ export default function Admin() {
         maxCapacity: form.maxCapacity || undefined,
         availableFrom: form.availableFrom || undefined,
         availableUntil: form.availableUntil || undefined,
+        currency: form.currency || undefined,
       };
       if (isEdit) { const r = await container.services.update(initial!.id!, payload); setServices(prev => prev.map(s => s.id === r.id ? r : s)); }
       else { const r = await container.services.create(payload); setServices(prev => [r, ...prev]); }
@@ -326,7 +327,7 @@ export default function Admin() {
 
     setModal(null);
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Error al guardar');
+      toast(err instanceof Error ? err.message : 'Error al guardar', 'error');
     }
   };
 

@@ -37,12 +37,12 @@ interface Props {
   toast: any;
 }
 
-const pageSubTabs = ['general', 'home', 'servicios', 'atractivos', 'noticias', 'conocenos', 'contacto', 'galeria', 'categorias', 'resenas', 'notificaciones', 'fechas-bloqueadas', 'usuarios-admin'];
+const pageSubTabs = ['general', 'home', 'servicios', 'atractivos', 'noticias', 'conocenos', 'contacto', 'galeria', 'categorias', 'notificaciones', 'fechas-bloqueadas', 'usuarios-admin'];
 
 const subTabLabels: Record<string, string> = {
   general: 'General', home: 'Inicio', servicios: 'Servicios', atractivos: 'Atractivos',
   noticias: 'Noticias', conocenos: 'Conócenos', contacto: 'Contacto',
-  galeria: 'Galería', categorias: 'Categorías', resenas: 'Reseñas',
+  galeria: 'Galería', categorias: 'Categorías',
   notificaciones: 'Notificaciones', 'fechas-bloqueadas': 'Fechas Bloqueadas', 'usuarios-admin': 'Usuarios Admin',
 };
 
@@ -423,50 +423,6 @@ export default function PagesTab({ org, orgForm, setOrgForm, pageContent, setPag
     );
   };
 
-  const renderResenasTab = () => {
-    const reviews = pageContent.reviews || [];
-    return (
-      <div className="space-y-3">
-        <h3 className="text-sm font-semibold text-gray-700 mb-3">Moderación de Reseñas</h3>
-        {reviews.length === 0 ? (
-          <div className="text-center py-12 text-gray-400 bg-white rounded-xl border border-gray-100 shadow-sm">
-            <svg className="w-12 h-12 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>
-            <p className="text-sm font-medium">No hay reseñas</p>
-          </div>
-        ) : (
-          reviews.map((r: any) => (
-            <div key={r.id} className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
-              <div className="flex items-start justify-between">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium text-sm text-gray-800">{r.name}</span>
-                    <span className="text-xs text-gray-400">{new Date(r.date).toLocaleDateString()}</span>
-                    {r.serviceName && <span className="text-xs text-gray-400">· {r.serviceName}</span>}
-                  </div>
-                  <div className="flex items-center gap-0.5 mt-1">
-                    {[1, 2, 3, 4, 5].map((s) => (
-                      <svg key={s} className={`w-3.5 h-3.5 ${s <= r.rating ? 'text-yellow-400' : 'text-gray-200'}`} fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>
-                    ))}
-                  </div>
-                  <p className="text-sm text-gray-600 mt-2">{r.text}</p>
-                  {r.role && <p className="text-xs text-gray-400 mt-1">{r.role}</p>}
-                </div>
-                <div className="flex gap-2">
-                  {!r.approved && (
-                    <button onClick={() => { const nr = reviews.map((rv: any) => rv.id === r.id ? { ...rv, approved: true } : rv); updatePC('reviews', nr); }}
-                      className="px-3 py-1.5 bg-green-50 text-green-700 rounded-lg text-xs font-medium hover:bg-green-100 transition-colors">Aprobar</button>
-                  )}
-                  <button onClick={() => updatePC('reviews', reviews.filter((rv: any) => rv.id !== r.id))}
-                    className="px-3 py-1.5 bg-red-50 text-red-700 rounded-lg text-xs font-medium hover:bg-red-100 transition-colors">Eliminar</button>
-                </div>
-              </div>
-            </div>
-          ))
-        )}
-      </div>
-    );
-  };
-
   const renderNotificacionesTab = () => {
     const notifications = pageContent.notifications || [];
     return (
@@ -592,7 +548,7 @@ export default function PagesTab({ org, orgForm, setOrgForm, pageContent, setPag
         setAdminUsers([...adminUsers, created.user as PublicUser]);
         t('Usuario admin creado exitosamente', 'success');
         resetForm();
-      } catch { t('Error al crear usuario', 'error'); }
+      } catch (err: any) { t(err?.message || 'Error al crear usuario', 'error'); }
     };
 
     const handleEditUser = async () => {
@@ -605,7 +561,7 @@ export default function PagesTab({ org, orgForm, setOrgForm, pageContent, setPag
         setAdminUsers(adminUsers.map((u) => u.id === editingUser.id ? { ...u, firstName: newFirstName, lastName: newLastName, email: newEmail } : u));
         t('Usuario actualizado exitosamente', 'success');
         resetForm();
-      } catch { t('Error al actualizar usuario', 'error'); }
+      } catch (err: any) { t(err?.message || 'Error al actualizar usuario', 'error'); }
     };
 
     const handleToggleActive = async (u: PublicUser) => {
@@ -613,7 +569,7 @@ export default function PagesTab({ org, orgForm, setOrgForm, pageContent, setPag
         await container.auth.updateUser(u.id, { isActive: !u.isActive } as any);
         setAdminUsers(adminUsers.map((au) => au.id === u.id ? { ...au, isActive: !au.isActive } : au));
         t(u.isActive ? 'Usuario desactivado' : 'Usuario activado', 'success');
-      } catch { t('Error al cambiar estado', 'error'); }
+      } catch (err: any) { t(err?.message || 'Error al cambiar estado', 'error'); }
     };
 
     const handleDeleteUser = async (u: PublicUser) => {
@@ -621,7 +577,7 @@ export default function PagesTab({ org, orgForm, setOrgForm, pageContent, setPag
         await container.auth.deleteUser(u.id);
         setAdminUsers(adminUsers.filter((au) => au.id !== u.id));
         t('Usuario eliminado exitosamente', 'success');
-      } catch { t('Error al eliminar usuario', 'error'); }
+      } catch (err: any) { t(err?.message || 'Error al eliminar usuario', 'error'); }
     };
 
     return (
@@ -760,7 +716,6 @@ export default function PagesTab({ org, orgForm, setOrgForm, pageContent, setPag
       case 'contacto': return renderContactoTab();
       case 'galeria': return renderGaleriaTab();
       case 'categorias': return renderCategoriasTab();
-      case 'resenas': return renderResenasTab();
       case 'notificaciones': return renderNotificacionesTab();
       case 'fechas-bloqueadas': return renderFechasBloqueadasTab();
       case 'usuarios-admin': return renderUsuariosAdminTab();
