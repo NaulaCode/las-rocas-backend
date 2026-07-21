@@ -8,9 +8,13 @@ import { ensurePgvector } from './infrastructure/database/postgres/enablePgvecto
 
 const startServer = async (): Promise<void> => {
   try {
-    // 1. Verificar conexión a PostgreSQL
+    // 1. Verificar conexión a PostgreSQL (con timeout, no bloquea el server si falla)
     log.info('🔌 Conectando a PostgreSQL...');
-    await testPrismaConnection();
+    try {
+      await testPrismaConnection();
+    } catch (e) {
+      log.warn('No se pudo conectar a PostgreSQL, iniciando server igual', e);
+    }
 
     // 2. Iniciar el servidor HTTP (antes de pgvector para no bloquear el puerto)
     const server = app.listen(config.server.port, () => {
