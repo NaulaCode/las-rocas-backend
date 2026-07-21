@@ -362,7 +362,7 @@ export default function Admin() {
     { id: 'reviews', label: 'Reseñas', count: null, permission: 'reviews:list' },
 
     { id: 'mensajes', label: 'Mensajes', count: unreadMessages, permission: 'contact:list' },
-    { id: 'activity', label: 'Activity Log', count: null, permission: 'audit:list' },
+   // { id: 'activity', label: 'Activity Log', count: null, permission: 'audit:list' },
     { id: 'roles', label: 'Roles', count: null, permission: 'roles:list' },
   ];
   const tabs = user?.role === 'super_admin'
