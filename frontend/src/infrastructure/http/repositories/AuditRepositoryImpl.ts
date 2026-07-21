@@ -4,7 +4,7 @@ import { AuditLog, AuditLogFilters } from '../../../domain/entities/AuditLog';
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1';
 
 function getAuthHeaders(): Record<string, string> {
-  const token = localStorage.getItem('auth-token');
+  const token = localStorage.getItem('token');
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
