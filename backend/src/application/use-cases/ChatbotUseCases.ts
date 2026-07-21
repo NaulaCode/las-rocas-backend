@@ -269,7 +269,7 @@ export class ChatbotUseCases {
     query: string,
     sessionId: string | undefined,
     onToken: (token: string) => void,
-    onDone: (result: { answer: string; aiGenerated: boolean; logId?: string; sources?: ChatSource[] }) => void,
+    onDone: (result: { answer: string; aiGenerated: boolean; logId?: string; sources?: ChatSource[]; relatedQuestions?: { question: string; answer: string }[] }) => void,
     onError: (error: string) => void,
   ): Promise<void> {
     const startTime = Date.now();
@@ -286,14 +286,15 @@ export class ChatbotUseCases {
       await this.persistSession(session);
       onToken(faqMatch.answer);
       const logId = await this.logInteraction(query, faqMatch.answer, 'faq', faqMatch.question, sessionId);
-      onDone({ answer: faqMatch.answer, aiGenerated: false, logId });
+      const relatedQ = await this.getRelatedQuestions(query);
+      onDone({ answer: faqMatch.answer, aiGenerated: false, logId, relatedQuestions: relatedQ });
       return;
     }
 
     if (!this.aiService) {
       const fallback = 'Actualmente el asistente está en mantenimiento.';
       onToken(fallback);
-      onDone({ answer: fallback, aiGenerated: false });
+      onDone({ answer: fallback, aiGenerated: false, relatedQuestions: [] });
       return;
     }
 
@@ -367,12 +368,13 @@ export class ChatbotUseCases {
       });
 
       const logId = await this.logInteraction(query, finalAnswer, 'ai', undefined, sessionId);
-      onDone({ answer: finalAnswer, aiGenerated: true, logId, sources: ragResult.sources });
+      const relatedQ = await this.getRelatedQuestions(query);
+      onDone({ answer: finalAnswer, aiGenerated: true, logId, sources: ragResult.sources, relatedQuestions: relatedQ });
     } catch (error) {
       this.logger.error('Error en chatStream', error);
       const friendly = 'Lo siento, tuve un inconveniente técnico al procesar tu consulta. Por favor, intenta de nuevo o contáctanos por WhatsApp.';
       onToken(friendly);
-      onDone({ answer: friendly, aiGenerated: false });
+      onDone({ answer: friendly, aiGenerated: false, relatedQuestions: [] });
     }
   }
 

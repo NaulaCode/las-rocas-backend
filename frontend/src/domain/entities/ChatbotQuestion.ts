@@ -32,7 +32,7 @@ export interface ChatResponse {
 
 export interface ChatStreamCallbacks {
   onToken: (token: string) => void;
-  onDone: (result: { answer: string; aiGenerated: boolean; logId?: string }) => void;
+  onDone: (result: { answer: string; aiGenerated: boolean; logId?: string; relatedQuestions?: { question: string; answer: string }[]; sources?: { type: string; name: string; similarity: number }[] }) => void;
   onError: (error: string) => void;
 }
 

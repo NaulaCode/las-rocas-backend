@@ -315,7 +315,7 @@ export default function Chatbot() {
             });
           }
         },
-        onDone: (result: { answer: string; aiGenerated?: boolean; logId?: string }) => {
+        onDone: (result: { answer: string; aiGenerated?: boolean; logId?: string; relatedQuestions?: { question: string; answer: string }[] }) => {
           if (streamingMsgIdx.current !== null) {
             setMessages((prev) => {
               const copy = [...prev];
@@ -324,16 +324,22 @@ export default function Chatbot() {
                 content: result.answer,
                 logId: result.logId,
                 aiGenerated: result.aiGenerated ?? true,
+                relatedQuestions: result.relatedQuestions,
               };
               return copy;
             });
           }
           streamingMsgIdx.current = null;
-          setCurrentSuggestions([
-            { text: 'Más información' },
-            { text: 'Hablar con un asesor' },
-            { text: 'Volver al inicio' },
-          ]);
+          const related = result.relatedQuestions;
+          if (related && related.length > 0) {
+            setCurrentSuggestions(related.map(r => ({ text: r.question })));
+          } else {
+            setCurrentSuggestions([
+              { text: 'Más información' },
+              { text: 'Hablar con un asesor' },
+              { text: 'Volver al inicio' },
+            ]);
+          }
           setShowSuggestions(true);
           setShowResetBanner(false);
           setLoading(false);
@@ -647,6 +653,24 @@ export default function Chatbot() {
                             <span className="text-[10px] text-green-500 font-medium">✓ {t('chatbot.feedbackThanks')}</span>
                           )}
                         </div>
+                        {msg.role === 'bot' && msg.relatedQuestions && msg.relatedQuestions.length > 0 && (
+                          <div className="flex flex-wrap gap-1.5 mt-2 ml-1">
+                            {msg.relatedQuestions.map((rq, qi) => (
+                              <motion.button
+                                key={qi}
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ delay: qi * 0.08 }}
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                onClick={() => handleSubmit(undefined, rq.question)}
+                                className="px-3 py-1.5 rounded-lg text-xs font-medium border border-green-200 bg-green-50 text-green-700 hover:bg-green-100 hover:border-green-300 transition-all"
+                              >
+                                {rq.question}
+                              </motion.button>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </motion.div>
                   ))}
