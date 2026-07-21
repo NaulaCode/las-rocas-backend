@@ -328,7 +328,37 @@ export class ChatbotUseCases {
   private async findFaqMatch(query: string): Promise<{ question: string; answer: string } | null> {
     const results = await this.chatbotRepository.search(query);
     const best = results.find(q => (q.relevance ?? 0) >= 25);
-    return best ? { question: best.question, answer: best.answer } : null;
+    if (best) return { question: best.question, answer: best.answer };
+
+    if (!this.aiService) return null;
+
+    const activeFaqs = await this.chatbotRepository.findAll(true);
+    if (activeFaqs.length === 0) return null;
+
+    try {
+      const faqList = activeFaqs.map((f, i) => `${i + 1}. P: ${f.question}\n   R: ${f.answer}`).join('\n\n');
+      const prompt = `Tienes esta lista de preguntas frecuentes:\n\n${faqList}\n\nLa pregunta del usuario es: "${query}"\n\n¿Coincide exactamente con alguna de las preguntas de la lista? Responde SOLO con el número de la pregunta (1-${activeFaqs.length}) si hay coincidencia exacta, o "ninguna" si no coincide.`;
+
+      const result = await this.aiService.chat({
+        systemPrompt: 'Eres un clasificador de preguntas. Responde solo con un número o "ninguna".',
+        messages: [{ role: 'user', content: prompt }],
+      });
+
+      if (result.text) {
+        const match = result.text.trim().match(/^(\d+)$/);
+        if (match) {
+          const idx = parseInt(match[1], 10) - 1;
+          if (idx >= 0 && idx < activeFaqs.length) {
+            this.logger.info('FAQ detectado por Gemini', { query, matchedFaq: activeFaqs[idx].question });
+            return { question: activeFaqs[idx].question, answer: activeFaqs[idx].answer };
+          }
+        }
+      }
+    } catch (e) {
+      this.logger.warn('Falló detección de FAQ con Gemini', e);
+    }
+
+    return null;
   }
 
   private async buildContext(): Promise<{ org: string; faqs: string; services: string }> {
@@ -962,17 +992,96 @@ REGLAS:
     this.embeddingService?.invalidateCache();
   }
 
+  async reindexEntity(type: string, entityId: string, text: string): Promise<void> {
+    if (!this.embeddingService || !this.embeddingRepo) return;
+    try {
+      await this.embeddingRepo.delete(`${type}:${entityId}`);
+      const emb = await this.embeddingService.embed(text.substring(0, 2000));
+      await this.embeddingRepo.save(`${type}:${entityId}`, text.substring(0, 2000), emb);
+    } catch (e) {
+      this.logger.warn(`No se pudo reindexar ${type}:${entityId}`, e);
+    }
+  }
+
+  async removeEntityEmbedding(type: string, entityId: string): Promise<void> {
+    if (!this.embeddingRepo) return;
+    try {
+      await this.embeddingRepo.delete(`${type}:${entityId}`);
+    } catch { /* ignore */ }
+  }
+
+  async reindexAll(): Promise<void> {
+    if (!this.embeddingService || !this.embeddingRepo) return;
+    this.logger.info('Reindexando todas las entidades para embeddings...');
+
+    const allServices = await this.serviceRepository.findAll(true);
+    for (const s of allServices) {
+      const text = `Servicio: ${s.name}. ${s.description || ''}. Categoría: ${s.category || ''}. Precio: $${s.price || 0}. Duración: ${s.duration || ''}. Horario: ${s.schedule || ''}. Ubicación: ${s.location || ''}.`;
+      try {
+        const emb = await this.embeddingService.embed(text.substring(0, 2000));
+        await this.embeddingRepo.save(`service:${s.id}`, text.substring(0, 2000), emb);
+      } catch { /* continue */ }
+    }
+
+    const allFaqs = await this.chatbotRepository.findAll(true);
+    for (const f of allFaqs) {
+      const text = `Pregunta: ${f.question}. Respuesta: ${f.answer}. Categoría: ${f.category}.`;
+      try {
+        const emb = await this.embeddingService.embed(text.substring(0, 2000));
+        await this.embeddingRepo.save(`faq:${f.id}`, text.substring(0, 2000), emb);
+      } catch { /* continue */ }
+    }
+
+    if (this.attractionRepository) {
+      const allAttractions = await this.attractionRepository.findAll(true);
+      for (const a of allAttractions) {
+        const text = `Atracción turística: ${a.name}. ${a.description || ''}. Categoría: ${a.category || ''}. Ubicación: ${a.location || ''}. Horario: ${a.schedule || ''}.`;
+        try {
+          const emb = await this.embeddingService.embed(text.substring(0, 2000));
+          await this.embeddingRepo.save(`attraction:${a.id}`, text.substring(0, 2000), emb);
+        } catch { /* continue */ }
+      }
+    }
+
+    if (this.newsRepository) {
+      const allNews = await this.newsRepository.findAll(true);
+      for (const n of allNews) {
+        const text = `${n.type === 'evento' ? 'Evento' : 'Noticia'}: ${n.title}. ${n.summary || n.content.substring(0, 200)}. Tipo: ${n.type}.${n.location ? ` Ubicación: ${n.location}.` : ''}${n.eventDate ? ` Fecha: ${n.eventDate.toISOString().substring(0, 10)}.` : ''}`;
+        try {
+          const emb = await this.embeddingService.embed(text.substring(0, 2000));
+          await this.embeddingRepo.save(`news:${n.id}`, text.substring(0, 2000), emb);
+        } catch { /* continue */ }
+      }
+    }
+
+    const org = await this.organizationRepository.find();
+    if (org) {
+      const text = `Organización: ${org.name || ''}. ${org.description || ''}. ${org.mission || ''}. ${org.history || ''}. Dirección: ${org.address || ''}. Teléfono: ${org.phone || ''}. Email: ${org.email || ''}.`;
+      try {
+        const emb = await this.embeddingService.embed(text.substring(0, 2000));
+        await this.embeddingRepo.save('organization:main', text.substring(0, 2000), emb);
+      } catch { /* ignore */ }
+    }
+
+    this.logger.info('Reindexación completa');
+  }
+
   async createQuestion(data: CreateChatbotQuestionData): Promise<ChatbotQuestion> {
     if (!data.question || !data.answer || !data.category) throw new ValidationError('Pregunta, respuesta y categoría son requeridos');
     if (!data.keywords || data.keywords.length === 0) throw new ValidationError('Al menos una palabra clave es requerida');
     this.contextCache = null;
-    return this.chatbotRepository.create(data);
+
+    const q = await this.chatbotRepository.create(data);
+    await this.reindexEntity('faq', q.id, `Pregunta: ${q.question}. Respuesta: ${q.answer}. Categoría: ${q.category}.`);
+    return q;
   }
 
   async updateQuestion(id: string, data: UpdateChatbotQuestionData): Promise<ChatbotQuestion> {
     const q = await this.chatbotRepository.update(id, data);
     if (!q) throw new NotFoundError('Pregunta no encontrada');
     this.contextCache = null;
+
+    await this.reindexEntity('faq', q.id, `Pregunta: ${q.question}. Respuesta: ${q.answer}. Categoría: ${q.category}.`);
     return q;
   }
 
@@ -980,6 +1089,7 @@ REGLAS:
     const deleted = await this.chatbotRepository.delete(id);
     if (!deleted) throw new NotFoundError('Pregunta no encontrada');
     this.contextCache = null;
+    await this.removeEntityEmbedding('faq', id);
   }
 
   async initializeDefaultQuestions(): Promise<void> {

@@ -38,6 +38,7 @@ export class ServiceController {
     try {
       const service = await this.serviceUseCases.create(req.body);
       this.chatbotUseCases?.clearContextCache();
+      this.chatbotUseCases?.reindexEntity('service', service.id, `Servicio: ${service.name}. ${service.description || ''}. Categoría: ${service.category || ''}. Precio: $${service.price || 0}. Duración: ${service.duration || ''}. Horario: ${service.schedule || ''}.`);
       this.auditLogger.log({ userId: req.user.userId, userEmail: req.user.email, action: 'CREATE', entityType: 'service', entityId: service.id });
       res.status(201).json({ status: 'success', message: 'Servicio creado correctamente', data: service });
     } catch (error) { next(error); }
@@ -48,6 +49,7 @@ export class ServiceController {
       const id = req.params.id as string;
       const service = await this.serviceUseCases.update(id, req.body);
       this.chatbotUseCases?.clearContextCache();
+      this.chatbotUseCases?.reindexEntity('service', id, `Servicio: ${service.name}. ${service.description || ''}. Categoría: ${service.category || ''}. Precio: $${service.price || 0}. Duración: ${service.duration || ''}. Horario: ${service.schedule || ''}.`);
       this.auditLogger.log({ userId: req.user.userId, userEmail: req.user.email, action: 'UPDATE', entityType: 'service', entityId: id, details: { changes: Object.keys(req.body) } });
       res.status(200).json({ status: 'success', message: 'Servicio actualizado correctamente', data: service });
     } catch (error) { next(error); }
@@ -58,6 +60,7 @@ export class ServiceController {
       const id = req.params.id as string;
       await this.serviceUseCases.delete(id);
       this.chatbotUseCases?.clearContextCache();
+      this.chatbotUseCases?.removeEntityEmbedding('service', id);
       this.auditLogger.log({ userId: req.user.userId, userEmail: req.user.email, action: 'DELETE', entityType: 'service', entityId: id });
       res.status(200).json({ status: 'success', message: 'Servicio eliminado correctamente' });
     } catch (error) { next(error); }

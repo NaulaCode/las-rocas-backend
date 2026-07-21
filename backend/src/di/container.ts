@@ -92,11 +92,11 @@ const roleUseCases = new RoleUseCases(roleRepo);
 
 export const serviceController = new ServiceController(serviceUseCases, auditLogger, chatbotUseCases);
 export const reservationController = new ReservationController(reservationUseCases, auditLogger, wsNotifier, serviceUseCases);
-export const newsController = new NewsController(newsUseCases, auditLogger);
+export const newsController = new NewsController(newsUseCases, auditLogger, chatbotUseCases);
 export const authController = new AuthController(authUseCases, auditLogger);
 export const organizationController = new OrganizationController(organizationUseCases, auditLogger);
 export const chatbotController = new ChatbotController(chatbotUseCases, auditLogger);
-export const attractionController = new TouristicAttractionController(attractionUseCases, auditLogger);
+export const attractionController = new TouristicAttractionController(attractionUseCases, auditLogger, chatbotUseCases);
 export const uploadController = new UploadController(uploadUseCases);
 export const auditController = new AuditController(auditUseCases);
 export const contactController = new ContactController(contactUseCases, auditLogger, wsNotifier);

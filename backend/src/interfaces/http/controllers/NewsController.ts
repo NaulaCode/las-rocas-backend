@@ -1,11 +1,13 @@
 import { Request, Response, NextFunction } from 'express';
 import { NewsUseCases } from '../../../application/use-cases/NewsUseCases';
+import { ChatbotUseCases } from '../../../application/use-cases/ChatbotUseCases';
 import { IAuditLogger } from '../../../domain/ports/IAuditLogger';
 
 export class NewsController {
   constructor(
     private newsUseCases: NewsUseCases,
     private auditLogger: IAuditLogger,
+    private chatbotUseCases?: ChatbotUseCases,
   ) {}
 
   async getAll(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -35,6 +37,8 @@ export class NewsController {
   async create(req: any, res: Response, next: NextFunction): Promise<void> {
     try {
       const news = await this.newsUseCases.create(req.body);
+      this.chatbotUseCases?.clearContextCache();
+      this.chatbotUseCases?.reindexEntity('news', news.id, `${news.type === 'evento' ? 'Evento' : 'Noticia'}: ${news.title}. ${news.summary || news.content.substring(0, 200)}. Tipo: ${news.type}.${news.location ? ` Ubicación: ${news.location}.` : ''}`);
       this.auditLogger.log({ userId: req.user.userId, userEmail: req.user.email, action: 'CREATE', entityType: 'news', entityId: news.id });
       res.status(201).json({ status: 'success', message: 'Noticia/Evento creado correctamente', data: news });
     } catch (error) { next(error); }
@@ -44,6 +48,8 @@ export class NewsController {
     try {
       const id = req.params.id as string;
       const news = await this.newsUseCases.update(id, req.body);
+      this.chatbotUseCases?.clearContextCache();
+      this.chatbotUseCases?.reindexEntity('news', id, `${news.type === 'evento' ? 'Evento' : 'Noticia'}: ${news.title}. ${news.summary || news.content.substring(0, 200)}. Tipo: ${news.type}.${news.location ? ` Ubicación: ${news.location}.` : ''}`);
       this.auditLogger.log({ userId: req.user.userId, userEmail: req.user.email, action: 'UPDATE', entityType: 'news', entityId: id, details: { changes: Object.keys(req.body) } });
       res.status(200).json({ status: 'success', message: 'Noticia/Evento actualizado correctamente', data: news });
     } catch (error) { next(error); }
@@ -53,6 +59,8 @@ export class NewsController {
     try {
       const id = req.params.id as string;
       await this.newsUseCases.delete(id);
+      this.chatbotUseCases?.clearContextCache();
+      this.chatbotUseCases?.removeEntityEmbedding('news', id);
       this.auditLogger.log({ userId: req.user.userId, userEmail: req.user.email, action: 'DELETE', entityType: 'news', entityId: id });
       res.status(200).json({ status: 'success', message: 'Noticia/Evento eliminado correctamente' });
     } catch (error) { next(error); }
