@@ -4,7 +4,7 @@ import { Review, ReviewAverage } from '../../domain/entities/Review';
 export class ReviewUseCases {
   constructor(private repo: IReviewRepository) {}
 
-  submit(data: { name: string; email: string; text: string; rating: number; serviceName?: string; role?: string }): Promise<Review> {
+  submit(data: { name: string; email: string; text: string; rating: number; serviceId?: string; serviceName?: string; role?: string }): Promise<Review> {
     return this.repo.submit(data);
   }
   getAll(params?: { approved?: string; serviceName?: string }): Promise<Review[]> {

@@ -107,7 +107,7 @@ export const createReviewSchema = z.object({
   email: emailField,
   text: z.string().min(1, 'La reseña es requerida').max(1000),
   rating: z.number().int().min(1, 'Debe dar al menos 1 estrella').max(5, 'Máximo 5 estrellas'),
-  serviceId: z.string().uuid().optional(),
+  serviceId: z.string().optional(),
   serviceName: z.string().optional(),
   role: z.string().optional(),
 });

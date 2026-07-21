@@ -239,7 +239,8 @@ export default function Admin() {
   };
 
   const openEdit = (type: string, item: AdminFormData) => {
-    setForm({ ...item });
+    const formatted = item.eventDate ? item.eventDate.substring(0, 10) : undefined;
+    setForm({ ...item, eventDate: formatted });
     setModal({ type, initial: item });
   };
 
