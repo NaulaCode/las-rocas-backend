@@ -1,65 +1,130 @@
 {
+
   "name": "backend",
+
   "version": "1.0.0",
+
   "description": "API REST - Asociación Turística Las Rocas",
+
   "main": "dist/server.js",
+
   "engines": {
+
     "node": ">=18.0.0"
+
   },
+
   "scripts": {
+
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
+
     "build": "tsc",
-    "start": "npx prisma migrate deploy && node dist/server.js",
+
+    "start": "npx prisma db push; node dist/server.js",
+
     "postinstall": "prisma generate",
+
     "migrate": "ts-node src/infrastructure/database/postgres/migrate.ts",
+
     "seed": "ts-node src/infrastructure/database/postgres/seed.ts",
+
     "seed-embeddings": "ts-node src/infrastructure/database/postgres/seedEmbeddings.ts",
+
     "seed-faqs": "ts-node src/infrastructure/database/postgres/seedMoreFaqs.ts",
+
     "test": "node --import tsx --test \"src/**/*.test.ts\"",
+
     "test:watch": "node --import tsx --test --watch 'src/**/*.test.ts'"
+
   },
+
   "keywords": [],
+
   "author": "",
+
   "license": "ISC",
+
   "type": "commonjs",
+
   "devDependencies": {
+
     "@types/bcryptjs": "^2.4.6",
+
     "@types/compression": "^1.8.1",
+
     "@types/cors": "^2.8.19",
+
     "@types/express": "^5.0.6",
+
     "@types/jsonwebtoken": "^9.0.10",
+
     "@types/morgan": "^1.9.10",
+
     "@types/node-cron": "^3.0.11",
+
     "@types/nodemailer": "^8.0.1",
+
     "@types/supertest": "^7.2.1",
+
     "@types/uuid": "^10.0.0",
+
     "@types/ws": "^8.18.1",
-    "prisma": "^6.19.3",
+
     "supertest": "^7.2.2",
+
     "ts-node-dev": "^2.0.0",
+
     "tsx": "^4.23.0"
+
   },
+
   "dependencies": {
+
     "@prisma/client": "^6.19.3",
+
     "@types/multer": "^2.1.0",
+
     "@types/node": "^25.9.5",
+
     "bcryptjs": "^3.0.3",
+
     "cloudinary": "^2.10.0",
+
     "compression": "^1.8.1",
+
     "cors": "^2.8.6",
+
     "dotenv": "^17.4.2",
+
     "express": "^5.2.1",
+
     "express-rate-limit": "^8.4.1",
+
     "helmet": "^8.1.0",
+
     "jsonwebtoken": "^9.0.3",
+
     "morgan": "^1.10.1",
+
     "multer": "^2.1.1",
+
     "node-cron": "^4.5.0",
+
     "nodemailer": "^9.0.1",
+
+    "prisma": "^6.19.3",
+
     "typescript": "^6.0.3",
+
     "uuid": "^14.0.0",
+
     "winston": "^3.19.0",
+
     "ws": "^8.21.0",
+
     "zod": "^4.4.3"
+
   }
-}
+
+} 
+
