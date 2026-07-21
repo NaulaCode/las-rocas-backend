@@ -6,7 +6,6 @@ import { TouristicAttraction } from '../../domain/entities/TouristicAttraction';
 import { PageContent } from '../../domain/entities/Organization';
 import { ChatbotQuestion } from '../../domain/entities/ChatbotQuestion';
 
-// ── Color palette ──────────────────────────────────────────────
 const C = {
   primary: [26, 54, 93] as [number, number, number],
   accent: [241, 101, 33] as [number, number, number],
@@ -24,62 +23,62 @@ const C = {
 const PAGE_W = 210;
 const MARGIN = 20;
 const CONTENT_W = PAGE_W - MARGIN * 2;
-
-// ── Shared helpers ─────────────────────────────────────────────
+const CELL_PAD = 3;
 
 function headerBar(doc: jsPDF, title: string, subtitle: string) {
   doc.setFillColor(...C.primary);
-  doc.rect(0, 0, PAGE_W, 40, 'F');
+  doc.rect(0, 0, PAGE_W, 45, 'F');
   doc.setFillColor(...C.accent);
-  doc.rect(0, 38, PAGE_W, 3, 'F');
+  doc.rect(0, 43, PAGE_W, 3, 'F');
   doc.setTextColor(...C.white);
-  doc.setFontSize(20);
+  doc.setFontSize(22);
   doc.setFont('helvetica', 'bold');
-  doc.text(title, MARGIN, 22);
-  doc.setFontSize(9);
+  doc.text(title, MARGIN, 24);
+  doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
-  doc.text(subtitle, MARGIN, 32);
+  doc.text(subtitle, MARGIN, 35);
 }
 
 function footer(doc: jsPDF) {
   const n = doc.getNumberOfPages();
   for (let i = 1; i <= n; i++) {
     doc.setPage(i);
-    doc.setFontSize(7);
+    doc.setFontSize(8);
     doc.setTextColor(...C.textLight);
-    doc.text(`Página ${i} de ${n}`, PAGE_W - MARGIN, 290, { align: 'right' });
-    doc.text(`Generado: ${new Date().toLocaleDateString('es-EC', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`, MARGIN, 290);
+    doc.text(`Página ${i} de ${n}`, PAGE_W - MARGIN, 288, { align: 'right' });
+    doc.text(`Generado: ${new Date().toLocaleDateString('es-EC', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`, MARGIN, 288);
   }
 }
 
 function sectionTitle(doc: jsPDF, text: string, y: number) {
-  if (y > 270) { doc.addPage(); return MARGIN; }
-  doc.setDrawColor(...C.border);
-  doc.setLineWidth(0.5);
+  if (y > 260) { doc.addPage(); return MARGIN + 10; }
+  doc.setDrawColor(...C.primary);
+  doc.setLineWidth(0.6);
   doc.line(MARGIN, y, PAGE_W - MARGIN, y);
-  y += 8;
+  y += 10;
   doc.setTextColor(...C.primary);
-  doc.setFontSize(13);
+  doc.setFontSize(14);
   doc.setFont('helvetica', 'bold');
   doc.text(text, MARGIN, y);
-  return y + 8;
+  return y + 10;
 }
 
 function drawSummaryCards(doc: jsPDF, y: number, cards: { label: string; value: string; color: [number, number, number] }[]) {
-  const cardW = (CONTENT_W - (cards.length - 1) * 4) / cards.length;
+  const gap = 6;
+  const cardW = (CONTENT_W - (cards.length - 1) * gap) / cards.length;
   cards.forEach((c, i) => {
-    const x = MARGIN + i * (cardW + 4);
+    const x = MARGIN + i * (cardW + gap);
     doc.setFillColor(...c.color);
-    doc.roundedRect(x, y, cardW, 18, 2, 2, 'F');
+    doc.roundedRect(x, y, cardW, 24, 3, 3, 'F');
     doc.setTextColor(...C.white);
-    doc.setFontSize(c.value.length > 6 ? 10 : 14);
+    doc.setFontSize(c.value.length > 6 ? 12 : 18);
     doc.setFont('helvetica', 'bold');
-    doc.text(c.value, x + cardW / 2, y + 7, { align: 'center' });
-    doc.setFontSize(6);
+    doc.text(c.value, x + cardW / 2, y + 10, { align: 'center' });
+    doc.setFontSize(7);
     doc.setFont('helvetica', 'normal');
-    doc.text(c.label.toUpperCase(), x + cardW / 2, y + 14, { align: 'center' });
+    doc.text(c.label.toUpperCase(), x + cardW / 2, y + 19, { align: 'center' });
   });
-  return y + 26;
+  return y + 32;
 }
 
 function drawTable(
@@ -87,51 +86,45 @@ function drawTable(
   startY: number,
   headers: { label: string; x: number; w: number }[],
   rows: { cols: (string | number)[]; color?: [number, number, number] }[],
-  rowH = 6,
-  fontSize = 7,
+  rowH = 8,
+  fontSize = 8,
 ) {
   let y = startY;
-  const headerH = 7;
+  const headerH = 9;
 
   function drawHeader() {
-    doc.setFillColor(...C.light);
-    doc.rect(MARGIN, y - 4, CONTENT_W, headerH, 'F');
-    doc.setDrawColor(...C.border);
-    doc.setLineWidth(0.3);
-    doc.line(MARGIN, y + 3, PAGE_W - MARGIN, y + 3);
-    doc.setTextColor(...C.textLight);
+    doc.setFillColor(...C.primary);
+    doc.rect(MARGIN, y - 5, CONTENT_W, headerH, 'F');
+    doc.setTextColor(...C.white);
     doc.setFontSize(fontSize);
     doc.setFont('helvetica', 'bold');
-    headers.forEach((h) => doc.text(h.label, h.x, y));
-    y += 8;
+    headers.forEach((h) => doc.text(h.label, h.x + CELL_PAD, y));
+    y += headerH + 1;
   }
 
   drawHeader();
   doc.setFont('helvetica', 'normal');
 
   rows.forEach((row, ri) => {
-    if (y > 278) { doc.addPage(); y = MARGIN + 5; drawHeader(); }
-    const bg = ri % 2 === 0 ? [255, 255, 255] : [248, 250, 252];
+    if (y > 275) { doc.addPage(); y = MARGIN + 5; drawHeader(); }
+    const bg = ri % 2 === 0 ? [255, 255, 255] : [245, 247, 250];
     doc.setFillColor(bg[0], bg[1], bg[2]);
     doc.rect(MARGIN, y - 4, CONTENT_W, rowH, 'F');
-    doc.setTextColor(...C.text);
     doc.setFontSize(fontSize);
     row.cols.forEach((val, ci) => {
       const h = headers[ci];
       if (row.color && ci === row.cols.length - 1) doc.setTextColor(...row.color);
       else doc.setTextColor(...C.text);
-      doc.text(String(val), h.x, y);
+      doc.text(String(val), h.x + CELL_PAD, y);
     });
     doc.setDrawColor(...C.border);
-    doc.setLineWidth(0.2);
-    doc.line(MARGIN, y + 2, PAGE_W - MARGIN, y + 2);
-    y += rowH + 1;
+    doc.setLineWidth(0.3);
+    doc.line(MARGIN, y + rowH - 4, PAGE_W - MARGIN, y + rowH - 4);
+    y += rowH + 2;
   });
 
-  return y + 4;
+  return y + 6;
 }
-
-// ── Status helpers ─────────────────────────────────────────────
 
 const statusColors: Record<string, [number, number, number]> = {
   pendiente: C.warning,
@@ -155,13 +148,11 @@ const statusLabels: Record<string, string> = {
   borrador: 'Borrador',
 };
 
-// ── Export: Services ──────────────────────────────────────────
-
 export function exportServicesPDF(services: TouristicService[]) {
   const doc = new jsPDF('p', 'mm', 'a4');
   headerBar(doc, 'Reporte de Servicios', `Generado: ${new Date().toLocaleDateString('es-EC', { year: 'numeric', month: 'long', day: 'numeric' })} · Total: ${services.length} servicios`);
 
-  let y = 56;
+  let y = 60;
   const active = services.filter((s) => s.isActive).length;
   const inactive = services.length - active;
   const cats = [...new Set(services.map((s) => s.category))];
@@ -175,12 +166,12 @@ export function exportServicesPDF(services: TouristicService[]) {
   y = sectionTitle(doc, 'Detalle de Servicios', y);
 
   const headers = [
-    { label: 'NOMBRE', x: MARGIN, w: 40 },
-    { label: 'CATEGORÍA', x: MARGIN + 40, w: 30 },
-    { label: 'PRECIO', x: MARGIN + 70, w: 20 },
-    { label: 'DURACIÓN', x: MARGIN + 90, w: 20 },
-    { label: 'UBICACIÓN', x: MARGIN + 110, w: 30 },
-    { label: 'ESTADO', x: MARGIN + 140, w: 15 },
+    { label: 'NOMBRE', x: MARGIN, w: 42 },
+    { label: 'CATEGORÍA', x: MARGIN + 42, w: 28 },
+    { label: 'PRECIO', x: MARGIN + 70, w: 22 },
+    { label: 'DURACIÓN', x: MARGIN + 92, w: 20 },
+    { label: 'UBICACIÓN', x: MARGIN + 112, w: 32 },
+    { label: 'ESTADO', x: MARGIN + 144, w: 18 },
   ];
 
   const rows = services.map((s) => ({
@@ -188,19 +179,17 @@ export function exportServicesPDF(services: TouristicService[]) {
     color: s.isActive ? C.success : C.textLight,
   }));
 
-  drawTable(doc, y, headers, rows);
+  drawTable(doc, y, headers, rows, 8, 8);
   footer(doc);
   doc.save(`servicios_${new Date().toISOString().split('T')[0]}.pdf`);
   return doc.output('blob');
 }
 
-// ── Export: News ──────────────────────────────────────────────
-
 export function exportNewsPDF(news: News[]) {
   const doc = new jsPDF('p', 'mm', 'a4');
   headerBar(doc, 'Reporte de Noticias y Eventos', `Generado: ${new Date().toLocaleDateString('es-EC', { year: 'numeric', month: 'long', day: 'numeric' })} · Total: ${news.length} publicaciones`);
 
-  let y = 56;
+  let y = 60;
   const published = news.filter((n) => n.isPublished).length;
   const drafts = news.length - published;
   const types = [...new Set(news.map((n) => n.type))];
@@ -214,31 +203,29 @@ export function exportNewsPDF(news: News[]) {
   y = sectionTitle(doc, 'Detalle de Publicaciones', y);
 
   const headers = [
-    { label: 'TÍTULO', x: MARGIN, w: 55 },
-    { label: 'TIPO', x: MARGIN + 55, w: 25 },
-    { label: 'FECHA EVENTO', x: MARGIN + 80, w: 28 },
-    { label: 'UBICACIÓN', x: MARGIN + 108, w: 30 },
-    { label: 'ESTADO', x: MARGIN + 138, w: 15 },
+    { label: 'TÍTULO', x: MARGIN, w: 58 },
+    { label: 'TIPO', x: MARGIN + 58, w: 24 },
+    { label: 'FECHA EVENTO', x: MARGIN + 82, w: 28 },
+    { label: 'UBICACIÓN', x: MARGIN + 110, w: 32 },
+    { label: 'ESTADO', x: MARGIN + 142, w: 18 },
   ];
 
   const rows = news.map((n) => ({
-    cols: [n.title.length > 45 ? n.title.slice(0, 42) + '...' : n.title, n.type, n.eventDate ? new Date(n.eventDate).toLocaleDateString('es-EC') : '-', n.location || '-', n.isPublished ? 'Publicado' : 'Borrador'],
+    cols: [n.title.length > 50 ? n.title.slice(0, 48) + '...' : n.title, n.type, n.eventDate ? new Date(n.eventDate).toLocaleDateString('es-EC') : '-', n.location || '-', n.isPublished ? 'Publicado' : 'Borrador'],
     color: n.isPublished ? C.success : C.warning,
   }));
 
-  drawTable(doc, y, headers, rows, 6, 7);
+  drawTable(doc, y, headers, rows, 8, 8);
   footer(doc);
   doc.save(`noticias_${new Date().toISOString().split('T')[0]}.pdf`);
   return doc.output('blob');
 }
 
-// ── Export: Reservations ──────────────────────────────────────
-
 export function exportReservationsPDF(reservations: Reservation[], services: TouristicService[]) {
   const doc = new jsPDF('p', 'mm', 'a4');
   headerBar(doc, 'Reporte de Reservas', `Generado: ${new Date().toLocaleDateString('es-EC', { year: 'numeric', month: 'long', day: 'numeric' })} · Total: ${reservations.length} reservas`);
 
-  let y = 56;
+  let y = 60;
   const pendientes = reservations.filter((r) => r.status === 'pendiente').length;
   const confirmadas = reservations.filter((r) => r.status === 'confirmada').length;
   const completadas = reservations.filter((r) => r.status === 'completada').length;
@@ -254,22 +241,22 @@ export function exportReservationsPDF(reservations: Reservation[], services: Tou
   y = sectionTitle(doc, 'Detalle de Reservas', y);
 
   const headers = [
-    { label: 'CLIENTE', x: MARGIN, w: 28 },
-    { label: 'EMAIL', x: MARGIN + 28, w: 38 },
-    { label: 'SERVICIO', x: MARGIN + 66, w: 30 },
-    { label: 'FECHA', x: MARGIN + 96, w: 20 },
-    { label: 'PERS.', x: MARGIN + 116, w: 10 },
-    { label: 'ESTADO', x: MARGIN + 126, w: 15 },
-    { label: 'TELÉFONO', x: MARGIN + 141, w: 25 },
+    { label: 'CLIENTE', x: MARGIN, w: 30 },
+    { label: 'EMAIL', x: MARGIN + 30, w: 40 },
+    { label: 'SERVICIO', x: MARGIN + 70, w: 30 },
+    { label: 'FECHA', x: MARGIN + 100, w: 22 },
+    { label: 'PERS.', x: MARGIN + 122, w: 12 },
+    { label: 'ESTADO', x: MARGIN + 134, w: 18 },
+    { label: 'TELÉFONO', x: MARGIN + 152, w: 22 },
   ];
 
   const rows = reservations.map((r) => {
     const s = services.find((sv) => sv.id === r.serviceId);
     return {
       cols: [
-        r.userName.length > 16 ? r.userName.slice(0, 14) + '...' : r.userName,
-        r.userEmail.length > 22 ? r.userEmail.slice(0, 20) + '...' : r.userEmail,
-        (s?.name || r.serviceName || '-').length > 18 ? (s?.name || r.serviceName || '-').slice(0, 16) + '...' : (s?.name || r.serviceName || '-'),
+        r.userName.length > 20 ? r.userName.slice(0, 18) + '...' : r.userName,
+        r.userEmail.length > 26 ? r.userEmail.slice(0, 24) + '...' : r.userEmail,
+        (s?.name || r.serviceName || '-').length > 20 ? (s?.name || r.serviceName || '-').slice(0, 18) + '...' : (s?.name || r.serviceName || '-'),
         r.preferredDate ? new Date(r.preferredDate).toLocaleDateString('es-EC') : '-',
         String(r.numberOfPeople || 1),
         statusLabels[r.status] || r.status,
@@ -279,19 +266,17 @@ export function exportReservationsPDF(reservations: Reservation[], services: Tou
     };
   });
 
-  drawTable(doc, y, headers, rows, 6, 6.5);
+  drawTable(doc, y, headers, rows, 8, 8);
   footer(doc);
   doc.save(`reservas_${new Date().toISOString().split('T')[0]}.pdf`);
   return doc.output('blob');
 }
 
-// ── Export: Attractions ───────────────────────────────────────
-
 export function exportAttractionsPDF(attractions: TouristicAttraction[]) {
   const doc = new jsPDF('p', 'mm', 'a4');
   headerBar(doc, 'Reporte de Atractivos Turísticos', `Generado: ${new Date().toLocaleDateString('es-EC', { year: 'numeric', month: 'long', day: 'numeric' })} · Total: ${attractions.length} atractivos`);
 
-  let y = 56;
+  let y = 60;
   const active = attractions.filter((a) => a.isActive).length;
   const inactive = attractions.length - active;
   const cats = [...new Set(attractions.map((a) => a.category))];
@@ -305,35 +290,33 @@ export function exportAttractionsPDF(attractions: TouristicAttraction[]) {
   y = sectionTitle(doc, 'Detalle de Atractivos', y);
 
   const headers = [
-    { label: 'NOMBRE', x: MARGIN, w: 35 },
-    { label: 'CATEGORÍA', x: MARGIN + 35, w: 25 },
-    { label: 'UBICACIÓN', x: MARGIN + 60, w: 30 },
-    { label: 'PRECIO', x: MARGIN + 90, w: 18 },
-    { label: 'DURACIÓN', x: MARGIN + 108, w: 18 },
-    { label: 'ESTADO', x: MARGIN + 126, w: 15 },
-    { label: 'HORARIO', x: MARGIN + 141, w: 25 },
+    { label: 'NOMBRE', x: MARGIN, w: 38 },
+    { label: 'CATEGORÍA', x: MARGIN + 38, w: 26 },
+    { label: 'UBICACIÓN', x: MARGIN + 64, w: 30 },
+    { label: 'PRECIO', x: MARGIN + 94, w: 20 },
+    { label: 'DURACIÓN', x: MARGIN + 114, w: 18 },
+    { label: 'HORARIO', x: MARGIN + 132, w: 28 },
+    { label: 'ESTADO', x: MARGIN + 160, w: 16 },
   ];
 
   const rows = attractions.map((a) => ({
     cols: [
-      a.name.length > 18 ? a.name.slice(0, 16) + '...' : a.name,
+      a.name.length > 22 ? a.name.slice(0, 20) + '...' : a.name,
       a.category,
       a.location || '-',
       a.price ? `$${a.price}` : '-',
       a.duration || '-',
-      a.isActive ? 'Activo' : 'Inactivo',
       a.schedule || '-',
+      a.isActive ? 'Activo' : 'Inactivo',
     ],
     color: a.isActive ? C.success : C.textLight,
   }));
 
-  drawTable(doc, y, headers, rows, 6, 6.5);
+  drawTable(doc, y, headers, rows, 8, 8);
   footer(doc);
   doc.save(`atractivos_${new Date().toISOString().split('T')[0]}.pdf`);
   return doc.output('blob');
 }
-
-// ── Helper: trigger browser download ──────────────────────────
 
 export function downloadBlob(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob);
@@ -346,14 +329,12 @@ export function downloadBlob(blob: Blob, filename: string) {
   URL.revokeObjectURL(url);
 }
 
-// ── Dashboard: Reservations PDF (with summary) ────────────────
-
 export function downloadPDF(reservations: Reservation[], services: TouristicService[]) {
   try {
     const doc = new jsPDF('p', 'mm', 'a4');
     headerBar(doc, 'Reporte de Reservas', `Generado: ${new Date().toLocaleDateString('es-EC', { year: 'numeric', month: 'long', day: 'numeric' })} · Total: ${reservations.length} reservas`);
 
-    let y = 56;
+    let y = 60;
     const pendientes = reservations.filter((r) => r.status === 'pendiente').length;
     const confirmadas = reservations.filter((r) => r.status === 'confirmada').length;
     const completadas = reservations.filter((r) => r.status === 'completada').length;
@@ -369,7 +350,7 @@ export function downloadPDF(reservations: Reservation[], services: TouristicServ
     y = sectionTitle(doc, 'Resumen Ejecutivo', y);
     if (y > 270) y = MARGIN;
     doc.setTextColor(...C.text);
-    doc.setFontSize(9);
+    doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
     const convRate = reservations.length > 0 ? Math.round((confirmadas + completadas) / reservations.length * 100) : 0;
     const lines = [
@@ -380,29 +361,29 @@ export function downloadPDF(reservations: Reservation[], services: TouristicServ
       `• Tasa de conversión (confirmadas + completadas): ${convRate}%`,
     ];
     lines.forEach((l) => {
-      if (y > 280) { doc.addPage(); y = MARGIN; }
-      doc.text(l, MARGIN + 2, y);
-      y += 5.5;
+      if (y > 278) { doc.addPage(); y = MARGIN; }
+      doc.text(l, MARGIN + 3, y);
+      y += 7;
     });
 
-    y = sectionTitle(doc, 'Detalle de Reservas', y + 4);
+    y = sectionTitle(doc, 'Detalle de Reservas', y + 6);
 
     const headers = [
-      { label: 'CLIENTE', x: MARGIN, w: 28 },
-      { label: 'EMAIL', x: MARGIN + 28, w: 38 },
-      { label: 'SERVICIO', x: MARGIN + 66, w: 30 },
-      { label: 'FECHA', x: MARGIN + 96, w: 20 },
-      { label: 'PERS.', x: MARGIN + 116, w: 10 },
-      { label: 'ESTADO', x: MARGIN + 126, w: 15 },
+      { label: 'CLIENTE', x: MARGIN, w: 30 },
+      { label: 'EMAIL', x: MARGIN + 30, w: 40 },
+      { label: 'SERVICIO', x: MARGIN + 70, w: 30 },
+      { label: 'FECHA', x: MARGIN + 100, w: 22 },
+      { label: 'PERS.', x: MARGIN + 122, w: 12 },
+      { label: 'ESTADO', x: MARGIN + 134, w: 18 },
     ];
 
     const rows = reservations.map((r) => {
       const s = services.find((sv) => sv.id === r.serviceId);
       return {
         cols: [
-          r.userName.substring(0, 16),
-          r.userEmail.substring(0, 22),
-          (s?.name || r.serviceName || '-').substring(0, 18),
+          r.userName.length > 20 ? r.userName.slice(0, 18) + '...' : r.userName,
+          r.userEmail.length > 26 ? r.userEmail.slice(0, 24) + '...' : r.userEmail,
+          (s?.name || r.serviceName || '-').length > 20 ? (s?.name || r.serviceName || '-').slice(0, 18) + '...' : (s?.name || r.serviceName || '-'),
           r.preferredDate ? new Date(r.preferredDate).toLocaleDateString('es-EC') : '-',
           String(r.numberOfPeople || 1),
           statusLabels[r.status] || r.status,
@@ -411,14 +392,12 @@ export function downloadPDF(reservations: Reservation[], services: TouristicServ
       };
     });
 
-    drawTable(doc, y, headers, rows);
+    drawTable(doc, y, headers, rows, 8, 8);
     footer(doc);
     doc.save(`reservas_${new Date().toISOString().split('T')[0]}.pdf`);
     return doc.output('blob');
   } catch (e) { console.error('PDF error:', e); alert('Error al generar PDF: ' + e); }
 }
-
-// ── Dashboard: Full Platform Report ───────────────────────────
 
 export function generateFullReport(
   services: TouristicService[],
@@ -431,7 +410,7 @@ export function generateFullReport(
     const doc = new jsPDF('p', 'mm', 'a4');
     headerBar(doc, 'Reporte Completo de la Plataforma', `Generado: ${new Date().toLocaleDateString('es-EC', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`);
 
-    let y = 56;
+    let y = 60;
     const pendientes = reservations.filter((r) => r.status === 'pendiente').length;
     const confirmadas = reservations.filter((r) => r.status === 'confirmada').length;
     const completadas = reservations.filter((r) => r.status === 'completada').length;
@@ -439,7 +418,6 @@ export function generateFullReport(
     const totalRev = (pageContent.reviews || []).length;
     const approvedRev = (pageContent.reviews || []).filter((r: any) => r.approved).length;
 
-    // Summary cards
     y = drawSummaryCards(doc, y, [
       { label: 'Servicios', value: String(services.length), color: C.primary },
       { label: 'Reservas', value: String(reservations.length), color: C.info },
@@ -447,10 +425,9 @@ export function generateFullReport(
       { label: 'Reseñas', value: String(totalRev), color: C.success },
     ]);
 
-    // 1. Executive Summary
     y = sectionTitle(doc, '1. Resumen Ejecutivo', y);
     doc.setTextColor(...C.text);
-    doc.setFontSize(9);
+    doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
 
     const execItems = [
@@ -463,46 +440,44 @@ export function generateFullReport(
     ];
 
     execItems.forEach((item) => {
-      if (y > 280) { doc.addPage(); y = MARGIN + 10; }
+      if (y > 278) { doc.addPage(); y = MARGIN + 10; }
       doc.setFont('helvetica', 'bold');
       doc.text(item.label, MARGIN, y);
       const lw = doc.getTextWidth(item.label + '  ');
       doc.setFont('helvetica', 'normal');
       doc.text(item.value, MARGIN + lw, y);
-      y += 6;
+      y += 8;
     });
 
-    // 2. Services
-    y = sectionTitle(doc, '2. Detalle de Servicios', y + 4);
+    y = sectionTitle(doc, '2. Detalle de Servicios', y + 6);
     const svcHeaders = [
-      { label: 'NOMBRE', x: MARGIN, w: 40 },
-      { label: 'CATEGORÍA', x: MARGIN + 40, w: 30 },
-      { label: 'PRECIO', x: MARGIN + 70, w: 20 },
-      { label: 'ESTADO', x: MARGIN + 90, w: 15 },
+      { label: 'NOMBRE', x: MARGIN, w: 42 },
+      { label: 'CATEGORÍA', x: MARGIN + 42, w: 28 },
+      { label: 'PRECIO', x: MARGIN + 70, w: 22 },
+      { label: 'ESTADO', x: MARGIN + 92, w: 18 },
     ];
     const svcRows = services.map((s) => ({
       cols: [s.name, s.category, s.price ? `$${s.price}` : '-', s.isActive ? 'Activo' : 'Inactivo'],
       color: s.isActive ? C.success : C.textLight,
     }));
-    y = drawTable(doc, y, svcHeaders, svcRows, 6, 7);
+    y = drawTable(doc, y, svcHeaders, svcRows, 8, 8);
 
-    // 3. Reservations
     y = sectionTitle(doc, '3. Detalle de Reservas', y);
     const resHeaders = [
-      { label: 'CLIENTE', x: MARGIN, w: 22 },
-      { label: 'EMAIL', x: MARGIN + 22, w: 30 },
-      { label: 'SERVICIO', x: MARGIN + 52, w: 28 },
-      { label: 'FECHA', x: MARGIN + 80, w: 16 },
-      { label: 'PERS.', x: MARGIN + 96, w: 10 },
-      { label: 'ESTADO', x: MARGIN + 106, w: 14 },
+      { label: 'CLIENTE', x: MARGIN, w: 24 },
+      { label: 'EMAIL', x: MARGIN + 24, w: 32 },
+      { label: 'SERVICIO', x: MARGIN + 56, w: 28 },
+      { label: 'FECHA', x: MARGIN + 84, w: 20 },
+      { label: 'PERS.', x: MARGIN + 104, w: 12 },
+      { label: 'ESTADO', x: MARGIN + 116, w: 16 },
     ];
     const resRows = reservations.map((r) => {
       const s = services.find((sv) => sv.id === r.serviceId);
       return {
         cols: [
-          r.userName.substring(0, 14),
-          r.userEmail.substring(0, 18),
-          (s?.name || r.serviceName || '-').substring(0, 16),
+          r.userName.length > 16 ? r.userName.slice(0, 14) + '...' : r.userName,
+          r.userEmail.length > 20 ? r.userEmail.slice(0, 18) + '...' : r.userEmail,
+          (s?.name || r.serviceName || '-').length > 18 ? (s?.name || r.serviceName || '-').slice(0, 16) + '...' : (s?.name || r.serviceName || '-'),
           r.preferredDate ? new Date(r.preferredDate).toLocaleDateString('es-EC') : '-',
           String(r.numberOfPeople || 1),
           statusLabels[r.status] || r.status,
@@ -510,37 +485,35 @@ export function generateFullReport(
         color: statusColors[r.status] || C.textLight,
       };
     });
-    y = drawTable(doc, y, resHeaders, resRows, 5.5, 6.5);
+    y = drawTable(doc, y, resHeaders, resRows, 8, 8);
 
-    // 4. News
     y = sectionTitle(doc, '4. Detalle de Noticias', y);
     const newsHeaders = [
-      { label: 'TÍTULO', x: MARGIN, w: 50 },
-      { label: 'TIPO', x: MARGIN + 50, w: 20 },
-      { label: 'ESTADO', x: MARGIN + 70, w: 15 },
+      { label: 'TÍTULO', x: MARGIN, w: 55 },
+      { label: 'TIPO', x: MARGIN + 55, w: 22 },
+      { label: 'ESTADO', x: MARGIN + 77, w: 18 },
     ];
     const newsRows = news.map((n) => ({
-      cols: [n.title.length > 40 ? n.title.slice(0, 38) + '...' : n.title, n.type, n.isPublished ? 'Publicado' : 'Borrador'],
+      cols: [n.title.length > 45 ? n.title.slice(0, 42) + '...' : n.title, n.type, n.isPublished ? 'Publicado' : 'Borrador'],
       color: n.isPublished ? C.success : C.warning,
     }));
-    y = drawTable(doc, y, newsHeaders, newsRows, 5.5, 6.5);
+    y = drawTable(doc, y, newsHeaders, newsRows, 8, 8);
 
-    // 5. Reviews
     y = sectionTitle(doc, '5. Estadísticas de Reseñas', y);
     doc.setTextColor(...C.text);
-    doc.setFontSize(9);
+    doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
-    doc.text(`Total de reseñas: ${totalRev}`, MARGIN, y); y += 6;
-    doc.text(`Aprobadas: ${approvedRev}`, MARGIN, y); y += 6;
-    doc.text(`Pendientes de revisión: ${totalRev - approvedRev}`, MARGIN, y); y += 7;
+    doc.text(`Total de reseñas: ${totalRev}`, MARGIN, y); y += 7;
+    doc.text(`Aprobadas: ${approvedRev}`, MARGIN, y); y += 7;
+    doc.text(`Pendientes de revisión: ${totalRev - approvedRev}`, MARGIN, y); y += 8;
 
     const reviews = pageContent.reviews || [];
     (reviews as any[]).filter((r: any) => r.approved).forEach((r: any) => {
-      if (y > 280) { doc.addPage(); y = MARGIN + 10; }
-      doc.setFontSize(8);
+      if (y > 278) { doc.addPage(); y = MARGIN + 10; }
+      doc.setFontSize(9);
       doc.setTextColor(...C.text);
-      doc.text(`• ${r.name}: "${r.text}" (${r.rating}★)`, MARGIN, y);
-      y += 5;
+      doc.text(`• ${r.name}: "${r.text}" (${r.rating}★)`, MARGIN + 2, y);
+      y += 6;
     });
 
     footer(doc);
@@ -548,8 +521,6 @@ export function generateFullReport(
     return doc.output('blob');
   } catch (e) { console.error('Full report PDF error:', e); alert('Error al generar reporte PDF: ' + e); }
 }
-
-// ── Public: Reservation Receipt ───────────────────────────────
 
 interface ReservationPDFData {
   id: string;
@@ -568,47 +539,41 @@ interface ReservationPDFData {
 export function generateReservationPDF(data: ReservationPDFData, t: (key: string) => string) {
   const doc = new jsPDF('p', 'mm', 'a4');
   let y = MARGIN;
-
-  // Header bar
   headerBar(doc, t('pdf.titulo'), data.orgName || 'Las Rocas');
-  y = 55;
+  y = 58;
 
-  // Subtitle
   doc.setTextColor(...C.primary);
-  doc.setFontSize(14);
+  doc.setFontSize(15);
   doc.setFont('helvetica', 'bold');
   doc.text(t('pdf.subtitulo'), MARGIN, y);
-  y += 10;
+  y += 12;
 
   doc.setDrawColor(...C.accent);
-  doc.setLineWidth(0.5);
+  doc.setLineWidth(0.6);
   doc.line(MARGIN, y, PAGE_W - MARGIN, y);
-  y += 10;
+  y += 12;
 
-  // Reservation code
   doc.setTextColor(...C.textLight);
-  doc.setFontSize(10);
+  doc.setFontSize(11);
   doc.setFont('helvetica', 'bold');
   doc.text(`${t('pdf.codigo')}:`, MARGIN, y);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(...C.text);
-  doc.text(data.id.slice(0, 8).toUpperCase(), MARGIN + 40, y);
-  y += 8;
+  doc.text(data.id.slice(0, 8).toUpperCase(), MARGIN + 42, y);
+  y += 10;
 
-  // Status badge
   const sc = statusColors[data.status] || C.textLight;
   doc.setFillColor(...sc);
-  doc.roundedRect(MARGIN + 40, y - 5, 35, 7, 2, 2, 'F');
+  doc.roundedRect(MARGIN + 42, y - 6, 38, 8, 2, 2, 'F');
   doc.setTextColor(...C.white);
-  doc.setFontSize(8);
+  doc.setFontSize(9);
   doc.setFont('helvetica', 'bold');
   const statusLabel = t(`checkReservation.${data.status}`) || data.status;
-  doc.text(statusLabel, MARGIN + 43, y);
-  y += 14;
+  doc.text(statusLabel, MARGIN + 46, y);
+  y += 16;
   doc.setTextColor(...C.text);
 
-  // Detail table
-  doc.setFontSize(9);
+  doc.setFontSize(10);
   const rows: [string, string][] = [
     [t('pdf.servicio'), data.serviceName],
     [t('pdf.cliente'), data.userName],
@@ -623,30 +588,29 @@ export function generateReservationPDF(data: ReservationPDFData, t: (key: string
   rows.forEach(([label, value], i) => {
     const bgColor = i % 2 === 0 ? [249, 250, 251] : [255, 255, 255];
     doc.setFillColor(bgColor[0], bgColor[1], bgColor[2]);
-    doc.rect(MARGIN, tableY, CONTENT_W, 9, 'F');
+    doc.rect(MARGIN, tableY, CONTENT_W, 10, 'F');
     doc.setTextColor(...C.textLight);
     doc.setFont('helvetica', 'bold');
-    doc.text(label, MARGIN + 4, tableY + 6);
+    doc.text(label, MARGIN + 5, tableY + 7);
     doc.setTextColor(...C.text);
     doc.setFont('helvetica', 'normal');
-    doc.text(value, MARGIN + 50, tableY + 6);
-    tableY += 9;
+    doc.text(value, MARGIN + 55, tableY + 7);
+    tableY += 10;
   });
 
-  y = tableY + 15;
+  y = tableY + 18;
 
-  // Footer section
   doc.setDrawColor(...C.accent);
-  doc.setLineWidth(0.3);
+  doc.setLineWidth(0.4);
   doc.line(MARGIN, y, PAGE_W - MARGIN, y);
-  y += 8;
+  y += 10;
   doc.setTextColor(...C.primary);
-  doc.setFontSize(11);
+  doc.setFontSize(12);
   doc.setFont('helvetica', 'bold');
   doc.text(t('pdf.gracias'), MARGIN, y);
-  y += 6;
+  y += 7;
   doc.setTextColor(...C.textLight);
-  doc.setFontSize(8);
+  doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
   doc.text(`${t('pdf.generado')}: ${new Date().toLocaleDateString('es-EC')}`, MARGIN, y);
 
