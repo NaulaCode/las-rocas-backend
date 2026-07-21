@@ -44,10 +44,29 @@ export default function ServicesTab({ services, pageContent, searchTerm, setSear
     setPage(1);
   };
 
+  const activos = services.filter((s) => s.isActive).length;
+  const inactivos = services.length - activos;
+
   return (
-    <div>
+    <div className="space-y-6">
       {previewImg && <ImageLightbox images={[{ url: previewImg }]} index={0} onClose={() => setPreviewImg(null)} onPrev={() => {}} onNext={() => {}} />}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-5">
+
+      <div className="grid grid-cols-3 gap-4">
+        <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-center">
+          <p className="text-2xl font-bold text-green-700">{activos}</p>
+          <p className="text-xs font-semibold text-green-600 uppercase tracking-wider mt-1">Activos</p>
+        </div>
+        <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 text-center">
+          <p className="text-2xl font-bold text-gray-700">{inactivos}</p>
+          <p className="text-xs font-semibold text-gray-600 uppercase tracking-wider mt-1">Inactivos</p>
+        </div>
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-center">
+          <p className="text-2xl font-bold text-blue-700">{cats.length}</p>
+          <p className="text-xs font-semibold text-blue-600 uppercase tracking-wider mt-1">Categorías</p>
+        </div>
+      </div>
+
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-2">
         <div className="flex items-center gap-3 flex-1 w-full sm:w-auto">
           <div className="relative flex-1 max-w-xs">{searchInput(searchTerm, setSearchTerm, 'Buscar por nombre...')}</div>
           <select value={filterValue} onChange={(e) => { setFilterValue(e.target.value); setPage(1); }}
@@ -67,6 +86,7 @@ export default function ServicesTab({ services, pageContent, searchTerm, setSear
           </button>
         </div>
       </div>
+
       {renderTable(
         [
           { label: 'Imagen', key: 'image', sortable: true },
@@ -78,21 +98,22 @@ export default function ServicesTab({ services, pageContent, searchTerm, setSear
         ],
         paginated.map((s) => (
           <tr key={s.id} className="hover:bg-gray-50/50 transition-colors">
-            <td className="px-4 py-3">
+            <td className="px-5 py-3.5">
               {s.image ? <img src={s.image} alt="" className="w-10 h-10 object-cover rounded-lg cursor-pointer hover:opacity-80" loading="lazy" onClick={() => setPreviewImg(s.image ?? null)} />
                 : <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center"><svg className="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg></div>}
             </td>
-            <td className="px-4 py-3 text-sm font-medium text-gray-800">{s.name}</td>
-            <td className="px-4 py-3"><span className="inline-block px-2.5 py-0.5 bg-gray-100 text-gray-600 rounded-full text-xs font-medium">{s.category}</span></td>
-            <td className="px-4 py-3 text-sm text-gray-600">{s.price ? `$${s.price}` : '-'}</td>
-            <td className="px-4 py-3"><StatusBadge active={s.isActive} status={s.isActive ? 'activo' : 'inactivo'} /></td>
-            <td className="px-4 py-3">{actionButtons(() => openEdit('service', s), () => setDeleteId(`service:${s.id}`))}</td>
+            <td className="px-5 py-3.5 text-sm font-medium text-gray-800 max-w-0 truncate">{s.name}</td>
+            <td className="px-5 py-3.5"><span className="inline-block px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium">{s.category}</span></td>
+            <td className="px-5 py-3.5 text-sm text-gray-600">{s.price ? `$${s.price}` : '-'}</td>
+            <td className="px-5 py-3.5"><StatusBadge active={s.isActive} status={s.isActive ? 'activo' : 'inactivo'} /></td>
+            <td className="px-5 py-3.5">{actionButtons(() => openEdit('service', s), () => setDeleteId(`service:${s.id}`))}</td>
           </tr>
         )),
         { key: sortKey, dir: sortDir },
         handleSort
       )}
-      {totalPages > 1 && <Pagination current={page} total={sorted.length} pageSize={PAGE_SIZE} onChange={setPage} />}
+
+      {totalPages > 1 && <div className="pt-2"><Pagination current={page} total={sorted.length} pageSize={PAGE_SIZE} onChange={setPage} /></div>}
     </div>
   );
 }

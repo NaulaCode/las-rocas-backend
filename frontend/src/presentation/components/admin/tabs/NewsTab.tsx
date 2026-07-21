@@ -41,10 +41,30 @@ export default function NewsTab({ news, searchTerm, setSearchTerm, filterValue, 
     setPage(1);
   };
 
+  const published = news.filter((n) => n.isPublished).length;
+  const drafts = news.length - published;
+  const types = [...new Set(news.map((n) => n.type))];
+
   return (
-    <div>
+    <div className="space-y-6">
       {previewImg && <ImageLightbox images={[{ url: previewImg }]} index={0} onClose={() => setPreviewImg(null)} onPrev={() => {}} onNext={() => {}} />}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-5">
+
+      <div className="grid grid-cols-3 gap-4">
+        <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-center">
+          <p className="text-2xl font-bold text-green-700">{published}</p>
+          <p className="text-xs font-semibold text-green-600 uppercase tracking-wider mt-1">Publicadas</p>
+        </div>
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-center">
+          <p className="text-2xl font-bold text-amber-700">{drafts}</p>
+          <p className="text-xs font-semibold text-amber-600 uppercase tracking-wider mt-1">Borradores</p>
+        </div>
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-center">
+          <p className="text-2xl font-bold text-blue-700">{types.length}</p>
+          <p className="text-xs font-semibold text-blue-600 uppercase tracking-wider mt-1">Tipos</p>
+        </div>
+      </div>
+
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-2">
         <div className="flex items-center gap-3 flex-1 w-full sm:w-auto">
           <div className="relative flex-1 max-w-xs">{searchInput(searchTerm, setSearchTerm, 'Buscar por título...')}</div>
           <select value={filterValue} onChange={(e) => { setFilterValue(e.target.value); setPage(1); }}
@@ -64,6 +84,7 @@ export default function NewsTab({ news, searchTerm, setSearchTerm, filterValue, 
           </button>
         </div>
       </div>
+
       {renderTable(
         [
           { label: 'Imagen', key: 'image', sortable: true },
@@ -74,20 +95,21 @@ export default function NewsTab({ news, searchTerm, setSearchTerm, filterValue, 
         ],
         paginated.map((n) => (
           <tr key={n.id} className="hover:bg-gray-50/50 transition-colors">
-            <td className="px-4 py-3">
+            <td className="px-5 py-3.5">
               {n.image ? <img src={n.image} alt="" className="w-10 h-10 object-cover rounded-lg cursor-pointer hover:opacity-80" loading="lazy" onClick={() => setPreviewImg(n.image ?? null)} />
                 : <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center"><svg className="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" /></svg></div>}
             </td>
-            <td className="px-4 py-3 text-sm font-medium text-gray-800 max-w-xs truncate">{n.title}</td>
-            <td className="px-4 py-3"><span className="inline-block px-2.5 py-0.5 bg-gray-100 text-gray-600 rounded-full text-xs font-medium">{n.type}</span></td>
-            <td className="px-4 py-3"><StatusBadge status={n.isPublished ? 'publicado' : 'borrador'} /></td>
-            <td className="px-4 py-3">{actionButtons(() => openEdit('news', n), () => setDeleteId(`news:${n.id}`))}</td>
+            <td className="px-5 py-3.5 text-sm font-medium text-gray-800 max-w-0 truncate">{n.title}</td>
+            <td className="px-5 py-3.5"><span className="inline-block px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium">{n.type}</span></td>
+            <td className="px-5 py-3.5"><StatusBadge status={n.isPublished ? 'publicado' : 'borrador'} /></td>
+            <td className="px-5 py-3.5">{actionButtons(() => openEdit('news', n), () => setDeleteId(`news:${n.id}`))}</td>
           </tr>
         )),
         { key: sortKey, dir: sortDir },
         handleSort
       )}
-      {totalPages > 1 && <Pagination current={page} total={sorted.length} pageSize={PAGE_SIZE} onChange={setPage} />}
+
+      {totalPages > 1 && <div className="pt-2"><Pagination current={page} total={sorted.length} pageSize={PAGE_SIZE} onChange={setPage} /></div>}
     </div>
   );
 }
