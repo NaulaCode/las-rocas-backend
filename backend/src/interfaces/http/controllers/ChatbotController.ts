@@ -67,6 +67,22 @@ export class ChatbotController {
     } catch (error) { next(error); }
   }
 
+  async seedAndReindex(req: any, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const result = await this.chatbotUseCases.seedExtraFaqs();
+      this.auditLogger.log({ userId: req.user.userId, userEmail: req.user.email, action: 'UPDATE', entityType: 'chatbot_seed', entityId: 'bulk', details: { added: result.added, total: result.total, reindexed: result.reindexed } });
+      res.status(200).json({ status: 'success', message: `Se agregaron ${result.added} preguntas nuevas. Total: ${result.total}. Embeddings reindexados: ${result.reindexed ? 'sí' : 'no'}.`, data: result });
+    } catch (error) { next(error); }
+  }
+
+  async reindexEmbeddings(req: any, res: Response, next: NextFunction): Promise<void> {
+    try {
+      await this.chatbotUseCases.reindexAll();
+      this.auditLogger.log({ userId: req.user.userId, userEmail: req.user.email, action: 'UPDATE', entityType: 'chatbot_reindex', entityId: 'all' });
+      res.status(200).json({ status: 'success', message: 'Embeddings reindexados correctamente.' });
+    } catch (error) { next(error); }
+  }
+
   async getAllQuestions(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const activeOnly = req.query.active === 'true';

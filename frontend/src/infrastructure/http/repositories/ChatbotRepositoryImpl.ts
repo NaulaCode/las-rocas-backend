@@ -86,4 +86,12 @@ export class ChatbotRepositoryImpl implements IChatbotRepository {
   sendFeedback(logId: string, type: 'like' | 'dislike'): Promise<void> {
     return apiClient.put<void>(`/chatbot/logs/${logId}/feedback`, { type });
   }
+
+  seedAndReindex(): Promise<{ added: number; total: number; reindexed: boolean }> {
+    return apiClient.post<{ added: number; total: number; reindexed: boolean }>('/chatbot/seed', {});
+  }
+
+  reindexEmbeddings(): Promise<void> {
+    return apiClient.post<void>('/chatbot/reindex', {});
+  }
 }

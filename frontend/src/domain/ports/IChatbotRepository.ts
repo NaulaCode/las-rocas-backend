@@ -9,4 +9,6 @@ export interface IChatbotRepository {
   updateQuestion(id: string, data: UpdateQuestionDTO): Promise<ChatbotQuestion>;
   deleteQuestion(id: string): Promise<void>;
   sendFeedback(logId: string, type: 'like' | 'dislike'): Promise<void>;
+  seedAndReindex(): Promise<{ added: number; total: number; reindexed: boolean }>;
+  reindexEmbeddings(): Promise<void>;
 }

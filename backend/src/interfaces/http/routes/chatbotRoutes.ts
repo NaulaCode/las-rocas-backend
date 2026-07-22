@@ -25,6 +25,12 @@ router.put('/logs/:id/feedback', (req, res, next) =>
 router.get('/stats', authenticate, loadPermissions, createRequirePermission('chatbot:list'), (req, res, next) =>
   chatbotController.getStats(req, res, next)
 );
+router.post('/seed', authenticate, loadPermissions, createRequirePermission('chatbot:create'), (req, res, next) =>
+  chatbotController.seedAndReindex(req, res, next)
+);
+router.post('/reindex', authenticate, loadPermissions, createRequirePermission('chatbot:create'), (req, res, next) =>
+  chatbotController.reindexEmbeddings(req, res, next)
+);
 router.post('/questions', authenticate, loadPermissions, createRequirePermission('chatbot:create'), (req, res, next) =>
   chatbotController.createQuestion(req, res, next)
 );

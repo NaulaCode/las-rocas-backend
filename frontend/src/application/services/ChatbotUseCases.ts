@@ -35,4 +35,12 @@ export class ChatbotUseCases {
   deleteQuestion(id: string): Promise<void> {
     return this.repo.deleteQuestion(id);
   }
+
+  seedAndReindex(): Promise<{ added: number; total: number; reindexed: boolean }> {
+    return this.repo.seedAndReindex();
+  }
+
+  reindexEmbeddings(): Promise<void> {
+    return this.repo.reindexEmbeddings();
+  }
 }
