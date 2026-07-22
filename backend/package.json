@@ -20,7 +20,7 @@
 
     "build": "tsc",
 
-    "start": "npx prisma db push; node dist/server.js",
+    "start": "node dist/server.js",
 
     "postinstall": "prisma generate",
 
