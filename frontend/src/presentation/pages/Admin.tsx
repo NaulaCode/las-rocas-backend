@@ -101,9 +101,10 @@ export default function Admin() {
       container.organization.get().catch(() => null),
       container.attractions.getAllIncludingInactive().catch(() => []),
       container.contact.getAll().catch(() => []),
+      container.auth.getUsers().catch(() => []),
 
     ])
-      .then(([srv, nw, rs, qtns, orgData, atr, msgs]: any[]) => {
+      .then(([srv, nw, rs, qtns, orgData, atr, msgs, adminUsrs]: any[]) => {
         setUnreadMessages(msgs.filter((m: any) => !m.isRead).length);
         setServices(srv);
         setNews(nw);
@@ -111,6 +112,7 @@ export default function Admin() {
         setQuestions(qtns);
         setOrg(orgData);
         setAttractions(atr);
+        setAdminUsers(adminUsrs);
         setPageContent(orgData?.pageContent || {});
         setLogoUrl(orgData?.logo || '');
         setOrgForm({
