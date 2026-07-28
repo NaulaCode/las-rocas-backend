@@ -7,6 +7,7 @@ import ImageUpload from '../ImageUpload';
 import { container } from '../../../../di/container';
 import SEO from '../../SEO';
 import { detectMediaType } from '../../../utils/video';
+import PasswordStrength, { validatePassword } from '../../PasswordStrength';
 
 function Field({ label, value, onChange, type = 'text', placeholder }: { label: string; value: string; onChange: (v: string) => void; type?: string; placeholder?: string }) {
   return (
@@ -536,14 +537,19 @@ export default function PagesTab({ org, orgForm, setOrgForm, pageContent, setPag
     );
   };
 
+  const [confirmPass, setConfirmPass] = useState('');
+
   const renderUsuariosAdminTab = () => {
     const resetForm = () => {
-      setNewEmail(''); setNewPass(''); setNewFirstName(''); setNewLastName('');
+      setNewEmail(''); setNewPass(''); setConfirmPass(''); setNewFirstName(''); setNewLastName('');
       setEditingUser(null); setShowAdminForm(false); setChangePassword(false); setNewRoleId('');
     };
 
     const handleCreateUser = async () => {
       try {
+        const pwValidation = validatePassword(newPass);
+        if (!pwValidation.valid) { t(pwValidation.errors.join('. '), 'error'); return; }
+        if (newPass !== confirmPass) { t('Las contraseñas no coinciden', 'error'); return; }
         const created = await container.auth.register({ email: newEmail, password: newPass, firstName: newFirstName, lastName: newLastName, role: 'admin', roleId: newRoleId || undefined });
         setAdminUsers([...adminUsers, created.user as PublicUser]);
         t('Usuario admin creado exitosamente', 'success');
@@ -555,7 +561,12 @@ export default function PagesTab({ org, orgForm, setOrgForm, pageContent, setPag
       if (!editingUser) return;
       try {
         const payload: Record<string, any> = { firstName: newFirstName, lastName: newLastName, email: newEmail };
-        if (changePassword && newPass) payload.password = newPass;
+        if (changePassword && newPass) {
+          const pwValidation = validatePassword(newPass);
+          if (!pwValidation.valid) { t(pwValidation.errors.join('. '), 'error'); return; }
+          if (newPass !== confirmPass) { t('Las contraseñas no coinciden', 'error'); return; }
+          payload.password = newPass;
+        }
         if (newRoleId) payload.roleId = newRoleId;
         await container.auth.updateUser(editingUser.id, payload);
         setAdminUsers(adminUsers.map((u) => u.id === editingUser.id ? { ...u, firstName: newFirstName, lastName: newLastName, email: newEmail } : u));
@@ -598,7 +609,27 @@ export default function PagesTab({ org, orgForm, setOrgForm, pageContent, setPag
               <Field label="Apellido" value={newLastName} onChange={setNewLastName} />
               <Field label="Email" value={newEmail} onChange={setNewEmail} />
               {!editingUser ? (
-                <Field label="Contraseña" value={newPass} onChange={setNewPass} type="password" />
+                <>
+                  <Field label="Contraseña" value={newPass} onChange={setNewPass} type="password" />
+                  <Field label="Confirmar contraseña" value={confirmPass} onChange={setConfirmPass} type="password" />
+                  <div className="md:col-span-2">
+                    <PasswordStrength password={newPass} />
+                    <div className="mt-2 space-y-1">
+                      {[
+                        { test: newPass.length >= 8, label: 'Mínimo 8 caracteres' },
+                        { test: /[A-Z]/.test(newPass), label: 'Al menos una mayúscula' },
+                        { test: /[a-z]/.test(newPass), label: 'Al menos una minúscula' },
+                        { test: /[0-9]/.test(newPass), label: 'Al menos un número' },
+                        { test: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(newPass), label: 'Al menos un carácter especial' },
+                      ].map(({ test, label }) => (
+                        <div key={label} className="flex items-center gap-2 text-xs">
+                          <span className={`${test ? 'text-green-500' : 'text-gray-300'}`}>{test ? '✓' : '○'}</span>
+                          <span className={`${test ? 'text-green-600' : 'text-gray-400'}`}>{label}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </>
               ) : (
                 <div>
                   <label className="flex items-center gap-2 text-sm text-gray-600 mb-2">
@@ -606,7 +637,13 @@ export default function PagesTab({ org, orgForm, setOrgForm, pageContent, setPag
                       className="rounded border-gray-300 text-primary-600 focus:ring-primary-500" />
                     Cambiar contraseña
                   </label>
-                  {changePassword && <Field label="Nueva contraseña" value={newPass} onChange={setNewPass} type="password" />}
+                  {changePassword && (
+                    <div className="space-y-4">
+                      <Field label="Nueva contraseña" value={newPass} onChange={setNewPass} type="password" />
+                      <Field label="Confirmar contraseña" value={confirmPass} onChange={setConfirmPass} type="password" />
+                      <PasswordStrength password={newPass} />
+                    </div>
+                  )}
                 </div>
               )}
               <div>

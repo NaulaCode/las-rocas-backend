@@ -6,6 +6,7 @@ import { IPasswordHasher } from '../../domain/ports/IPasswordHasher';
 import { ITokenService } from '../../domain/ports/ITokenService';
 import { ILogger } from '../../domain/ports/ILogger';
 import { passwordResetEmail } from '../../domain/services/emailTemplates';
+import { validatePassword } from '../../shared/validation/passwordValidator';
 
 export class AuthUseCases {
   constructor(
@@ -22,8 +23,9 @@ export class AuthUseCases {
       throw new ValidationError('Todos los campos son requeridos');
     }
 
-    if (data.password.length < 6) {
-      throw new ValidationError('La contraseña debe tener al menos 6 caracteres');
+    const validation = validatePassword(data.password);
+    if (!validation.valid) {
+      throw new ValidationError(validation.errors.join('. '));
     }
 
     const exists = await this.userRepository.existsByEmail(data.email);
@@ -31,7 +33,8 @@ export class AuthUseCases {
       throw new ConflictError('Ya existe una cuenta con ese email');
     }
 
-    const user = await this.userRepository.create({ ...data, createdBy });
+    const passwordHash = await this.passwordHasher.hash(data.password);
+    const user = await this.userRepository.create({ ...data, createdBy, passwordHash });
     const token = this.tokenService.sign({ userId: user.id, role: user.role, roleId: user.roleId });
 
     return {
@@ -42,9 +45,7 @@ export class AuthUseCases {
 
   async updateUser(id: string, data: UpdateUserData, requesterRole: string): Promise<PublicUser> {
     const target = await this.userRepository.findById(id);
-    if (!target) {
-      throw new NotFoundError('Usuario no encontrado');
-    }
+    if (!target) throw new NotFoundError('Usuario no encontrado');
     if (target.role === 'super_admin' && requesterRole !== 'super_admin') {
       throw new ForbiddenError('No puedes modificar un administrador general');
     }
@@ -53,9 +54,8 @@ export class AuthUseCases {
     }
 
     if (data.password) {
-      if (data.password.length < 6) {
-        throw new ValidationError('La contraseña debe tener al menos 6 caracteres');
-      }
+      const validation = validatePassword(data.password);
+      if (!validation.valid) throw new ValidationError(validation.errors.join('. '));
       const passwordHash = await this.passwordHasher.hash(data.password);
       await this.userRepository.updatePassword(id, passwordHash);
     }
@@ -146,8 +146,9 @@ export class AuthUseCases {
   }
 
   async resetPassword(token: string, newPassword: string): Promise<void> {
-    if (!newPassword || newPassword.length < 6) {
-      throw new ValidationError('La contraseña debe tener al menos 6 caracteres');
+    const validation = validatePassword(newPassword);
+    if (!validation.valid) {
+      throw new ValidationError(validation.errors.join('. '));
     }
 
     let decoded: { email: string };

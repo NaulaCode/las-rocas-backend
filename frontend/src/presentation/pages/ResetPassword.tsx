@@ -3,6 +3,7 @@ import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import SEO from '../components/SEO';
+import PasswordStrength, { validatePassword } from '../components/PasswordStrength';
 import { container } from '../../di/container';
 
 export default function ResetPassword() {
@@ -28,8 +29,9 @@ export default function ResetPassword() {
       return;
     }
 
-    if (password.length < 6) {
-      setError(t('resetPassword.contrasenaMinLength'));
+    const pwValidation = validatePassword(password);
+    if (!pwValidation.valid) {
+      setError(pwValidation.errors.join('. '));
       setLoading(false);
       return;
     }
@@ -182,6 +184,7 @@ export default function ResetPassword() {
                       placeholder="········"
                     />
                   </div>
+                  <PasswordStrength password={password} />
                 </div>
 
                 <div>
@@ -201,6 +204,24 @@ export default function ResetPassword() {
                       placeholder="········"
                     />
                   </div>
+                </div>
+
+                <div className="bg-white/5 rounded-xl p-3 space-y-1">
+                  <p className="text-xs text-primary-200/70 font-medium mb-1.5">La contraseña debe tener:</p>
+                  {[
+                    { test: password.length >= 8, label: 'Mínimo 8 caracteres' },
+                    { test: /[A-Z]/.test(password), label: 'Al menos una mayúscula' },
+                    { test: /[a-z]/.test(password), label: 'Al menos una minúscula' },
+                    { test: /[0-9]/.test(password), label: 'Al menos un número' },
+                    { test: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password), label: 'Al menos un carácter especial' },
+                  ].map(({ test, label }) => (
+                    <div key={label} className="flex items-center gap-2 text-xs">
+                      <span className={`${test ? 'text-emerald-400' : 'text-white/30'} transition-colors`}>
+                        {test ? '✓' : '○'}
+                      </span>
+                      <span className={`${test ? 'text-emerald-300' : 'text-white/40'} transition-colors`}>{label}</span>
+                    </div>
+                  ))}
                 </div>
 
                 <label className="flex items-center gap-2 text-sm text-primary-200/60 cursor-pointer select-none">

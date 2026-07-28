@@ -3,7 +3,7 @@ import { authController } from '../../../di/container';
 import { authenticate } from '../middlewares/authMiddleware';
 import { loadPermissions } from '../../../di/container';
 import { createRequirePermission } from '../middlewares/permissionMiddleware';
-import { authLimiter, forgotPasswordLimiter } from '../middlewares/rateLimit';
+import { authLimiter, forgotPasswordLimiter, resetPasswordLimiter } from '../middlewares/rateLimit';
 
 const router = Router();
 
@@ -14,7 +14,7 @@ router.post('/login', authLimiter, (req, res, next) =>
 router.post('/forgot-password', forgotPasswordLimiter, (req, res, next) =>
   authController.forgotPassword(req, res, next)
 );
-router.post('/reset-password', (req, res, next) =>
+router.post('/reset-password', resetPasswordLimiter, (req, res, next) =>
   authController.resetPassword(req, res, next)
 );
 

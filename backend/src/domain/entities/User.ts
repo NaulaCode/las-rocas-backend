@@ -34,6 +34,7 @@ export interface PublicUser {
 export interface CreateUserData {
   email: string;
   password: string;
+  passwordHash?: string;
   firstName: string;
   lastName: string;
   phone?: string;

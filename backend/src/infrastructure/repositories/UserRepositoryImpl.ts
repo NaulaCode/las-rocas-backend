@@ -1,7 +1,6 @@
 import { UserRepository } from '../../domain/repositories/UserRepository';
 import { User, CreateUserData, UpdateUserData } from '../../domain/entities/User';
 import { getPrisma } from '../database/postgres/PrismaService';
-import bcrypt from 'bcryptjs';
 
 export class UserRepositoryImpl implements UserRepository {
 
@@ -23,12 +22,11 @@ export class UserRepositoryImpl implements UserRepository {
 
   async create(data: CreateUserData): Promise<User> {
     const prisma = getPrisma();
-    const passwordHash = await bcrypt.hash(data.password, 10);
 
     const user = await prisma.user.create({
       data: {
         email: data.email,
-        passwordHash,
+        passwordHash: data.passwordHash!,
         firstName: data.firstName,
         lastName: data.lastName,
         phone: data.phone || null,

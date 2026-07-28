@@ -13,14 +13,14 @@ export const generalLimiter = rateLimit({
 });
 
 export const authLimiter = rateLimit({
-  windowMs: 60 * 1000,
-  max: 1000,
+  windowMs: 15 * 60 * 1000,
+  max: 10,
   standardHeaders: true,
   legacyHeaders: false,
   message: {
     status: 'error',
     code: 'RATE_LIMIT',
-    message: 'Demasiados intentos de inicio de sesión. Intenta de nuevo en 1 minuto.',
+    message: 'Demasiados intentos de inicio de sesión. Intenta de nuevo en 15 minutos.',
   },
 });
 
@@ -49,14 +49,26 @@ export const uploadLimiter = rateLimit({
 });
 
 export const forgotPasswordLimiter = rateLimit({
-  windowMs: 60 * 1000,
-  max: 200,
+  windowMs: 15 * 60 * 1000,
+  max: 3,
   standardHeaders: true,
   legacyHeaders: false,
   message: {
     status: 'error',
     code: 'RATE_LIMIT',
-    message: 'Demasiadas solicitudes. Intenta de nuevo en 1 minuto.',
+    message: 'Demasiadas solicitudes. Intenta de nuevo en 15 minutos.',
+  },
+});
+
+export const resetPasswordLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    status: 'error',
+    code: 'RATE_LIMIT',
+    message: 'Demasiados intentos. Intenta de nuevo en 15 minutos.',
   },
 });
 
