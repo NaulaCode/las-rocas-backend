@@ -18,7 +18,7 @@ import { AdminFormData, ServiceForm } from '../components/admin/forms/ServiceFor
 import { NewsForm } from '../components/admin/forms/NewsForm';
 import { ChatbotForm } from '../components/admin/forms/ChatbotForm';
 import { AttractionForm } from '../components/admin/forms/AttractionForm';
-import { ReservationForm } from '../components/admin/forms/ReservationForm';
+import { ReservationForm, validateReservationForm } from '../components/admin/forms/ReservationForm';
 
 import { tabIcons, sectionVariants } from '../components/admin/tabIcons';
 
@@ -70,6 +70,7 @@ export default function Admin() {
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState<{ type: string; initial?: AdminFormData } | null>(null);
   const [form, setForm] = useState<AdminFormData>({});
+  const [reservationFormErrors, setReservationFormErrors] = useState<{ email?: string; phone?: string }>({});
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterValue, setFilterValue] = useState('');
@@ -237,12 +238,14 @@ export default function Admin() {
 
   const openCreate = (type: string) => {
     setForm({});
+    setReservationFormErrors({});
     setModal({ type, initial: undefined });
   };
 
   const openEdit = (type: string, item: AdminFormData) => {
     const formatted = item.eventDate ? item.eventDate.substring(0, 10) : undefined;
     setForm({ ...item, eventDate: formatted });
+    setReservationFormErrors({});
     setModal({ type, initial: item });
   };
 
@@ -284,6 +287,9 @@ export default function Admin() {
       if (isEdit) { const r = await container.news.update(initial!.id!, payload); setNews(prev => prev.map(n => n.id === r.id ? r : n)); }
       else { const r = await container.news.create(payload); setNews(prev => [r, ...prev]); }
     } else if (m.type === 'reservation') {
+      const errs = validateReservationForm(form);
+      setReservationFormErrors(errs);
+      if (Object.keys(errs).length > 0) return;
       const payload = {
         serviceId: form.serviceId || '',
         serviceName: form.serviceName || '',
@@ -328,6 +334,7 @@ export default function Admin() {
     }
 
     setModal(null);
+    setReservationFormErrors({});
     } catch (err) {
       toast(err instanceof Error ? err.message : 'Error al guardar', 'error');
     }
@@ -588,7 +595,7 @@ export default function Admin() {
           title={modal?.initial ? `Editar ${modal?.type === 'service' ? 'Servicio' : modal?.type === 'news' ? 'Noticia' : modal?.type === 'chatbot' ? 'Pregunta' : modal?.type === 'attraction' ? 'Atractivo Turístico' : 'Reserva'}` : `Nuevo ${modal?.type === 'service' ? 'Servicio' : modal?.type === 'news' ? 'Noticia' : modal?.type === 'chatbot' ? 'Pregunta' : modal?.type === 'attraction' ? 'Atractivo Turístico' : 'Reserva'}`}>
           {modal?.type === 'service' && <ServiceForm form={form} setForm={setForm} categories={pageContent.categories} />}
           {modal?.type === 'news' && <NewsForm form={form} setForm={setForm} />}
-          {modal?.type === 'reservation' && <ReservationForm form={form} setForm={setForm} services={services} />}
+          {modal?.type === 'reservation' && <ReservationForm form={form} setForm={setForm} services={services} errors={reservationFormErrors} />}
           {modal?.type === 'chatbot' && <ChatbotForm form={form} setForm={setForm} />}
           {modal?.type === 'attraction' && <AttractionForm form={form} setForm={setForm} />}
         </Modal>

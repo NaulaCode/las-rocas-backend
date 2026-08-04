@@ -5,10 +5,12 @@ import { loadPermissions } from '../../../di/container';
 import { createRequirePermission } from '../middlewares/permissionMiddleware';
 import { publicPostLimiter } from '../middlewares/rateLimit';
 import { validateTurnstile } from '../middlewares/turnstile';
+import { validate } from '../middlewares/validate';
+import { createContactMessageSchema } from '../../../shared/validation/schemas';
 
 const router = Router();
 
-router.post('/', publicPostLimiter, validateTurnstile, (req, res, next) =>
+router.post('/', publicPostLimiter, validateTurnstile, validate(createContactMessageSchema), (req, res, next) =>
   contactController.send(req, res, next)
 );
 router.get('/', authenticate, loadPermissions, createRequirePermission('contact:list'), (req, res, next) =>

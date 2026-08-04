@@ -5,6 +5,8 @@ import { loadPermissions } from '../../../di/container';
 import { createRequirePermission } from '../middlewares/permissionMiddleware';
 import { reservationPostLimiter, reservationLimiter } from '../middlewares/rateLimit';
 import { validateTurnstile } from '../middlewares/turnstile';
+import { validate } from '../middlewares/validate';
+import { createReservationSchema, updateReservationSchema, cancelReservationSchema } from '../../../shared/validation/schemas';
 
 const router = Router();
 
@@ -18,10 +20,10 @@ router.get('/availability', (req, res, next) =>
 router.get('/by-email/:email', (req, res, next) =>
   reservationController.getByEmail(req, res, next)
 );
-router.post('/', reservationPostLimiter, validateTurnstile, (req, res, next) =>
+router.post('/', reservationPostLimiter, validateTurnstile, validate(createReservationSchema), (req, res, next) =>
   reservationController.create(req, res, next)
 );
-router.post('/cancel', (req, res, next) =>
+router.post('/cancel', validate(cancelReservationSchema), (req, res, next) =>
   reservationController.cancel(req, res, next)
 );
 
@@ -44,7 +46,7 @@ router.get('/:id', (req, res, next) =>
   reservationController.getById(req, res, next)
 );
 
-router.put('/:id', authenticate, loadPermissions, createRequirePermission('reservations:update'), (req, res, next) =>
+router.put('/:id', authenticate, loadPermissions, createRequirePermission('reservations:update'), validate(updateReservationSchema), (req, res, next) =>
   reservationController.update(req, res, next)
 );
 router.delete('/:id', authenticate, loadPermissions, createRequirePermission('reservations:delete'), (req, res, next) =>

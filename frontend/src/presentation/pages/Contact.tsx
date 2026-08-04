@@ -11,6 +11,7 @@ import { TouristicService } from '../../domain/entities/TouristicService';
 import { Reservation } from '../../domain/entities/Reservation';
 import TurnstileWidget, { TurnstileHandle } from '../components/TurnstileWidget';
 import { CreateContactMessageData } from '../../domain/entities/ContactMessage';
+import { isValidEmail, isValidPhone } from '../utils/validation';
 
 const pageAnim = {
   hidden: { opacity: 0 },
@@ -112,6 +113,8 @@ export default function Contact() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<{ email?: string; phone?: string }>({});
+  const [contactFieldErrors, setContactFieldErrors] = useState<{ email?: string; phone?: string }>({});
   const [bookedDates, setBookedDates] = useState<Set<string>>(new Set());
   const [availability, setAvailability] = useState<{ available: boolean; booked: number } | null>(null);
   const [checkingAvail, setCheckingAvail] = useState(false);
@@ -179,6 +182,15 @@ export default function Contact() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const newFieldErrors: { email?: string; phone?: string } = {};
+    if (!form.userEmail.trim()) newFieldErrors.email = t('errors.requiredEmail');
+    else if (!isValidEmail(form.userEmail)) newFieldErrors.email = t('errors.invalidEmail');
+    if (!form.userPhone.trim()) newFieldErrors.phone = t('errors.required');
+    else if (!isValidPhone(form.userPhone)) newFieldErrors.phone = t('errors.invalidPhone');
+    setFieldErrors(newFieldErrors);
+    if (Object.keys(newFieldErrors).length > 0) return;
+
     setLoading(true);
     setError('');
 
@@ -188,7 +200,7 @@ export default function Contact() {
     }
 
     try {
-      await container.reservations.create({ ...form, turnstileToken } as import('../../domain/entities/Reservation').CreateReservationDTO);
+      await container.reservations.create({ ...form, userPhone: form.userPhone.trim(), turnstileToken } as import('../../domain/entities/Reservation').CreateReservationDTO);
       setSuccess(true);
       setForm({
         serviceId: '',
@@ -211,6 +223,14 @@ export default function Contact() {
 
   const handleContactSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const newFieldErrors: { email?: string; phone?: string } = {};
+    if (!contactForm.email.trim()) newFieldErrors.email = t('errors.requiredEmail');
+    else if (!isValidEmail(contactForm.email)) newFieldErrors.email = t('errors.invalidEmail');
+    if (contactForm.phone.trim() && !isValidPhone(contactForm.phone)) newFieldErrors.phone = t('errors.invalidPhone');
+    setContactFieldErrors(newFieldErrors);
+    if (Object.keys(newFieldErrors).length > 0) return;
+
     setLoading(true);
     setError('');
 
@@ -220,7 +240,7 @@ export default function Contact() {
     }
 
     try {
-      await container.contact.send({ ...contactForm, turnstileToken: contactTurnstileToken } as CreateContactMessageData);
+      await container.contact.send({ ...contactForm, phone: contactForm.phone.trim(), turnstileToken: contactTurnstileToken } as CreateContactMessageData);
       setSuccess(true);
       setContactForm({ name: '', email: '', phone: '', subject: '', message: '' });
       sessionStorage.removeItem('contactForm');
@@ -531,10 +551,11 @@ export default function Contact() {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                           </svg>
                         } />
-                        <input type="tel" value={form.userPhone}
-                          onChange={(e) => setForm({ ...form, userPhone: e.target.value })}
-                          className={inputClass} placeholder={t('contact.telefono')} />
+                        <input type="tel" required value={form.userPhone}
+                          onChange={(e) => { setForm({ ...form, userPhone: e.target.value }); if (fieldErrors.phone) setFieldErrors({ ...fieldErrors, phone: undefined }); }}
+                          className={fieldErrors.phone ? inputClass + ' border-red-400' : inputClass} placeholder={t('contact.telefono')} />
                       </div>
+                      {fieldErrors.phone && <p className="text-red-500 text-xs mt-1">{fieldErrors.phone}</p>}
                     </div>
                   </div>
 
@@ -547,9 +568,10 @@ export default function Contact() {
                         </svg>
                       } />
                       <input type="email" required value={form.userEmail}
-                        onChange={(e) => setForm({ ...form, userEmail: e.target.value })}
-                        className={inputClass} placeholder={t('contact.email')} />
+                        onChange={(e) => { setForm({ ...form, userEmail: e.target.value }); if (fieldErrors.email) setFieldErrors({ ...fieldErrors, email: undefined }); }}
+                        className={fieldErrors.email ? inputClass + ' border-red-400' : inputClass} placeholder={t('contact.email')} />
                     </div>
+                    {fieldErrors.email && <p className="text-red-500 text-xs mt-1">{fieldErrors.email}</p>}
                   </div>
 
                   <div className="grid md:grid-cols-2 gap-4">
@@ -647,18 +669,20 @@ export default function Contact() {
                       <label className="block text-sm font-medium text-gray-700 mb-1.5">{t('contact.telefono')}</label>
                       <div className="relative">
                         <InputIcon icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>} />
-                        <input type="tel" value={contactForm.phone} onChange={(e) => setContactForm({ ...contactForm, phone: e.target.value })}
-                          className={inputClass} placeholder={t('contact.telefono')} />
+                        <input type="tel" value={contactForm.phone} onChange={(e) => { setContactForm({ ...contactForm, phone: e.target.value }); if (contactFieldErrors.phone) setContactFieldErrors({ ...contactFieldErrors, phone: undefined }); }}
+                          className={contactFieldErrors.phone ? inputClass + ' border-red-400' : inputClass} placeholder={t('contact.telefono')} />
                       </div>
+                      {contactFieldErrors.phone && <p className="text-red-500 text-xs mt-1">{contactFieldErrors.phone}</p>}
                     </div>
                   </div>
                   <div className="relative">
                     <label className="block text-sm font-medium text-gray-700 mb-1.5">{t('contact.email')}</label>
                     <div className="relative">
                       <InputIcon icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>} />
-                      <input type="email" required value={contactForm.email} onChange={(e) => setContactForm({ ...contactForm, email: e.target.value })}
-                        className={inputClass} placeholder={t('contact.email')} />
+                      <input type="email" required value={contactForm.email} onChange={(e) => { setContactForm({ ...contactForm, email: e.target.value }); if (contactFieldErrors.email) setContactFieldErrors({ ...contactFieldErrors, email: undefined }); }}
+                        className={contactFieldErrors.email ? inputClass + ' border-red-400' : inputClass} placeholder={t('contact.email')} />
                     </div>
+                    {contactFieldErrors.email && <p className="text-red-500 text-xs mt-1">{contactFieldErrors.email}</p>}
                   </div>
                   <div className="relative">
                     <label className="block text-sm font-medium text-gray-700 mb-1.5">{t('contact.asunto')}</label>

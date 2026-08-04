@@ -2,6 +2,11 @@ import { z } from 'zod';
 
 export const emailField = z.string().email('Email inválido');
 
+export const phoneField = z
+  .string()
+  .regex(/^[+\d\s-]{7,18}$/, 'Número de teléfono inválido')
+  .transform((v) => v.replace(/[\s-]/g, ''));
+
 export const createServiceSchema = z.object({
   name: z.string().min(1, 'El nombre es requerido').max(200),
   description: z.string().min(1, 'La descripción es requerida'),
@@ -24,7 +29,7 @@ export const createReservationSchema = z.object({
   serviceName: z.string().optional(),
   userName: z.string().min(1, 'El nombre es requerido'),
   userEmail: emailField,
-  userPhone: z.string().optional(),
+  userPhone: phoneField.optional(),
   numberOfPeople: z.number().int().positive('Debe ser al menos 1 persona').optional(),
   preferredDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Fecha inválida (YYYY-MM-DD)').optional(),
   message: z.string().optional(),
@@ -35,7 +40,7 @@ export const updateReservationSchema = z.object({
   serviceName: z.string().optional(),
   userName: z.string().optional(),
   userEmail: emailField.optional(),
-  userPhone: z.string().optional(),
+  userPhone: phoneField.optional(),
   numberOfPeople: z.number().int().positive().optional(),
   preferredDate: z.string().optional(),
   message: z.string().optional(),
@@ -97,7 +102,7 @@ export const updateAttractionSchema = createAttractionSchema.partial();
 export const createContactMessageSchema = z.object({
   name: z.string().min(1, 'El nombre es requerido'),
   email: emailField,
-  phone: z.string().optional(),
+  phone: phoneField.optional(),
   subject: z.string().max(200).optional(),
   message: z.string().min(1, 'El mensaje es requerido'),
 });

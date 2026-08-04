@@ -462,6 +462,7 @@
   "errors": {
     "required": "This field is required",
     "invalidEmail": "Invalid email",
+    "invalidPhone": "Invalid phone number",
     "minLength": "Minimum {{min}} characters",
     "requiredName": "Name is required",
     "requiredEmail": "Email is required",

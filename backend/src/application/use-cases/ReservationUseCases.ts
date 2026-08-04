@@ -43,6 +43,12 @@ export class ReservationUseCases {
     if (!this.isValidEmail(data.userEmail)) {
       throw new ValidationError('Email inválido');
     }
+    if (data.userPhone && !this.isValidPhone(data.userPhone)) {
+      throw new ValidationError('Número de teléfono inválido');
+    }
+    if (data.userPhone) {
+      data.userPhone = data.userPhone.replace(/[\s-]/g, '');
+    }
 
     if (data.preferredDate && this.serviceRepository) {
       const service = await this.serviceRepository.findById(data.serviceId);
@@ -217,5 +223,9 @@ export class ReservationUseCases {
   private isValidEmail(email: string): boolean {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
+  }
+
+  private isValidPhone(phone: string): boolean {
+    return /^\+?\d{7,15}$/.test(phone.replace(/[\s-]/g, ''));
   }
 }

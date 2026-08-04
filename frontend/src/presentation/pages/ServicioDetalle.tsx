@@ -11,6 +11,7 @@ import type { Reservation } from '../../domain/entities/Reservation';
 import AnimatedPrice from '../components/AnimatedPrice';
 import ReviewForm from '../components/ReviewForm';
 import type { Review } from '../../domain/entities/Review';
+import { isValidEmail, isValidPhone } from '../utils/validation';
 
 export default function ServicioDetalle() {
   const { t } = useTranslation();
@@ -25,6 +26,7 @@ export default function ServicioDetalle() {
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<{ email?: string; phone?: string }>({});
   const [bookedDates, setBookedDates] = useState<Set<string>>(new Set());
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [showReview, setShowReview] = useState(false);
@@ -60,6 +62,15 @@ export default function ServicioDetalle() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!id) return;
+
+    const newFieldErrors: { email?: string; phone?: string } = {};
+    if (!form.userEmail.trim()) newFieldErrors.email = t('errors.requiredEmail');
+    else if (!isValidEmail(form.userEmail)) newFieldErrors.email = t('errors.invalidEmail');
+    if (!form.userPhone.trim()) newFieldErrors.phone = t('errors.required');
+    else if (!isValidPhone(form.userPhone)) newFieldErrors.phone = t('errors.invalidPhone');
+    setFieldErrors(newFieldErrors);
+    if (Object.keys(newFieldErrors).length > 0) return;
+
     if (form.preferredDate && bookedDates.has(form.preferredDate)) {
       setError(t('serviceDetail.fechaNoDisponible'));
       return;
@@ -68,7 +79,7 @@ export default function ServicioDetalle() {
     setSaving(true);
     setError('');
     try {
-      await container.reservations.create({ serviceId: id, serviceName: service?.name, ...form });
+      await container.reservations.create({ serviceId: id, serviceName: service?.name, ...form, userPhone: form.userPhone.trim() });
       setSuccess(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al enviar');
@@ -198,10 +209,12 @@ export default function ServicioDetalle() {
                   <>
                     <input required placeholder={t('serviceDetail.nombre')} value={form.userName} onChange={(e) => setForm({ ...form, userName: e.target.value })}
                       className="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100 bg-white transition-all" />
-                    <input required type="email" placeholder={t('serviceDetail.email')} value={form.userEmail} onChange={(e) => setForm({ ...form, userEmail: e.target.value })}
-                      className="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100 bg-white transition-all" />
-                    <input placeholder={t('serviceDetail.whatsapp')} value={form.userPhone} onChange={(e) => setForm({ ...form, userPhone: e.target.value })}
-                      className="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100 bg-white transition-all" />
+                    <input required type="email" placeholder={t('serviceDetail.email')} value={form.userEmail} onChange={(e) => { setForm({ ...form, userEmail: e.target.value }); if (fieldErrors.email) setFieldErrors({ ...fieldErrors, email: undefined }); }}
+                      className={`w-full px-3.5 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 bg-white transition-all ${fieldErrors.email ? 'border-red-400 focus:border-red-400 focus:ring-red-100' : 'border-gray-200 focus:border-primary-400 focus:ring-primary-100'}`} />
+                    {fieldErrors.email && <p className="text-red-500 text-xs -mt-1">{fieldErrors.email}</p>}
+                    <input required type="tel" placeholder={t('serviceDetail.whatsapp')} value={form.userPhone} onChange={(e) => { setForm({ ...form, userPhone: e.target.value }); if (fieldErrors.phone) setFieldErrors({ ...fieldErrors, phone: undefined }); }}
+                      className={`w-full px-3.5 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 bg-white transition-all ${fieldErrors.phone ? 'border-red-400 focus:border-red-400 focus:ring-red-100' : 'border-gray-200 focus:border-primary-400 focus:ring-primary-100'}`} />
+                    {fieldErrors.phone && <p className="text-red-500 text-xs -mt-1">{fieldErrors.phone}</p>}
                     <div className="grid grid-cols-2 gap-2">
                       <input type="number" min="1" placeholder={t('serviceDetail.personas')} value={form.numberOfPeople} onChange={(e) => setForm({ ...form, numberOfPeople: parseInt(e.target.value) || 1 })}
                         className="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100 bg-white transition-all" />
