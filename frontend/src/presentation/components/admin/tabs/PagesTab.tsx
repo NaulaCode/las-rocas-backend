@@ -322,6 +322,10 @@ export default function PagesTab({ org, orgForm, setOrgForm, pageContent, setPag
             <Field label="Email" value={contacto.email || ''} onChange={(v) => updatePC('contacto', { ...contacto, email: v })} />
             <Field label="Dirección" value={contacto.address || ''} onChange={(v) => updatePC('contacto', { ...contacto, address: v })} />
             <Field label="Horario" value={contacto.schedule || ''} onChange={(v) => updatePC('contacto', { ...contacto, schedule: v })} />
+            <Field label="Facebook URL" value={contacto.facebookUrl || ''} onChange={(v) => updatePC('contacto', { ...contacto, facebookUrl: v })} placeholder="https://facebook.com/..." />
+            <Field label="Instagram URL" value={contacto.instagramUrl || ''} onChange={(v) => updatePC('contacto', { ...contacto, instagramUrl: v })} placeholder="https://instagram.com/..." />
+            <Field label="YouTube URL" value={contacto.youtubeUrl || ''} onChange={(v) => updatePC('contacto', { ...contacto, youtubeUrl: v })} placeholder="https://youtube.com/..." />
+            <Field label="TikTok URL" value={contacto.tiktokUrl || ''} onChange={(v) => updatePC('contacto', { ...contacto, tiktokUrl: v })} placeholder="https://tiktok.com/..." />
           </div>
           <div className="mt-4">
             <Field label="Mapa (URL embebida)" value={contacto.mapUrl || ''} onChange={(v) => updatePC('contacto', { ...contacto, mapUrl: v })} type="textarea" />
