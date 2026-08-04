@@ -137,6 +137,63 @@ function drawTable(
   return y + 6;
 }
 
+function drawWrappedTable(
+  doc: jsPDF,
+  startY: number,
+  headers: { label: string; x: number; w: number }[],
+  rows: { cols: (string | number)[]; color?: [number, number, number] }[],
+  fontSize = 8,
+) {
+  let y = startY;
+  const headerH = 9;
+  const rowPad = 4;
+  const lineH = fontSize * 0.45;
+
+  function drawHeader() {
+    doc.setFillColor(...C.primary);
+    doc.rect(MARGIN, y - 5, CONTENT_W, headerH, 'F');
+    doc.setTextColor(...C.white);
+    doc.setFontSize(fontSize);
+    doc.setFont('helvetica', 'bold');
+    headers.forEach((h) => doc.text(h.label, h.x + CELL_PAD, y));
+    y += headerH + 1;
+  }
+
+  function drawRow(row: { cols: (string | number)[]; color?: [number, number, number] }) {
+    const linesPerCol: string[][] = headers.map((h, ci) => {
+      const cellW = ci < headers.length - 1 ? h.w - CELL_PAD : 999;
+      const txt = String(row.cols[ci] ?? '');
+      return doc.splitTextToSize(txt, cellW) as string[];
+    });
+    const maxLines = Math.max(...linesPerCol.map((l) => l.length));
+    const rowH = maxLines * lineH + rowPad * 2;
+    if (y + rowH > 275) {
+      doc.addPage();
+      y = MARGIN + 5;
+      drawHeader();
+    }
+    const bg: [number, number, number] = [255, 255, 255];
+    doc.setFillColor(bg[0], bg[1], bg[2]);
+    doc.rect(MARGIN, y - 4, CONTENT_W, rowH, 'F');
+    doc.setFontSize(fontSize);
+    headers.forEach((h, ci) => {
+      const lines = linesPerCol[ci];
+      if (row.color && ci === row.cols.length - 1) doc.setTextColor(...row.color);
+      else doc.setTextColor(...C.text);
+      const startY = y + rowPad;
+      lines.forEach((ln, li) => doc.text(ln, h.x + CELL_PAD, startY + li * lineH));
+    });
+    doc.setDrawColor(...C.border);
+    doc.setLineWidth(0.3);
+    doc.line(MARGIN, y + rowH - 4, PAGE_W - MARGIN, y + rowH - 4);
+    y += rowH + 2;
+  }
+
+  drawHeader();
+  rows.forEach(drawRow);
+  return y + 6;
+}
+
 const statusColors: Record<string, [number, number, number]> = {
   pendiente: C.warning,
   confirmada: C.info,
@@ -511,21 +568,46 @@ export function generateFullReport(
     y = drawTable(doc, y, newsHeaders, newsRows, 8, 8);
 
     y = sectionTitle(doc, '5. Estadísticas de Reseñas', y);
-    doc.setTextColor(...C.text);
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    doc.text(`Total de reseñas: ${totalRev}`, MARGIN, y); y += 7;
-    doc.text(`Aprobadas: ${approvedRev}`, MARGIN, y); y += 7;
-    doc.text(`Pendientes de revisión: ${totalRev - approvedRev}`, MARGIN, y); y += 8;
 
     const reviews = pageContent.reviews || [];
-    (reviews as any[]).filter((r: any) => r.approved).forEach((r: any) => {
-      if (y > 278) { doc.addPage(); y = MARGIN + 10; }
-      doc.setFontSize(9);
-      doc.setTextColor(...C.text);
-      doc.text(`• ${r.name}: "${r.text}" (${r.rating}★)`, MARGIN + 2, y);
-      y += 6;
-    });
+    const approvedList = (reviews as any[]).filter((r: any) => r.approved);
+    const avgRating = approvedList.length > 0
+      ? (approvedList.reduce((sum, r) => sum + (Number(r.rating) || 0), 0) / approvedList.length).toFixed(1)
+      : '0';
+
+    y = drawSummaryCards(doc, y, [
+      { label: 'Total', value: String(totalRev), color: C.primary },
+      { label: 'Aprobadas', value: String(approvedRev), color: C.success },
+      { label: 'Pendientes', value: String(totalRev - approvedRev), color: C.warning },
+      { label: 'Promedio', value: `${avgRating}★`, color: C.accent },
+    ]);
+
+    if (approvedList.length > 0) {
+      const headers = [
+        { label: 'NOMBRE', x: MARGIN, w: 30 },
+        { label: 'SERVICIO', x: MARGIN + 30, w: 34 },
+        { label: 'CALIF.', x: MARGIN + 64, w: 14 },
+        { label: 'RESEÑA', x: MARGIN + 78, w: 62 },
+        { label: 'FECHA', x: MARGIN + 140, w: 26 },
+      ];
+      const rows = approvedList.map((r: any) => ({
+        cols: [
+          r.name || '-',
+          r.serviceName || '-',
+          `${r.rating}★`,
+          r.text || '-',
+          r.date ? new Date(r.date).toLocaleDateString('es-EC') : '-',
+        ],
+      }));
+      y = drawWrappedTable(doc, y, headers, rows, 8);
+    } else {
+      if (y > 270) { doc.addPage(); y = MARGIN + 10; }
+      doc.setTextColor(...C.textLight);
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.text('No hay reseñas aprobadas aún.', MARGIN, y);
+      y += 8;
+    }
 
     footer(doc);
     doc.save(`reporte_completo_${new Date().toISOString().split('T')[0]}.pdf`);
