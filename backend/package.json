@@ -32,6 +32,8 @@
 
     "seed-faqs": "ts-node src/infrastructure/database/postgres/seedMoreFaqs.ts",
 
+    "sync-reviews": "ts-node src/infrastructure/database/postgres/syncReviews.ts",
+
     "test": "node --import tsx --test \"src/**/*.test.ts\"",
 
     "test:watch": "node --import tsx --test --watch 'src/**/*.test.ts'"

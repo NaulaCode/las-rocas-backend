@@ -1,9 +1,13 @@
 import { Review, CreateReviewData } from '../../domain/entities/Review';
 import { ReviewRepository } from '../../domain/repositories/ReviewRepository';
+import { OrganizationRepository } from '../../domain/repositories/OrganizationRepository';
 import { ValidationError, NotFoundError } from '../../domain/errors/AppError';
 
 export class ReviewUseCases {
-  constructor(private reviewRepo: ReviewRepository) {}
+  constructor(
+    private reviewRepo: ReviewRepository,
+    private organizationRepo: OrganizationRepository,
+  ) {}
 
   async submit(data: CreateReviewData): Promise<Review> {
     if (!data.name || !data.email || !data.text) {
@@ -25,10 +29,32 @@ export class ReviewUseCases {
 
   async approve(id: string): Promise<void> {
     await this.reviewRepo.approve(id);
+    await this.syncApprovedToPageContent();
   }
 
   async delete(id: string): Promise<void> {
     await this.reviewRepo.delete(id);
+    await this.syncApprovedToPageContent();
+  }
+
+  private async syncApprovedToPageContent(): Promise<void> {
+    const org = await this.organizationRepo.find();
+    if (!org) return;
+    const approved = await this.reviewRepo.findAll({ approved: true });
+    const reviews = approved.map((r) => ({
+      id: r.id,
+      name: r.name,
+      text: r.text,
+      rating: r.rating,
+      date: r.createdAt.toISOString(),
+      approved: true,
+      serviceName: r.serviceName,
+      role: r.role,
+    }));
+    const pageContent = org.pageContent as Record<string, any> | null || {};
+    await this.organizationRepo.update({
+      pageContent: { ...pageContent, reviews },
+    });
   }
 
   async getAverageByService(serviceName: string): Promise<{ average: number | null; count: number }> {

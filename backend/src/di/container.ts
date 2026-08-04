@@ -88,7 +88,7 @@ const attractionUseCases = new TouristicAttractionUseCases(attractionRepo);
 const uploadUseCases = new UploadUseCases(uploadService);
 const auditUseCases = new AuditUseCases(auditLogRepo);
 const contactUseCases = new ContactUseCases(contactMessageRepo, logger, organizationRepo, mailService);
-const reviewUseCases = new ReviewUseCases(reviewRepo);
+const reviewUseCases = new ReviewUseCases(reviewRepo, organizationRepo);
 const roleUseCases = new RoleUseCases(roleRepo);
 
 export const serviceController = new ServiceController(serviceUseCases, auditLogger, chatbotUseCases);
