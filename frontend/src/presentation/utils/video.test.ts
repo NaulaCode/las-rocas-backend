@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getYouTubeEmbedUrl, isVideoUrl } from './video';
+import { getYouTubeEmbedUrl, getInstagramEmbedUrl, getEmbedType, isVideoUrl } from './video';
 
 describe('getYouTubeEmbedUrl', () => {
   it('extracts ID from youtube.com/watch', () => {
@@ -22,9 +22,35 @@ describe('getYouTubeEmbedUrl', () => {
   });
 });
 
+describe('getInstagramEmbedUrl', () => {
+  it('builds embed for a post', () => {
+    expect(getInstagramEmbedUrl('https://www.instagram.com/p/AbCdEf1234/'))
+      .toBe('https://www.instagram.com/p/AbCdEf1234/embed/');
+  });
+
+  it('builds embed for a reel', () => {
+    expect(getInstagramEmbedUrl('https://www.instagram.com/reel/AbCdEf1234/'))
+      .toBe('https://www.instagram.com/reel/AbCdEf1234/embed/');
+  });
+
+  it('returns null for non-Instagram URL', () => {
+    expect(getInstagramEmbedUrl('https://example.com/photo.jpg')).toBeNull();
+  });
+});
+
+describe('getEmbedType', () => {
+  it('detects Instagram URL', () => {
+    expect(getEmbedType('https://www.instagram.com/p/AbCdEf1234/')).toBe('instagram');
+  });
+});
+
 describe('isVideoUrl', () => {
   it('detects YouTube URL', () => {
     expect(isVideoUrl('https://youtu.be/dQw4w9WgXcQ')).toBe(true);
+  });
+
+  it('detects Instagram post URL', () => {
+    expect(isVideoUrl('https://www.instagram.com/p/AbCdEf1234/')).toBe(true);
   });
 
   it('detects .mp4 URL', () => {

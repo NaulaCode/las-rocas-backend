@@ -417,6 +417,7 @@ export default function PagesTab({ org, orgForm, setOrgForm, pageContent, setPag
                 <option value="youtube">YouTube</option>
                 <option value="facebook">Facebook</option>
                 <option value="tiktok">TikTok</option>
+                <option value="instagram">Instagram</option>
               </select>
               <button onClick={() => { const ng = gallery.filter((_: any, j: number) => j !== i); updatePC('gallery', ng); }}
                 className="text-xs text-red-500 hover:text-red-700 font-medium">Eliminar</button>

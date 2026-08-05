@@ -8,7 +8,7 @@ import SafeImage from '../components/SafeImage';
 import ImageLightbox from '../components/ImageLightbox';
 import { Organization } from '../../domain/entities/Organization';
 import EmptyState from '../components/EmptyState';
-import { getYouTubeEmbedUrl, getFacebookEmbedUrl, getTikTokEmbedUrl, getEmbedType } from '../utils/video';
+import { getYouTubeEmbedUrl, getFacebookEmbedUrl, getTikTokEmbedUrl, getInstagramEmbedUrl, getEmbedType } from '../utils/video';
 
 const galleryContainer = {
   hidden: { opacity: 0 },
@@ -33,7 +33,7 @@ export default function Galeria() {
     /\.(mp4|webm|ogg|mov|avi|mkv)(\?|$)/i.test(url) || /\/video\/upload\//i.test(url);
 
   const isEmbedVideo = (entry: { url: string; type?: string }) =>
-    !!getEmbedType(entry.url) || entry.type === 'youtube' || entry.type === 'facebook' || entry.type === 'tiktok';
+    !!getEmbedType(entry.url) || entry.type === 'youtube' || entry.type === 'facebook' || entry.type === 'tiktok' || entry.type === 'instagram';
 
   const isDirectVideo = (entry: { url: string; type?: string }) =>
     entry.type === 'video' || (isDirectVideoUrl(entry.url) && !getEmbedType(entry.url));
@@ -42,7 +42,7 @@ export default function Galeria() {
     isEmbedVideo(entry) || isDirectVideo(entry);
 
   const embedSrc = (url: string) =>
-    getYouTubeEmbedUrl(url) || getFacebookEmbedUrl(url) || getTikTokEmbedUrl(url) || url;
+    getYouTubeEmbedUrl(url) || getFacebookEmbedUrl(url) || getTikTokEmbedUrl(url) || getInstagramEmbedUrl(url) || url;
 
   const openLightbox = useCallback((index: number) => {
     setLightboxIndex(index);

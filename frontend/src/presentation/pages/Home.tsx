@@ -11,7 +11,7 @@ import ImageLightbox from '../components/ImageLightbox';
 import AnimatedPrice from '../components/AnimatedPrice';
 import EmptyState from '../components/EmptyState';
 import { HeroSkeleton, CardSkeleton, NewsCardSkeleton } from '../components/Skeleton';
-import { getYouTubeEmbedUrl, getFacebookEmbedUrl, getTikTokEmbedUrl, getEmbedType } from '../utils/video';
+import { getYouTubeEmbedUrl, getFacebookEmbedUrl, getTikTokEmbedUrl, getInstagramEmbedUrl, getEmbedType } from '../utils/video';
 import { useTranslation } from 'react-i18next';
 import i18n from '../../i18n';
 
@@ -166,7 +166,7 @@ export default function Home() {
     /\.(mp4|webm|ogg|mov|avi|mkv)(\?|$)/i.test(url) || /\/video\/upload\//i.test(url);
 
   const isEmbedVideo = (entry: { url: string; type?: string }) =>
-    !!getEmbedType(entry.url) || entry.type === 'youtube' || entry.type === 'facebook' || entry.type === 'tiktok';
+    !!getEmbedType(entry.url) || entry.type === 'youtube' || entry.type === 'facebook' || entry.type === 'tiktok' || entry.type === 'instagram';
 
   const isDirectVideo = (entry: { url: string; type?: string }) =>
     entry.type === 'video' || (isDirectVideoUrl(entry.url) && !getEmbedType(entry.url));
@@ -177,7 +177,7 @@ export default function Home() {
   const isYouTubeUrl = (url: string) => /youtube\.com|youtu\.be/i.test(url);
 
   const embedSrc = (url: string) =>
-    getYouTubeEmbedUrl(url) || getFacebookEmbedUrl(url) || getTikTokEmbedUrl(url) || url;
+    getYouTubeEmbedUrl(url) || getFacebookEmbedUrl(url) || getTikTokEmbedUrl(url) || getInstagramEmbedUrl(url) || url;
   const heroImages: string[] = gallery.map((g) => g.url).slice(0, 5);
   const heroBg = heroImages.length > 0 ? heroImages : [org?.coverImage || 'https://images.unsplash.com/photo-1504457047772-27faf9c0f3e9?w=1920&h=1080&fit=crop'];
   const reviews: { name: string; text: string; rating: number; role?: string }[] = (org?.pageContent?.reviews || []).filter((r) => r.approved);
