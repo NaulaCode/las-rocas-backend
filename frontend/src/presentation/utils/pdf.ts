@@ -579,7 +579,7 @@ export function generateFullReport(
       { label: 'Total', value: String(totalRev), color: C.primary },
       { label: 'Aprobadas', value: String(approvedRev), color: C.success },
       { label: 'Pendientes', value: String(totalRev - approvedRev), color: C.warning },
-      { label: 'Promedio', value: `${avgRating}★`, color: C.accent },
+      { label: 'Promedio', value: `${avgRating}/5`, color: C.accent },
     ]);
 
     if (approvedList.length > 0) {
@@ -594,7 +594,7 @@ export function generateFullReport(
         cols: [
           r.name || '-',
           r.serviceName || '-',
-          `${r.rating}★`,
+          `${r.rating}/5`,
           r.text || '-',
           r.date ? new Date(r.date).toLocaleDateString('es-EC') : '-',
         ],
