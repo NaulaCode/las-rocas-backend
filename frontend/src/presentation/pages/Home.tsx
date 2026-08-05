@@ -129,7 +129,7 @@ function SectionDivider() {
 function formatDate(dateStr: string | undefined) {
   if (!dateStr) return '';
   return new Date(dateStr).toLocaleDateString(i18n.language === 'en' ? 'en-US' : 'es-EC', {
-    day: 'numeric', month: 'long', year: 'numeric',
+    day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC',
   });
 }
 

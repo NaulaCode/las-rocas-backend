@@ -279,7 +279,7 @@ export function exportNewsPDF(news: News[]) {
   ];
 
   const rows = news.map((n) => ({
-    cols: [n.title.length > 50 ? n.title.slice(0, 48) + '...' : n.title, n.type, n.eventDate ? new Date(n.eventDate).toLocaleDateString('es-EC') : '-', n.location || '-', n.isPublished ? 'Publicado' : 'Borrador'],
+    cols: [n.title.length > 50 ? n.title.slice(0, 48) + '...' : n.title, n.type, n.eventDate ? new Date(n.eventDate).toLocaleDateString('es-EC', { timeZone: 'UTC' }) : '-', n.location || '-', n.isPublished ? 'Publicado' : 'Borrador'],
     color: n.isPublished ? C.success : C.warning,
   }));
 
