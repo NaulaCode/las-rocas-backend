@@ -9,6 +9,26 @@ import SEO from '../../SEO';
 import { detectMediaType, getEmbedUrl } from '../../../utils/video';
 import PasswordStrength, { validatePassword } from '../../PasswordStrength';
 
+function TikTokThumb({ url }: { url: string }) {
+  const [thumb, setThumb] = useState<string | null>(null);
+  useEffect(() => {
+    let active = true;
+    fetch(`https://www.tiktok.com/oembed?url=${encodeURIComponent(url)}`)
+      .then((r) => r.json())
+      .then((data: any) => { if (active && data?.thumbnail_url) setThumb(data.thumbnail_url); })
+      .catch(() => {});
+    return () => { active = false; };
+  }, [url]);
+  if (thumb) {
+    return <img src={thumb} alt="Vista previa TikTok" className="w-full h-24 object-cover rounded-lg mb-2" loading="lazy" />;
+  }
+  return (
+    <div className="w-full h-24 bg-gray-900 rounded-lg flex items-center justify-center mb-2">
+      <svg className="w-8 h-8 text-white/60" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+    </div>
+  );
+}
+
 function Field({ label, value, onChange, type = 'text', placeholder }: { label: string; value: string; onChange: (v: string) => void; type?: string; placeholder?: string }) {
   return (
     <div>
@@ -365,7 +385,9 @@ export default function PagesTab({ org, orgForm, setOrgForm, pageContent, setPag
           {gallery.map((item: any, i: number) => (
             <div key={i} className="border border-gray-200 rounded-lg p-3">
               {item.url ? (
-                getEmbedUrl(item.url) ? (
+                item.type === 'tiktok' || /tiktok\.com/.test(item.url) ? (
+                  <TikTokThumb url={item.url} />
+                ) : getEmbedUrl(item.url) ? (
                   <iframe
                     src={getEmbedUrl(item.url) || ''}
                     title={item.caption || 'Vista previa'}
