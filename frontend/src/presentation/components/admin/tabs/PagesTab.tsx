@@ -6,7 +6,7 @@ import { Role } from '../../../../domain/entities/Role';
 import ImageUpload from '../ImageUpload';
 import { container } from '../../../../di/container';
 import SEO from '../../SEO';
-import { detectMediaType } from '../../../utils/video';
+import { detectMediaType, getEmbedUrl } from '../../../utils/video';
 import PasswordStrength, { validatePassword } from '../../PasswordStrength';
 
 function Field({ label, value, onChange, type = 'text', placeholder }: { label: string; value: string; onChange: (v: string) => void; type?: string; placeholder?: string }) {
@@ -365,10 +365,16 @@ export default function PagesTab({ org, orgForm, setOrgForm, pageContent, setPag
           {gallery.map((item: any, i: number) => (
             <div key={i} className="border border-gray-200 rounded-lg p-3">
               {item.url ? (
-                item.type === 'video' || item.type === 'facebook' || item.type === 'tiktok' || item.type === 'youtube' ? (
-                  <div className="w-full h-24 bg-gray-900 rounded-lg flex items-center justify-center mb-2">
-                    <svg className="w-8 h-8 text-white/60" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
-                  </div>
+                getEmbedUrl(item.url) ? (
+                  <iframe
+                    src={getEmbedUrl(item.url) || ''}
+                    title={item.caption || 'Vista previa'}
+                    className="w-full h-24 rounded-lg mb-2 bg-black"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                ) : item.type === 'video' ? (
+                  <video src={item.url} className="w-full h-24 object-contain bg-black rounded-lg mb-2" muted controls playsInline />
                 ) : (
                   <img src={item.url} alt={item.caption || ''} className="w-full h-24 object-cover rounded-lg mb-2" loading="lazy" />
                 )
