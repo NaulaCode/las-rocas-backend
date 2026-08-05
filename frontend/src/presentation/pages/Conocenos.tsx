@@ -560,8 +560,8 @@ export default function Conocenos() {
                 </h4>
                 <div className="flex flex-col sm:flex-row items-center gap-6">
                   <div className="bg-white rounded-xl p-2 border border-gray-200 shadow-sm">
-                    <img src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent('https://www.google.com/maps?q=-2.760096,-79.626700')}`}
-                      alt="QR Google Maps" className="w-32 h-32" loading="lazy"
+                    <img src={`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent('https://www.google.com/maps?q=-2.760096,-79.626700')}`}
+                      alt="QR Google Maps" className="w-48 h-48" loading="lazy"
                       onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                   </div>
                   <div className="text-sm text-gray-500 leading-relaxed">
