@@ -522,10 +522,10 @@ export default function Conocenos() {
           <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-8 md:gap-12 items-start">
             <motion.div initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
               <div className="rounded-2xl overflow-hidden shadow-xl border border-gray-100 bg-gray-100">
-                <img src="https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?w=800&h=600&fit=crop" alt="Relieve del Cantón Naranjal"
+                <img src={org?.pageContent?.conocenos?.ubicacionImage || 'https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?w=800&h=600&fit=crop'} alt="Relieve del Cantón Naranjal"
                   className="w-full h-72 md:h-96 object-cover" loading="lazy" />
                 <div className="p-4 bg-white">
-                  <p className="text-xs text-gray-400 text-center">Relieve del Cantón Naranjal — Provincia del Guayas, Ecuador</p>
+                  <p className="text-xs text-gray-400 text-center">{org?.pageContent?.conocenos?.ubicacionCaption || 'Relieve del Cantón Naranjal — Provincia del Guayas, Ecuador'}</p>
                 </div>
               </div>
             </motion.div>

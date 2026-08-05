@@ -320,6 +320,15 @@ export default function PagesTab({ org, orgForm, setOrgForm, pageContent, setPag
         </div>
 
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+          <h3 className="text-sm font-semibold text-gray-700 mb-4">Ubicación / Relieve</h3>
+          <p className="text-xs text-gray-400 mb-3">Imagen y leyenda que se muestran en la sección de ubicación de la página Conócenos</p>
+          <Field label="Leyenda" value={conocenos.ubicacionCaption || ''} onChange={(v) => setConocenos('ubicacionCaption', v)} placeholder="Ej: Relieve del Cantón Naranjal — Provincia del Guayas, Ecuador" />
+          <div className="mt-4">
+            <ImageUpload value={conocenos.ubicacionImage || ''} onChange={(v) => setConocenos('ubicacionImage', v)} />
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
           <h3 className="text-sm font-semibold text-gray-700 mb-4">Invitación Final</h3>
           <Field label="Título" value={conocenos.invitationTitle || ''} onChange={(v) => setConocenos('invitationTitle', v)} />
           <div className="mt-4">
