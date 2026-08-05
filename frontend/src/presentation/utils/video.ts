@@ -65,3 +65,13 @@ export interface GalleryItem {
   caption?: string;
   type?: 'image' | 'video' | 'youtube' | 'facebook' | 'tiktok' | 'instagram';
 }
+
+export type GalleryCategory = 'image' | 'video' | 'social';
+
+export function classifyGalleryItem(item: { url: string; type?: string }): GalleryCategory {
+  const type = (item.type || '').toLowerCase();
+  if (type === 'youtube' || type === 'facebook' || type === 'tiktok' || type === 'instagram') return 'social';
+  if (getEmbedUrl(item.url)) return 'social';
+  if (type === 'video' || /\.(mp4|webm|ogg|mov|avi|mkv)(\?|$)/i.test(item.url) || /\/video\/upload\//i.test(item.url)) return 'video';
+  return 'image';
+}

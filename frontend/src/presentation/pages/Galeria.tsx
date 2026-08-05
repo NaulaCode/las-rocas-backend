@@ -8,7 +8,7 @@ import SafeImage from '../components/SafeImage';
 import ImageLightbox from '../components/ImageLightbox';
 import { Organization } from '../../domain/entities/Organization';
 import EmptyState from '../components/EmptyState';
-import { getYouTubeEmbedUrl, getFacebookEmbedUrl, getTikTokEmbedUrl, getInstagramEmbedUrl, getEmbedType } from '../utils/video';
+import { getYouTubeEmbedUrl, getFacebookEmbedUrl, getTikTokEmbedUrl, getInstagramEmbedUrl, getEmbedType, classifyGalleryItem } from '../utils/video';
 
 const galleryContainer = {
   hidden: { opacity: 0 },
@@ -26,8 +26,18 @@ export default function Galeria() {
   const [loading, setLoading] = useState(true);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
+  const [filter, setFilter] = useState<'all' | 'image' | 'video' | 'social'>('all');
 
   const gallery: { url: string; caption?: string; type?: string }[] = org?.pageContent?.gallery || [];
+
+  const filteredGallery = gallery.filter((g) => filter === 'all' || classifyGalleryItem(g) === filter);
+
+  const galleryFilters: { key: 'all' | 'image' | 'video' | 'social'; label: string }[] = [
+    { key: 'all', label: t('galeria.todo') },
+    { key: 'image', label: t('galeria.imagenes') },
+    { key: 'video', label: t('galeria.videos') },
+    { key: 'social', label: t('galeria.redes') },
+  ];
 
   const isDirectVideoUrl = (url: string) =>
     /\.(mp4|webm|ogg|mov|avi|mkv)(\?|$)/i.test(url) || /\/video\/upload\//i.test(url);
@@ -124,14 +134,28 @@ export default function Galeria() {
       </div>
 
       <div className="container mx-auto px-4 -mt-6 relative z-20 pb-16">
-        {gallery.length > 0 ? (
+        <div className="flex flex-wrap items-center justify-center gap-2 mb-8">
+          {galleryFilters.map((f) => {
+            const count = f.key === 'all' ? gallery.length : gallery.filter((g) => classifyGalleryItem(g) === f.key).length;
+            const active = filter === f.key;
+            return (
+              <button key={f.key} onClick={() => setFilter(f.key)}
+                className={`px-5 py-2 rounded-full text-sm font-semibold transition-all ${
+                  active ? 'bg-primary-600 text-white shadow-md shadow-primary-500/20' : 'bg-white text-gray-600 border border-gray-200 hover:border-primary-300 hover:text-primary-600'
+                }`}>
+                {f.label} <span className={`ml-1 text-xs ${active ? 'text-primary-100' : 'text-gray-400'}`}>({count})</span>
+              </button>
+            );
+          })}
+        </div>
+        {filteredGallery.length > 0 ? (
           <motion.div
             variants={galleryContainer}
             initial="hidden"
             animate="visible"
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 auto-rows-max"
           >
-            {gallery.map((entry, i) => (
+            {filteredGallery.map((entry, i) => (
               <motion.div
                 key={i}
                 variants={item}
@@ -208,7 +232,7 @@ export default function Galeria() {
             ))}
           </motion.div>
         ) : (
-          <EmptyState variant="gallery" title={t('galeria.sinImagenes')} description={t('galeria.sinImagenesDesc')} />
+          <EmptyState variant="gallery" title={filter === 'all' ? t('galeria.sinImagenes') : t('galeria.sinEnCategoria')} description={t('galeria.sinImagenesDesc')} />
         )}
       </div>
 
@@ -243,11 +267,11 @@ export default function Galeria() {
 
       {lightboxOpen && (
         <ImageLightbox
-          images={gallery}
+          images={filteredGallery}
           index={lightboxIndex}
           onClose={() => setLightboxOpen(false)}
-          onPrev={() => setLightboxIndex((prev) => (prev - 1 + gallery.length) % gallery.length)}
-          onNext={() => setLightboxIndex((prev) => (prev + 1) % gallery.length)}
+          onPrev={() => setLightboxIndex((prev) => (prev - 1 + filteredGallery.length) % filteredGallery.length)}
+          onNext={() => setLightboxIndex((prev) => (prev + 1) % filteredGallery.length)}
         />
       )}
     </div>

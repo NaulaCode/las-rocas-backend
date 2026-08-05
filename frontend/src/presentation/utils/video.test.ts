@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getYouTubeEmbedUrl, getInstagramEmbedUrl, getEmbedType, isVideoUrl } from './video';
+import { getYouTubeEmbedUrl, getInstagramEmbedUrl, getEmbedType, isVideoUrl, classifyGalleryItem } from './video';
 
 describe('getYouTubeEmbedUrl', () => {
   it('extracts ID from youtube.com/watch', () => {
@@ -41,6 +41,28 @@ describe('getInstagramEmbedUrl', () => {
 describe('getEmbedType', () => {
   it('detects Instagram URL', () => {
     expect(getEmbedType('https://www.instagram.com/p/AbCdEf1234/')).toBe('instagram');
+  });
+});
+
+describe('classifyGalleryItem', () => {
+  it('classifies image item', () => {
+    expect(classifyGalleryItem({ url: 'https://example.com/photo.jpg', type: 'image' })).toBe('image');
+  });
+
+  it('classifies direct video item', () => {
+    expect(classifyGalleryItem({ url: 'https://example.com/video.mp4', type: 'video' })).toBe('video');
+  });
+
+  it('classifies Instagram post as social', () => {
+    expect(classifyGalleryItem({ url: 'https://www.instagram.com/p/AbCdEf1234/' })).toBe('social');
+  });
+
+  it('classifies TikTok as social', () => {
+    expect(classifyGalleryItem({ url: 'https://www.tiktok.com/@user/video/1234567890', type: 'tiktok' })).toBe('social');
+  });
+
+  it('classifies YouTube embed as social', () => {
+    expect(classifyGalleryItem({ url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' })).toBe('social');
   });
 });
 

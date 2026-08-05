@@ -6,7 +6,7 @@ import { Role } from '../../../../domain/entities/Role';
 import ImageUpload from '../ImageUpload';
 import { container } from '../../../../di/container';
 import SEO from '../../SEO';
-import { detectMediaType, getEmbedUrl } from '../../../utils/video';
+import { detectMediaType, getEmbedUrl, classifyGalleryItem } from '../../../utils/video';
 import PasswordStrength, { validatePassword } from '../../PasswordStrength';
 
 function TikTokThumb({ url }: { url: string }) {
@@ -83,6 +83,7 @@ export default function PagesTab({ org, orgForm, setOrgForm, pageContent, setPag
   const [changePassword, setChangePassword] = useState(false);
   const [roles, setRoles] = useState<Role[]>([]);
   const [newRoleId, setNewRoleId] = useState('');
+  const [galleryFilter, setGalleryFilter] = useState<'all' | 'image' | 'video' | 'social'>('all');
 
   useEffect(() => {
     container.roles.getAll().then(setRoles).catch(() => {});
@@ -374,15 +375,41 @@ export default function PagesTab({ org, orgForm, setOrgForm, pageContent, setPag
 
   const renderGaleriaTab = () => {
     const gallery = pageContent.gallery || [];
+    const galleryFilters: { key: 'all' | 'image' | 'video' | 'social'; label: string }[] = [
+      { key: 'all', label: 'Todos' },
+      { key: 'image', label: 'Imágenes' },
+      { key: 'video', label: 'Videos' },
+      { key: 'social', label: 'Redes' },
+    ];
+    const filtered = gallery.filter((it: any) => galleryFilter === 'all' || classifyGalleryItem({ url: it.url || '', type: it.type }) === galleryFilter);
+    const defaultType = galleryFilter === 'video' ? 'video' : galleryFilter === 'social' ? 'instagram' : 'image';
     return (
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-sm font-semibold text-gray-700">Galería</h3>
-          <button onClick={() => updatePC('gallery', [...gallery, { url: '', caption: '', type: 'image' }])}
+          <button onClick={() => updatePC('gallery', [...gallery, { url: '', caption: '', type: defaultType }])}
             className="text-sm text-primary-600 hover:text-primary-700 font-medium">+ Agregar</button>
         </div>
+        <div className="flex flex-wrap gap-1 mb-4">
+          {galleryFilters.map((f) => {
+            const count = f.key === 'all' ? gallery.length : gallery.filter((it: any) => classifyGalleryItem({ url: it.url || '', type: it.type }) === f.key).length;
+            return (
+              <button key={f.key} onClick={() => setGalleryFilter(f.key)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                  galleryFilter === f.key ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}>
+                {f.label} ({count})
+              </button>
+            );
+          })}
+        </div>
+        {filtered.length === 0 ? (
+          <p className="text-sm text-gray-400 py-6 text-center">No hay elementos en esta categoría</p>
+        ) : (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {gallery.map((item: any, i: number) => (
+          {filtered.map((item: any) => {
+            const i = gallery.indexOf(item);
+            return (
             <div key={i} className="border border-gray-200 rounded-lg p-3">
               {item.url ? (
                 item.type === 'tiktok' || /tiktok\.com/.test(item.url) ? (
@@ -422,8 +449,10 @@ export default function PagesTab({ org, orgForm, setOrgForm, pageContent, setPag
               <button onClick={() => { const ng = gallery.filter((_: any, j: number) => j !== i); updatePC('gallery', ng); }}
                 className="text-xs text-red-500 hover:text-red-700 font-medium">Eliminar</button>
             </div>
-          ))}
+            );
+          })}
         </div>
+        )}
       </div>
     );
   };
