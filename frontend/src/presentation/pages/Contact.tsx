@@ -551,8 +551,8 @@ export default function Contact() {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                           </svg>
                         } />
-                        <input type="tel" required value={form.userPhone}
-                          onChange={(e) => { setForm({ ...form, userPhone: e.target.value }); if (fieldErrors.phone) setFieldErrors({ ...fieldErrors, phone: undefined }); }}
+                        <input type="tel" inputMode="numeric" maxLength={15} required value={form.userPhone}
+                          onChange={(e) => { const v = e.target.value.replace(/[^\d]/g, ''); setForm({ ...form, userPhone: v }); setFieldErrors((prev) => ({ ...prev, phone: v && !isValidPhone(v) ? t('errors.invalidPhone') : undefined })); }}
                           className={fieldErrors.phone ? inputClass + ' border-red-400' : inputClass} placeholder={t('contact.telefono')} />
                       </div>
                       {fieldErrors.phone && <p className="text-red-500 text-xs mt-1">{fieldErrors.phone}</p>}
@@ -568,7 +568,7 @@ export default function Contact() {
                         </svg>
                       } />
                       <input type="email" required value={form.userEmail}
-                        onChange={(e) => { setForm({ ...form, userEmail: e.target.value }); if (fieldErrors.email) setFieldErrors({ ...fieldErrors, email: undefined }); }}
+                        onChange={(e) => { const v = e.target.value; setForm({ ...form, userEmail: v }); setFieldErrors((prev) => ({ ...prev, email: v.trim() && !isValidEmail(v) ? t('errors.invalidEmail') : undefined })); }}
                         className={fieldErrors.email ? inputClass + ' border-red-400' : inputClass} placeholder={t('contact.email')} />
                     </div>
                     {fieldErrors.email && <p className="text-red-500 text-xs mt-1">{fieldErrors.email}</p>}
@@ -669,7 +669,7 @@ export default function Contact() {
                       <label className="block text-sm font-medium text-gray-700 mb-1.5">{t('contact.telefono')}</label>
                       <div className="relative">
                         <InputIcon icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>} />
-                        <input type="tel" value={contactForm.phone} onChange={(e) => { setContactForm({ ...contactForm, phone: e.target.value }); if (contactFieldErrors.phone) setContactFieldErrors({ ...contactFieldErrors, phone: undefined }); }}
+                        <input type="tel" inputMode="numeric" maxLength={15} value={contactForm.phone} onChange={(e) => { const v = e.target.value.replace(/[^\d]/g, ''); setContactForm({ ...contactForm, phone: v }); setContactFieldErrors((prev) => ({ ...prev, phone: v && !isValidPhone(v) ? t('errors.invalidPhone') : undefined })); }}
                           className={contactFieldErrors.phone ? inputClass + ' border-red-400' : inputClass} placeholder={t('contact.telefono')} />
                       </div>
                       {contactFieldErrors.phone && <p className="text-red-500 text-xs mt-1">{contactFieldErrors.phone}</p>}
@@ -679,7 +679,7 @@ export default function Contact() {
                     <label className="block text-sm font-medium text-gray-700 mb-1.5">{t('contact.email')}</label>
                     <div className="relative">
                       <InputIcon icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>} />
-                      <input type="email" required value={contactForm.email} onChange={(e) => { setContactForm({ ...contactForm, email: e.target.value }); if (contactFieldErrors.email) setContactFieldErrors({ ...contactFieldErrors, email: undefined }); }}
+                      <input type="email" required value={contactForm.email} onChange={(e) => { const v = e.target.value; setContactForm({ ...contactForm, email: v }); setContactFieldErrors((prev) => ({ ...prev, email: v.trim() && !isValidEmail(v) ? t('errors.invalidEmail') : undefined })); }}
                         className={contactFieldErrors.email ? inputClass + ' border-red-400' : inputClass} placeholder={t('contact.email')} />
                     </div>
                     {contactFieldErrors.email && <p className="text-red-500 text-xs mt-1">{contactFieldErrors.email}</p>}
