@@ -44,6 +44,12 @@ export default function Galeria() {
   const embedSrc = (url: string) =>
     getYouTubeEmbedUrl(url) || getFacebookEmbedUrl(url) || getTikTokEmbedUrl(url) || getInstagramEmbedUrl(url) || url;
 
+  const isInstagramEntry = (entry: { url: string; type?: string }) =>
+    !!getInstagramEmbedUrl(entry.url) || entry.type === 'instagram';
+
+  const embedRatio = (entry: { url: string; type?: string }) =>
+    isInstagramEntry(entry) ? '125%' : '56.25%';
+
   const openLightbox = useCallback((index: number) => {
     setLightboxIndex(index);
     setLightboxOpen(true);
@@ -135,7 +141,7 @@ export default function Galeria() {
                 <div className="relative overflow-hidden bg-gray-900">
                   {isVideo(entry) ? (
                     isEmbedVideo(entry) ? (
-                      <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+                      <div className="relative w-full" style={{ paddingBottom: embedRatio(entry) }}>
                         <iframe
                           src={embedSrc(entry.url)}
                           className="absolute inset-0 w-full h-full"
@@ -144,7 +150,7 @@ export default function Galeria() {
                         />
                       </div>
                     ) : (
-                      <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+                      <div className="relative w-full" style={{ paddingBottom: embedRatio(entry) }}>
                         <video
                           src={entry.url}
                           className="absolute inset-0 w-full h-full object-contain bg-black"

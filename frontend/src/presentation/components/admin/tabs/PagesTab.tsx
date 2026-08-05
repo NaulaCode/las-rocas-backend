@@ -391,7 +391,7 @@ export default function PagesTab({ org, orgForm, setOrgForm, pageContent, setPag
                   <iframe
                     src={getEmbedUrl(item.url) || ''}
                     title={item.caption || 'Vista previa'}
-                    className="w-full h-24 rounded-lg mb-2 bg-black"
+                    className={`w-full rounded-lg mb-2 bg-black ${item.type === 'instagram' || /instagram\.com/.test(item.url) ? 'h-52' : 'h-24'}`}
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowFullScreen
                   />

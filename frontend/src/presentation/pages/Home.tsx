@@ -178,6 +178,12 @@ export default function Home() {
 
   const embedSrc = (url: string) =>
     getYouTubeEmbedUrl(url) || getFacebookEmbedUrl(url) || getTikTokEmbedUrl(url) || getInstagramEmbedUrl(url) || url;
+
+  const isInstagramEntry = (entry: { url: string; type?: string }) =>
+    !!getInstagramEmbedUrl(entry.url) || entry.type === 'instagram';
+
+  const embedRatio = (entry: { url: string; type?: string }) =>
+    isInstagramEntry(entry) ? '125%' : '56.25%';
   const heroImages: string[] = gallery.map((g) => g.url).slice(0, 5);
   const heroBg = heroImages.length > 0 ? heroImages : [org?.coverImage || 'https://images.unsplash.com/photo-1504457047772-27faf9c0f3e9?w=1920&h=1080&fit=crop'];
   const reviews: { name: string; text: string; rating: number; role?: string }[] = (org?.pageContent?.reviews || []).filter((r) => r.approved);
@@ -893,7 +899,7 @@ export default function Home() {
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.8, ease: 'easeOut' }}
-                    className="relative aspect-[16/9] md:aspect-[21/9] overflow-hidden"
+                    className={`relative overflow-hidden ${isInstagramEntry(gallery[galleryIndex]) ? 'aspect-[4/5]' : 'aspect-[16/9] md:aspect-[21/9]'}`}
                     onClick={() => !isVideo(gallery[galleryIndex]) && openLightbox(galleryIndex)}
                   >
                     {isVideo(gallery[galleryIndex]) ? (
