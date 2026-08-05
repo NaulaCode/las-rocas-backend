@@ -93,19 +93,23 @@ export default function Galeria() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       <SEO title={t('galeria.titulo')} description={t('galeria.seoDescripcion')} />
-      <div className="relative bg-gradient-to-br from-primary-800 via-primary-700 to-accent-700 py-16 md:py-20 overflow-hidden">
+      <section className="relative min-h-[50vh] flex items-center justify-center overflow-hidden">
+        <div className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: `url(${org?.pageContent?.galeria?.coverImage || org?.coverImage || 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=1920&h=1080&fit=crop'})` }}>
+          <div className="absolute inset-0 bg-gradient-to-b from-primary-900/80 via-primary-800/70 to-primary-900/90" />
+        </div>
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute -top-20 left-1/3 w-80 h-80 bg-white/5 rounded-full blur-3xl" />
           <div className="absolute -bottom-20 right-1/4 w-96 h-96 bg-accent-500/10 rounded-full blur-3xl" />
           <motion.div className="absolute top-10 left-20 w-20 h-20 border border-white/10 rounded-full" animate={{ y: [-10, 10, -10] }} transition={{ duration: 7, repeat: Infinity }} />
           <motion.div className="absolute bottom-10 right-32 w-32 h-32 border border-white/5 rounded-full" animate={{ y: [10, -10, 10] }} transition={{ duration: 9, repeat: Infinity }} />
         </div>
-        <div className="container mx-auto px-4 text-center relative z-10">
+        <div className="relative z-10 text-center text-white px-4 max-w-4xl mx-auto">
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="text-4xl md:text-5xl font-bold text-white mb-4"
+            className="text-4xl md:text-5xl font-bold mb-4"
           >
             {org?.pageContent?.galeria?.heroTitle || org?.pageContent?.galeria?.title || t('galeria.titulo')}
           </motion.h1>
@@ -131,7 +135,8 @@ export default function Galeria() {
             </button>
           </motion.div>
         </div>
-      </div>
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-gray-50 to-transparent" />
+      </section>
 
       <div className="container mx-auto px-4 -mt-6 relative z-20 pb-16">
         <div className="flex flex-wrap items-center justify-center gap-2 mb-8">

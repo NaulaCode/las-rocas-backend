@@ -375,6 +375,8 @@ export default function PagesTab({ org, orgForm, setOrgForm, pageContent, setPag
 
   const renderGaleriaTab = () => {
     const gallery = pageContent.gallery || [];
+    const galeriaContent = pageContent.galeria || {};
+    const setGaleriaContent = (key: string, value: any) => updatePC('galeria', { ...galeriaContent, [key]: value });
     const galleryFilters: { key: 'all' | 'image' | 'video' | 'social'; label: string }[] = [
       { key: 'all', label: 'Todos' },
       { key: 'image', label: 'Imágenes' },
@@ -384,7 +386,20 @@ export default function PagesTab({ org, orgForm, setOrgForm, pageContent, setPag
     const filtered = gallery.filter((it: any) => galleryFilter === 'all' || classifyGalleryItem({ url: it.url || '', type: it.type }) === galleryFilter);
     const defaultType = galleryFilter === 'video' ? 'video' : galleryFilter === 'social' ? 'instagram' : 'image';
     return (
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+      <div className="space-y-4">
+        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+          <h3 className="text-sm font-semibold text-gray-700 mb-4">Hero de Galería</h3>
+          <div className="grid grid-cols-1 gap-4">
+            <Field label="Título del Hero" value={galeriaContent.heroTitle || galeriaContent.title || ''} onChange={(v) => { setGaleriaContent('heroTitle', v); setGaleriaContent('title', v); }} />
+            <Field label="Subtítulo del Hero" value={galeriaContent.heroSubtitle || galeriaContent.subtitle || ''} onChange={(v) => { setGaleriaContent('heroSubtitle', v); setGaleriaContent('subtitle', v); }} type="textarea" />
+          </div>
+        </div>
+        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+          <h3 className="text-sm font-semibold text-gray-700 mb-4">Imagen de Portada</h3>
+          <p className="text-xs text-gray-400 mb-3">Imagen de fondo del encabezado de la página de galería</p>
+          <ImageUpload value={galeriaContent.coverImage || ''} onChange={(v) => setGaleriaContent('coverImage', v)} />
+        </div>
+        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-sm font-semibold text-gray-700">Galería</h3>
           <button onClick={() => updatePC('gallery', [...gallery, { url: '', caption: '', type: defaultType }])}
@@ -453,6 +468,7 @@ export default function PagesTab({ org, orgForm, setOrgForm, pageContent, setPag
           })}
         </div>
         )}
+        </div>
       </div>
     );
   };
