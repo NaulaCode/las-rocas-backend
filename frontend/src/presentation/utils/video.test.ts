@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getYouTubeEmbedUrl, getInstagramEmbedUrl, getEmbedType, isVideoUrl, classifyGalleryItem } from './video';
+import { getYouTubeEmbedUrl, getInstagramEmbedUrl, getFacebookEmbedUrl, getEmbedType, isVideoUrl, classifyGalleryItem } from './video';
 
 describe('getYouTubeEmbedUrl', () => {
   it('extracts ID from youtube.com/watch', () => {
@@ -40,6 +40,22 @@ describe('getInstagramEmbedUrl', () => {
 
   it('returns null for non-Instagram URL', () => {
     expect(getInstagramEmbedUrl('https://example.com/photo.jpg')).toBeNull();
+  });
+});
+
+describe('getFacebookEmbedUrl', () => {
+  it('builds a post embed for a facebook share/post URL', () => {
+    expect(getFacebookEmbedUrl('https://www.facebook.com/share/p/19JxLnJNpm/?mibextid=wwXIfr'))
+      .toBe('https://www.facebook.com/plugins/post.php?href=https%3A%2F%2Fwww.facebook.com%2Fshare%2Fp%2F19JxLnJNpm%2F%3Fmibextid%3DwwXIfr&show_text=false&width=500');
+  });
+
+  it('builds a video embed for a facebook video/reel URL', () => {
+    expect(getFacebookEmbedUrl('https://www.facebook.com/reel/123456'))
+      .toContain('plugins/video.php');
+  });
+
+  it('returns null for a non-Facebook URL', () => {
+    expect(getFacebookEmbedUrl('https://example.com/photo.jpg')).toBeNull();
   });
 });
 

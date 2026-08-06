@@ -11,10 +11,11 @@ export function getYouTubeEmbedUrl(url: string): string | null {
 }
 
 export function getFacebookEmbedUrl(url: string): string | null {
+  if (!/facebook\.com|fb\.watch/i.test(url)) return null;
   if (/facebook\.com\/.*(?:video|watch|reel)/i.test(url) || /fb\.watch\//i.test(url)) {
     return `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(url)}&show_text=false&width=734`;
   }
-  return null;
+  return `https://www.facebook.com/plugins/post.php?href=${encodeURIComponent(url)}&show_text=false&width=500`;
 }
 
 export function getTikTokEmbedUrl(url: string): string | null {

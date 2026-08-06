@@ -10,6 +10,7 @@ import SafeImage from '../components/SafeImage';
 import ImageLightbox from '../components/ImageLightbox';
 import AnimatedPrice from '../components/AnimatedPrice';
 import EmptyState from '../components/EmptyState';
+import FacebookEmbed from '../components/FacebookEmbed';
 import { HeroSkeleton, CardSkeleton, NewsCardSkeleton } from '../components/Skeleton';
 import { getYouTubeEmbedUrl, getFacebookEmbedUrl, getTikTokEmbedUrl, getInstagramEmbedUrl, getEmbedType } from '../utils/video';
 import { useTranslation } from 'react-i18next';
@@ -181,6 +182,9 @@ export default function Home() {
 
   const isInstagramEntry = (entry: { url: string; type?: string }) =>
     !!getInstagramEmbedUrl(entry.url) || entry.type === 'instagram';
+
+  const isFacebookEntry = (entry: { url: string; type?: string }) =>
+    entry.type === 'facebook' || /facebook\.com|fb\.watch/i.test(entry.url);
 
   const embedRatio = (entry: { url: string; type?: string }) =>
     isInstagramEntry(entry) ? '125%' : '56.25%';
@@ -904,12 +908,18 @@ export default function Home() {
                   >
                     {isVideo(gallery[galleryIndex]) ? (
                       isEmbedVideo(gallery[galleryIndex]) ? (
+                        isFacebookEntry(gallery[galleryIndex]) ? (
+                          <div className="absolute inset-0 overflow-hidden">
+                            <FacebookEmbed url={gallery[galleryIndex].url} />
+                          </div>
+                        ) : (
                         <iframe
                           src={embedSrc(gallery[galleryIndex].url)}
                           className="absolute inset-0 w-full h-full"
                           allowFullScreen
                           title={gallery[galleryIndex].caption || ''}
                         />
+                        )
                       ) : (
                           <video
                             src={gallery[galleryIndex].url}
