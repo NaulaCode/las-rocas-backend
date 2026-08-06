@@ -57,6 +57,13 @@ describe('getFacebookEmbedUrl', () => {
   it('returns null for a non-Facebook URL', () => {
     expect(getFacebookEmbedUrl('https://example.com/photo.jpg')).toBeNull();
   });
+
+  it('builds an embed for the canonical permalink URL used in the database', () => {
+    const url = 'https://www.facebook.com/permalink.php?story_fbid=pfbid0FhYWoY3Pq5EbgDdjA8f462a87uLPqpNrDBcBZ3maQ6PDDdFupU3tqkg1FGBGthVHl&id=61593021833672';
+    expect(getFacebookEmbedUrl(url)).toContain('plugins/post.php');
+    expect(getEmbedType(url)).toBe('facebook');
+    expect(classifyGalleryItem({ url, type: 'facebook' })).toBe('social');
+  });
 });
 
 describe('getEmbedType', () => {
