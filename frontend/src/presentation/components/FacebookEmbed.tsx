@@ -21,6 +21,19 @@ function loadFbSdk() {
   document.head.appendChild(s);
 }
 
+function resetFbSdk() {
+  sdkStatus = 'idle';
+  const tag = document.getElementById('facebook-jssdk');
+  if (tag) tag.remove();
+  try {
+    const w = window as unknown as Record<string, unknown>;
+    delete w.FB;
+    delete w.FBAsyncInit;
+  } catch {
+    // ignore
+  }
+}
+
 function parseFb(el: HTMLElement | undefined) {
   const w = window as unknown as { FB?: { XFBML?: { parse: (el?: HTMLElement) => void } } };
   if (!w.FB?.XFBML?.parse) return;
@@ -34,9 +47,19 @@ function parseFb(el: HTMLElement | undefined) {
 export default function FacebookEmbed({ url }: { url: string }) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
+    resetFbSdk();
     loadFbSdk();
-    const id = window.setTimeout(() => parseFb(ref.current ?? undefined), 300);
-    return () => window.clearTimeout(id);
+    const id = window.setInterval(() => {
+      const w = window as unknown as { FB?: { XFBML?: { parse: (el?: HTMLElement) => void } } };
+      if (w.FB?.XFBML) {
+        window.clearInterval(id);
+        parseFb(ref.current ?? undefined);
+      }
+    }, 300);
+    return () => {
+      window.clearInterval(id);
+      resetFbSdk();
+    };
   }, [url]);
   return (
     <div
