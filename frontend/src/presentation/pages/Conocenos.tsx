@@ -6,6 +6,7 @@ import { container } from '../../di/container';
 import SEO from '../components/SEO';
 import { PageSkeleton } from '../components/Skeleton';
 import { Organization } from '../../domain/entities/Organization';
+import { getYouTubeEmbedUrl } from '../utils/video';
 
 const pageAnim = {
   hidden: { opacity: 0 },
@@ -175,6 +176,12 @@ export default function Conocenos() {
   }));
 
   const values = org?.pageContent?.conocenos?.values || valueData;
+
+  const conocenosVideoUrl = (org?.pageContent?.conocenos?.videoUrl as string) || '';
+  const conocenosVideoTitle = (org?.pageContent?.conocenos?.videoTitle as string) || '';
+  const conocenosYouTubeEmbed = conocenosVideoUrl ? getYouTubeEmbedUrl(conocenosVideoUrl) : null;
+  const conocenosIsDirectVideo = !!conocenosVideoUrl && !conocenosYouTubeEmbed && (/\.(mp4|webm|ogg|mov|avi|mkv)(\?|$)/i.test(conocenosVideoUrl) || /\/video\/upload\//i.test(conocenosVideoUrl));
+  const showConocenosVideo = !!conocenosYouTubeEmbed || conocenosIsDirectVideo;
   const historyParagraphs = (org?.history || 'La Asociación Turística Las Rocas fue fundada en el año 2013 por diez socios de la comuna San Miguel, ubicada en el cantón Naranjal, provincia del Guayas. Su creación surgió como respuesta a las dificultades económicas que enfrentaba la comunidad debido a la disminución del apoyo de entidades gubernamentales. Frente a esta realidad, los socios fundadores decidieron convertir la adversidad en una oportunidad de crecimiento. Al reconocer el potencial de las aguas termales como un recurso natural único, impulsaron un proyecto de turismo comunitario que permitiera generar empleo, fortalecer la economía local y promover el desarrollo sostenible. Con esfuerzo, compromiso y trabajo en equipo, la asociación fue consolidando un complejo turístico que hoy recibe visitantes de diferentes lugares del país. Actualmente, sus principales ingresos provienen de la venta de entradas a las piscinas de aguas termales y de los productos y servicios ofrecidos en el bar del complejo, recursos que contribuyen al mantenimiento de las instalaciones y al fortalecimiento continuo de la asociación. Más allá de la actividad turística, la Asociación Turística Las Rocas mantiene un firme compromiso con la conservación del entorno natural, la atención de calidad a sus visitantes y el bienestar de la comunidad que la vio nacer.')
     .split('. ')
     .filter(Boolean);
@@ -278,6 +285,34 @@ export default function Conocenos() {
           </motion.div>
         </div>
       </section>
+
+      {/* ─── VIDEO ─── */}
+      {showConocenosVideo && (
+        <section id="video" className="py-28 bg-gradient-to-br from-primary-50/60 via-white to-accent-50/40 relative overflow-hidden">
+          <div className="absolute bottom-0 left-0 w-80 h-80 bg-accent-50 rounded-full blur-3xl translate-y-1/2 -translate-x-1/4 pointer-events-none" />
+          <div className="container mx-auto px-4 relative z-10">
+            <motion.div variants={pageAnim} initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-80px' }} className="max-w-5xl mx-auto">
+              <motion.div variants={item} className="text-center mb-14">
+                <span className="text-sm font-bold text-accent-500 uppercase tracking-[0.2em]">Video</span>
+                <h2 className="text-4xl md:text-5xl font-bold mt-2">
+                  <span className="gradient-text">{conocenosVideoTitle || t('conocenos.videoTitulo')}</span>
+                </h2>
+                <SectionDivider />
+              </motion.div>
+
+              <motion.div variants={item}>
+                <div className="relative aspect-video w-full rounded-3xl overflow-hidden shadow-2xl border border-gray-100">
+                  {conocenosYouTubeEmbed ? (
+                    <iframe src={conocenosYouTubeEmbed} className="absolute inset-0 w-full h-full" title={conocenosVideoTitle || 'Video'} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
+                  ) : (
+                    <video src={conocenosVideoUrl} className="absolute inset-0 w-full h-full object-contain bg-black" controls playsInline />
+                  )}
+                </div>
+              </motion.div>
+            </motion.div>
+          </div>
+        </section>
+      )}
 
       {/* ─── MISIÓN + VISIÓN ─── */}
       <section className="py-24 bg-gradient-to-br from-gray-50 via-white to-gray-50 relative overflow-hidden">

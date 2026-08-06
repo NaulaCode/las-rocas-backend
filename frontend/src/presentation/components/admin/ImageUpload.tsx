@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { useToast } from '../Toast';
 import { container } from '../../../di/container';
+import { getYouTubeEmbedUrl } from '../../utils/video';
 
 const isVideoUrl = (url: string) =>
   /\.(mp4|webm|ogg|mov|avi|mkv)(\?|$)/i.test(url) || /\/video\/upload\//i.test(url) || url.includes('blob:');
@@ -26,6 +27,7 @@ export default function ImageUpload({ value, onChange, previewClass }: { value: 
   };
 
   const isVideo = value && isVideoUrl(value);
+  const youtubeEmbed = value ? getYouTubeEmbedUrl(value) : null;
 
   return (
     <div className="space-y-2">
@@ -47,7 +49,9 @@ export default function ImageUpload({ value, onChange, previewClass }: { value: 
         placeholder="O pega una URL..."
       />
       {value && (
-        isVideo ? (
+        youtubeEmbed ? (
+          <iframe src={youtubeEmbed} className={previewClass || "w-56 h-32 rounded border"} allowFullScreen title="Preview" />
+        ) : isVideo ? (
           <video src={value} className={previewClass || "w-32 h-20 object-cover rounded border"} controls />
         ) : (
           <img src={value} alt="Preview" className={previewClass || "w-32 h-20 object-cover rounded border"} loading="lazy" />

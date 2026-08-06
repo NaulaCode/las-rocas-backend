@@ -329,6 +329,15 @@ export default function PagesTab({ org, orgForm, setOrgForm, pageContent, setPag
         </div>
 
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+          <h3 className="text-sm font-semibold text-gray-700 mb-4">Video de Conócenos</h3>
+          <p className="text-xs text-gray-400 mb-3">Sube un video desde tu laptop o pega un enlace de YouTube. Se mostrará en la página Conócenos.</p>
+          <Field label="Título del video" value={conocenos.videoTitle || ''} onChange={(v) => setConocenos('videoTitle', v)} placeholder="Ej: Conoce Las Rocas en un minuto" />
+          <div className="mt-4">
+            <ImageUpload value={conocenos.videoUrl || ''} onChange={(v) => setConocenos('videoUrl', v)} previewClass="w-full aspect-video object-contain rounded border" />
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
           <h3 className="text-sm font-semibold text-gray-700 mb-4">Invitación Final</h3>
           <Field label="Título" value={conocenos.invitationTitle || ''} onChange={(v) => setConocenos('invitationTitle', v)} />
           <div className="mt-4">
