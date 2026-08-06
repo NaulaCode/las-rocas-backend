@@ -13,9 +13,22 @@ const sizeClasses = {
   lg: 'w-24 h-24 text-xl',
 };
 
+function getRandomPortrait(name: string) {
+  const key = (name || '').trim() || 'visitante';
+  let hash = 0;
+  for (let i = 0; i < key.length; i++) {
+    hash = (hash << 5) - hash + key.charCodeAt(i);
+    hash |= 0;
+  }
+  const abs = Math.abs(hash);
+  const index = abs % 100;
+  const gender = abs % 2 === 0 ? 'women' : 'men';
+  return `https://randomuser.me/api/portraits/${gender}/${index}.jpg`;
+}
+
 export default function ProfileAvatar({ name, photo, size = 'md', ring = true }: ProfileAvatarProps) {
   const [failed, setFailed] = useState(false);
-  const src = photo || `https://i.pravatar.cc/160?u=${encodeURIComponent((name || '').trim() || 'visitante')}`;
+  const src = photo || getRandomPortrait(name);
   const initials = name.split(' ').filter(Boolean).map(n => n[0]).join('').slice(0, 2).toUpperCase();
 
   if (failed || (!photo && !name.trim())) {
