@@ -14,6 +14,7 @@ import { HeroSkeleton, CardSkeleton, NewsCardSkeleton } from '../components/Skel
 import { getYouTubeEmbedUrl, getFacebookEmbedUrl, getTikTokEmbedUrl, getInstagramEmbedUrl, getEmbedType } from '../utils/video';
 import { useTranslation } from 'react-i18next';
 import i18n from '../../i18n';
+import ProfileAvatar from '../components/ProfileAvatar';
 
 const defaultGradients: Record<string, string> = {
   hospedaje: 'from-blue-400 to-blue-600',
@@ -142,21 +143,7 @@ function formatDate(dateStr: string | undefined) {
 }
 
 function TestimonialPhoto({ name, photo }: { name: string; photo?: string }) {
-  const [failed, setFailed] = useState(false);
-  const src = photo || `https://i.pravatar.cc/160?u=${encodeURIComponent(name.trim() || 'visitante')}`;
-  if (failed) {
-    const initials = name.split(' ').filter(Boolean).map(n => n[0]).join('').slice(0, 2).toUpperCase();
-    return (
-      <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary-500 via-primary-600 to-accent-500 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-primary-500/30 border-4 border-white">
-        {initials}
-      </div>
-    );
-  }
-  return (
-    <div className="w-24 h-24 p-1 rounded-full bg-gradient-to-br from-primary-400 via-primary-500 to-accent-400 shadow-lg shadow-primary-500/30">
-      <img src={src} alt={name} onError={() => setFailed(true)} loading="lazy" className="w-full h-full rounded-full object-cover border-2 border-white" />
-    </div>
-  );
+  return <ProfileAvatar name={name} photo={photo} size="lg" />;
 }
 
 export default function Home() {

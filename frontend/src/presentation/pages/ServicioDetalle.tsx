@@ -12,6 +12,7 @@ import AnimatedPrice from '../components/AnimatedPrice';
 import ReviewForm from '../components/ReviewForm';
 import type { Review } from '../../domain/entities/Review';
 import { isValidEmail, isValidPhone } from '../utils/validation';
+import ProfileAvatar from '../components/ProfileAvatar';
 
 export default function ServicioDetalle() {
   const { t } = useTranslation();
@@ -400,9 +401,8 @@ export default function ServicioDetalle() {
                     <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10H14.017zM0 21v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151C7.563 6.068 6 8.789 6 11h4.017v10H0z" />
                   </svg>
                   <div className="flex items-center gap-2.5 mb-3">
-                    <motion.div whileHover={{ scale: 1.1, rotate: 6 }} transition={{ type: 'spring', stiffness: 300, damping: 12 }}
-                      className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center text-white font-bold text-sm shadow-md shadow-primary-500/20 flex-shrink-0">
-                      {r.name.trim().split(/\s+/).slice(0, 2).map(n => n[0]).join('').toUpperCase()}
+                    <motion.div whileHover={{ scale: 1.1, rotate: 6 }} transition={{ type: 'spring', stiffness: 300, damping: 12 }}>
+                      <ProfileAvatar name={r.name} size="sm" />
                     </motion.div>
                     <div>
                       <p className="font-semibold text-gray-800 text-sm">{r.name}</p>
