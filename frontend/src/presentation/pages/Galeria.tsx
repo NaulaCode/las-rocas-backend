@@ -8,7 +8,6 @@ import SafeImage from '../components/SafeImage';
 import ImageLightbox from '../components/ImageLightbox';
 import { Organization } from '../../domain/entities/Organization';
 import EmptyState from '../components/EmptyState';
-import FacebookEmbed from '../components/FacebookEmbed';
 import { getYouTubeEmbedUrl, getFacebookEmbedUrl, getTikTokEmbedUrl, getInstagramEmbedUrl, getEmbedType, classifyGalleryItem } from '../utils/video';
 
 const galleryContainer = {
@@ -62,7 +61,7 @@ export default function Galeria() {
     entry.type === 'facebook' || /facebook\.com|fb\.watch/i.test(entry.url);
 
   const embedRatio = (entry: { url: string; type?: string }) =>
-    isInstagramEntry(entry) ? '125%' : '56.25%';
+    isInstagramEntry(entry) || isFacebookEntry(entry) ? '125%' : '56.25%';
 
   const openLightbox = useCallback((index: number) => {
     setLightboxIndex(index);
@@ -174,11 +173,6 @@ export default function Galeria() {
                 <div className="relative overflow-hidden bg-gray-900">
                   {isVideo(entry) ? (
                     isEmbedVideo(entry) ? (
-                      isFacebookEntry(entry) ? (
-                        <div className="relative w-full">
-                          <FacebookEmbed url={entry.url} />
-                        </div>
-                      ) : (
                       <div className="relative w-full" style={{ paddingBottom: embedRatio(entry) }}>
                         <iframe
                           src={embedSrc(entry.url)}
@@ -187,7 +181,6 @@ export default function Galeria() {
                           title={entry.caption || ''}
                         />
                       </div>
-                      )
                     ) : (
                       <div className="relative w-full" style={{ paddingBottom: embedRatio(entry) }}>
                         <video

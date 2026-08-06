@@ -10,7 +10,6 @@ import SafeImage from '../components/SafeImage';
 import ImageLightbox from '../components/ImageLightbox';
 import AnimatedPrice from '../components/AnimatedPrice';
 import EmptyState from '../components/EmptyState';
-import FacebookEmbed from '../components/FacebookEmbed';
 import { HeroSkeleton, CardSkeleton, NewsCardSkeleton } from '../components/Skeleton';
 import { getYouTubeEmbedUrl, getFacebookEmbedUrl, getTikTokEmbedUrl, getInstagramEmbedUrl, getEmbedType } from '../utils/video';
 import { useTranslation } from 'react-i18next';
@@ -903,23 +902,17 @@ export default function Home() {
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.8, ease: 'easeOut' }}
-                    className={`relative overflow-hidden ${isInstagramEntry(gallery[galleryIndex]) ? 'aspect-[4/5]' : 'aspect-[16/9] md:aspect-[21/9]'}`}
+                    className={`relative overflow-hidden ${isInstagramEntry(gallery[galleryIndex]) || isFacebookEntry(gallery[galleryIndex]) ? 'aspect-[4/5]' : 'aspect-[16/9] md:aspect-[21/9]'}`}
                     onClick={() => !isVideo(gallery[galleryIndex]) && openLightbox(galleryIndex)}
                   >
                     {isVideo(gallery[galleryIndex]) ? (
                       isEmbedVideo(gallery[galleryIndex]) ? (
-                        isFacebookEntry(gallery[galleryIndex]) ? (
-                          <div className="absolute inset-0 overflow-hidden">
-                            <FacebookEmbed url={gallery[galleryIndex].url} />
-                          </div>
-                        ) : (
                         <iframe
                           src={embedSrc(gallery[galleryIndex].url)}
                           className="absolute inset-0 w-full h-full"
                           allowFullScreen
                           title={gallery[galleryIndex].caption || ''}
                         />
-                        )
                       ) : (
                           <video
                             src={gallery[galleryIndex].url}

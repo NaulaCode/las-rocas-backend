@@ -7,7 +7,6 @@ import ImageUpload from '../ImageUpload';
 import { container } from '../../../../di/container';
 import SEO from '../../SEO';
 import { detectMediaType, getEmbedUrl, classifyGalleryItem } from '../../../utils/video';
-import FacebookEmbed from '../../FacebookEmbed';
 import PasswordStrength, { validatePassword } from '../../PasswordStrength';
 
 function TikTokThumb({ url }: { url: string }) {
@@ -439,15 +438,11 @@ export default function PagesTab({ org, orgForm, setOrgForm, pageContent, setPag
               {item.url ? (
                 item.type === 'tiktok' || /tiktok\.com/.test(item.url) ? (
                   <TikTokThumb url={item.url} />
-                ) : item.type === 'facebook' || /facebook\.com|fb\.watch/i.test(item.url) ? (
-                  <div className="w-full h-52 overflow-hidden rounded-lg mb-2 bg-black">
-                    <FacebookEmbed url={item.url} />
-                  </div>
                 ) : getEmbedUrl(item.url) ? (
                   <iframe
                     src={getEmbedUrl(item.url) || ''}
                     title={item.caption || 'Vista previa'}
-                    className={`w-full rounded-lg mb-2 bg-black ${item.type === 'instagram' || /instagram\.com/.test(item.url) ? 'h-52' : 'h-24'}`}
+                    className={`w-full rounded-lg mb-2 bg-black ${item.type === 'instagram' || item.type === 'facebook' || /instagram\.com/.test(item.url) ? 'h-52' : 'h-24'}`}
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowFullScreen
                   />
