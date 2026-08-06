@@ -385,25 +385,41 @@ export default function ServicioDetalle() {
           </div>
           {reviews.length > 0 && (
             <div className="grid md:grid-cols-2 gap-4 mb-8">
-              {reviews.map((r) => (
-                <div key={r.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 relative overflow-hidden hover:shadow-md transition-shadow">
-                  <div className="absolute top-0 left-0 bottom-0 w-1 bg-gradient-to-b from-accent-500 to-primary-500" />
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center text-white font-bold text-sm shadow-md flex-shrink-0">{r.name.charAt(0).toUpperCase()}</div>
+              {reviews.map((r, i) => (
+                <motion.div
+                  key={r.id}
+                  initial={{ opacity: 0, y: 30, scale: 0.97 }}
+                  whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                  viewport={{ once: true, margin: '-40px' }}
+                  transition={{ duration: 0.45, delay: (i % 2) * 0.12 }}
+                  whileHover={{ y: -5 }}
+                  className="group bg-white rounded-2xl border border-gray-100 shadow-sm p-5 relative overflow-hidden hover:shadow-xl hover:border-primary-100 transition-all duration-300"
+                >
+                  <div className="absolute top-0 left-0 bottom-0 w-1 bg-gradient-to-b from-accent-500 to-primary-500 group-hover:w-1.5 transition-all duration-300" />
+                  <svg className="absolute -top-3 -right-3 w-14 h-14 text-primary-50 group-hover:text-primary-100 transition-colors duration-300" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10H14.017zM0 21v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151C7.563 6.068 6 8.789 6 11h4.017v10H0z" />
+                  </svg>
+                  <div className="flex items-center gap-2.5 mb-3">
+                    <motion.div whileHover={{ scale: 1.1, rotate: 6 }} transition={{ type: 'spring', stiffness: 300, damping: 12 }}
+                      className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center text-white font-bold text-sm shadow-md shadow-primary-500/20 flex-shrink-0">
+                      {r.name.trim().split(/\s+/).slice(0, 2).map(n => n[0]).join('').toUpperCase()}
+                    </motion.div>
                     <div>
                       <p className="font-semibold text-gray-800 text-sm">{r.name}</p>
                       {r.role && <p className="text-xs text-gray-400">{r.role}</p>}
                     </div>
                     <div className="ml-auto flex items-center gap-0.5">
                       {[1, 2, 3, 4, 5].map((s) => (
-                        <svg key={s} className={`w-4 h-4 ${s <= r.rating ? 'text-yellow-400' : 'text-gray-200'}`} fill="currentColor" viewBox="0 0 20 20">
+                        <motion.svg key={s} initial={{ opacity: 0, scale: 0 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }}
+                          transition={{ delay: 0.3 + s * 0.06, type: 'spring', stiffness: 320, damping: 14 }}
+                          className={`w-4 h-4 ${s <= r.rating ? 'text-yellow-400' : 'text-gray-200'}`} fill="currentColor" viewBox="0 0 20 20">
                           <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-                        </svg>
+                        </motion.svg>
                       ))}
                     </div>
                   </div>
-                  <p className="text-gray-600 text-sm leading-relaxed ml-0">&ldquo;{r.text}&rdquo;</p>
-                </div>
+                  <p className="text-gray-600 text-sm leading-relaxed relative z-10">&ldquo;{r.text}&rdquo;</p>
+                </motion.div>
               ))}
             </div>
           )}

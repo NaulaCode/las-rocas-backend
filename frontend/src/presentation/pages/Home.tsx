@@ -104,14 +104,22 @@ function FloatingShape({ className, delay = 0 }: { className: string; delay?: nu
   );
 }
 
-function Stars({ count }: { count: number }) {
+function Stars({ count, animate = false }: { count: number; animate?: boolean }) {
   return (
-    <div className="flex gap-0.5 justify-center">
-      {Array.from({ length: 5 }).map((_, i) => (
-        <svg key={i} className={`w-4 h-4 ${i < count ? 'text-yellow-400' : 'text-gray-200'}`} fill="currentColor" viewBox="0 0 20 20">
-          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-        </svg>
-      ))}
+    <div className="flex gap-1 justify-center">
+      {Array.from({ length: 5 }).map((_, i) => {
+        const star = (
+          <svg key={i} className={`w-5 h-5 ${i < count ? 'text-yellow-400 drop-shadow-sm' : 'text-gray-200'}`} fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+          </svg>
+        );
+        return animate ? (
+          <motion.span key={i} initial={{ opacity: 0, scale: 0, rotate: -90 }} animate={{ opacity: 1, scale: 1, rotate: 0 }}
+            transition={{ delay: 0.25 + i * 0.08, type: 'spring', stiffness: 300, damping: 14 }} className="inline-flex">
+            {star}
+          </motion.span>
+        ) : star;
+      })}
     </div>
   );
 }
@@ -133,10 +141,13 @@ function formatDate(dateStr: string | undefined) {
   });
 }
 
-function Avatar({ name }: { name: string }) {
-  const initials = name.split(' ').map(n => n[0]).join('').slice(0, 2);
+function Avatar({ name, size = 'md' }: { name: string; size?: 'sm' | 'md' | 'lg' }) {
+  const initials = name.split(' ').filter(Boolean).map(n => n[0]).join('').slice(0, 2);
+  const sizes = { sm: 'w-10 h-10 text-xs', md: 'w-12 h-12 text-sm', lg: 'w-20 h-20 text-xl' };
   return (
-    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center text-white font-bold text-sm shadow-lg">
+    <div className={`relative ${sizes[size]} rounded-full bg-gradient-to-br from-primary-500 via-primary-600 to-accent-500 flex items-center justify-center text-white font-bold shadow-lg shadow-primary-500/30`}>
+      <div className="absolute inset-0 rounded-full border-2 border-white/40" />
+      <div className="absolute -inset-1 rounded-full bg-gradient-to-br from-primary-200/60 to-accent-200/60 -z-10 blur-sm" />
       {initials}
     </div>
   );
@@ -770,44 +781,73 @@ export default function Home() {
             <SectionDivider />
           </motion.div>
 
-          <div className="max-w-3xl mx-auto">
+          <div className="relative max-w-3xl mx-auto">
+            <button
+              onClick={() => setTestimonialIndex((testimonialIndex - 1 + testimonials.length) % testimonials.length)}
+              aria-label="Testimonio anterior"
+              className="hidden sm:flex absolute -left-4 md:-left-16 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-white shadow-lg border border-gray-100 text-primary-600 hover:bg-primary-50 hover:scale-110 active:scale-95 transition-all items-center justify-center"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+            </button>
+            <button
+              onClick={() => setTestimonialIndex((testimonialIndex + 1) % testimonials.length)}
+              aria-label="Siguiente testimonio"
+              className="hidden sm:flex absolute -right-4 md:-right-16 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-white shadow-lg border border-gray-100 text-primary-600 hover:bg-primary-50 hover:scale-110 active:scale-95 transition-all items-center justify-center"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+            </button>
+
             <AnimatePresence mode="wait">
               <motion.div
                 key={testimonialIndex}
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -30 }}
-                transition={{ duration: 0.5 }}
-                className="bg-white rounded-2xl shadow-xl p-8 md:p-10 border border-gray-100 text-center relative overflow-hidden"
+                initial={{ opacity: 0, y: 40, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -40, scale: 0.95 }}
+                transition={{ duration: 0.5, ease: 'easeOut' }}
+                className="bg-white rounded-3xl shadow-2xl shadow-primary-900/10 p-8 md:p-12 border border-gray-100 text-center relative overflow-hidden"
               >
-                <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-accent-500 via-primary-500 to-accent-500" />
+                <div className="absolute -top-20 -right-20 w-52 h-52 bg-primary-100 rounded-full blur-3xl pointer-events-none" />
+                <div className="absolute -bottom-20 -left-20 w-52 h-52 bg-accent-100 rounded-full blur-3xl pointer-events-none" />
+                <motion.div className="absolute bottom-0 left-0 right-0 h-1.5 bg-gradient-to-r from-accent-500 via-primary-500 to-accent-500"
+                  initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ duration: 0.8, delay: 0.3 }} style={{ transformOrigin: 'left' }} />
+
                 <div className="relative">
-                  <svg className="absolute -top-2 -left-2 w-12 h-12 text-primary-100 -z-0" fill="currentColor" viewBox="0 0 24 24">
+                  <motion.svg className="absolute -top-6 left-1/2 -translate-x-1/2 w-16 h-16 text-primary-100"
+                    initial={{ opacity: 0, rotate: -25, scale: 0.5 }} animate={{ opacity: 1, rotate: 0, scale: 1 }}
+                    transition={{ type: 'spring', stiffness: 220, damping: 16, delay: 0.1 }} fill="currentColor" viewBox="0 0 24 24">
                     <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10H14.017zM0 21v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151C7.563 6.068 6 8.789 6 11h4.017v10H0z" />
-                  </svg>
-                  <div className="relative z-10">
-                    <Avatar name={testimonials[testimonialIndex].name} />
-                  </div>
+                  </motion.svg>
+                  <motion.div animate={{ y: [0, -8, 0] }} transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }} className="relative z-10 inline-block mt-4">
+                    <Avatar name={testimonials[testimonialIndex].name} size="lg" />
+                  </motion.div>
                 </div>
+
                 <div className="mt-6 mb-6">
-                  <Stars count={testimonials[testimonialIndex].rating} />
+                  <Stars count={testimonials[testimonialIndex].rating} animate />
                 </div>
-                <p className="text-gray-600 text-lg leading-relaxed mb-6 italic relative z-10">
+
+                <motion.p initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45, duration: 0.5 }}
+                  className="text-gray-600 text-lg md:text-xl leading-relaxed mb-6 italic relative z-10">
                   &ldquo;{testimonials[testimonialIndex].text}&rdquo;
-                </p>
-                <div className="mt-4 pt-4 border-t border-gray-100">
-                  <p className="font-bold text-gray-800">{testimonials[testimonialIndex].name}</p>
-                  <p className="text-sm text-gray-400">{testimonials[testimonialIndex].role}</p>
-                </div>
+                </motion.p>
+
+                <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.55, duration: 0.5 }}
+                  className="mt-4 pt-4 border-t border-gray-100">
+                  <p className="font-bold text-gray-800 text-lg">{testimonials[testimonialIndex].name}</p>
+                  {testimonials[testimonialIndex].role && (
+                    <p className="text-sm text-gray-400 mt-0.5">{testimonials[testimonialIndex].role}</p>
+                  )}
+                </motion.div>
               </motion.div>
             </AnimatePresence>
 
-            <div className="flex items-center justify-center gap-2 mt-6">
+            <div className="flex items-center justify-center gap-2 mt-7">
               {testimonials.map((_, i) => (
                 <button
                   key={i}
                   onClick={() => setTestimonialIndex(i)}
-                  className={`p-2 flex items-center justify-center rounded-full transition-all duration-500 ${i === testimonialIndex ? 'w-6 h-2 bg-accent-500' : 'w-2 h-2 bg-gray-300 hover:bg-gray-400'}`}
+                  aria-label={`Testimonio ${i + 1}`}
+                  className={`p-2 flex items-center justify-center rounded-full transition-all duration-500 ${i === testimonialIndex ? 'w-8 h-2.5 bg-gradient-to-r from-accent-500 to-primary-500 shadow-sm' : 'w-2.5 h-2.5 bg-gray-300 hover:bg-gray-400 hover:scale-125'}`}
                 />
               ))}
             </div>
