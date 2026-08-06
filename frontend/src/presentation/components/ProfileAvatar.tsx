@@ -13,6 +13,49 @@ const sizeClasses = {
   lg: 'w-24 h-24 text-xl',
 };
 
+function normalizeName(name: string) {
+  return (name || '').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+
+const FEMALE_NAMES = new Set([
+  'maria', 'ana', 'lucia', 'carmen', 'sofia', 'valentina', 'camila', 'isabella', 'daniela', 'gabriela',
+  'valeria', 'samantha', 'sarah', 'emily', 'emma', 'olivia', 'mia', 'ava', 'mariana', 'fernanda',
+  'carolina', 'andrea', 'alejandra', 'pamela', 'michelle', 'katherine', 'jennifer', 'vanessa', 'paula',
+  'laura', 'natalia', 'domenica', 'melissa', 'nicole', 'scarlett', 'julissa', 'tatiana', 'veronica',
+  'patricia', 'monica', 'sandra', 'ruth', 'beatriz', 'rosa', 'raquel', 'jessica', 'jazmin', 'karen',
+  'wendy', 'estefania', 'sabrina', 'alicia', 'angela', 'barbara', 'belen', 'carla', 'cecilia', 'cristina',
+  'diana', 'elena', 'elisa', 'emilia', 'erika', 'francisca', 'gloria', 'ines', 'irene', 'isabel',
+  'julia', 'lourdes', 'luisa', 'margarita', 'martha', 'nieves', 'noelia', 'nuria', 'olga', 'paloma',
+  'pilar', 'rebeca', 'rocio', 'salome', 'silvia', 'susana', 'teresa', 'victoria', 'yolanda', 'amanda',
+  'adriana', 'alexandra', 'gisselle', 'joselin', 'joseline', 'katiuska', 'marisol', 'viviana', 'ximena',
+  'zoila', 'yessenia', 'fatima', 'milena', 'anthonella', 'alisson', 'brianna', 'nathaly', 'scarlet',
+]);
+
+const MALE_NAMES = new Set([
+  'juan', 'jose', 'carlos', 'luis', 'miguel', 'antonio', 'francisco', 'pedro', 'manuel', 'angel',
+  'david', 'jorge', 'diego', 'andres', 'alejandro', 'cristian', 'bryan', 'kevin', 'santiago', 'mateo',
+  'sebastian', 'nicolas', 'daniel', 'gabriel', 'matias', 'joaquin', 'benjamin', 'samuel', 'lucas',
+  'thiago', 'tomas', 'ian', 'liam', 'noah', 'ethan', 'ryan', 'adrian', 'alan', 'alexander', 'alberto',
+  'alfredo', 'armando', 'arturo', 'bernardo', 'cesar', 'christopher', 'cristobal', 'eduardo', 'emiliano',
+  'enrique', 'ernesto', 'esteban', 'fabian', 'fernando', 'gerardo', 'gonzalo', 'guillermo', 'gustavo',
+  'hector', 'hugo', 'ignacio', 'isaac', 'ismael', 'ivan', 'javier', 'jesus', 'jonathan', 'julio',
+  'leonardo', 'lorenzo', 'marcos', 'mario', 'martin', 'mauricio', 'maximiliano', 'oscar', 'pablo',
+  'patricio', 'rafael', 'ramon', 'raul', 'ricardo', 'roberto', 'rodrigo', 'ruben', 'salvador', 'sergio',
+  'vicente', 'victor', 'xavier', 'stiven', 'steven', 'kevin', 'dylan', 'jordy', 'jeremy', 'erick',
+  'erick', 'dario', 'fausto', 'german', 'lenin', 'mauro', 'nelson', 'orlando', 'roberto', 'washington',
+  'wilson', 'dennis', 'douglas', 'freire', 'jefferson', 'jose', 'antonio', 'geovanny', 'marvin',
+]);
+
+function detectGender(name: string): 'men' | 'women' {
+  const first = normalizeName(name).split(/\s+/)[0] || '';
+  if (!first) return 'men';
+  if (FEMALE_NAMES.has(first)) return 'women';
+  if (MALE_NAMES.has(first)) return 'men';
+  if (first.endsWith('a') && !first.endsWith('ma') && !first.endsWith('ola')) return 'women';
+  if (first.endsWith('o') || first.endsWith('r') || first.endsWith('n')) return 'men';
+  return 'men';
+}
+
 function getRandomPortrait(name: string) {
   const key = (name || '').trim() || 'visitante';
   let hash = 0;
@@ -22,8 +65,7 @@ function getRandomPortrait(name: string) {
   }
   const abs = Math.abs(hash);
   const index = abs % 100;
-  const gender = abs % 2 === 0 ? 'women' : 'men';
-  return `https://randomuser.me/api/portraits/${gender}/${index}.jpg`;
+  return `https://randomuser.me/api/portraits/${detectGender(name)}/${index}.jpg`;
 }
 
 export default function ProfileAvatar({ name, photo, size = 'md', ring = true }: ProfileAvatarProps) {
