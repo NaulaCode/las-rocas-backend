@@ -9,10 +9,10 @@ import DetailLayout from '../components/DetailLayout';
 import ImageLightbox from '../components/ImageLightbox';
 
 const categoryGradients: Record<string, string> = {
-  natural: 'from-green-400 to-emerald-600', cultural: 'from-purple-400 to-indigo-600',
-  aventura: 'from-orange-400 to-red-500', gastronomico: 'from-yellow-400 to-orange-500',
-  historico: 'from-amber-600 to-yellow-700', playa: 'from-sky-400 to-cyan-500',
-  montana: 'from-teal-500 to-green-600',
+  natural: 'from-green-100 to-emerald-200', cultural: 'from-purple-100 to-indigo-200',
+  aventura: 'from-orange-100 to-red-200', gastronomico: 'from-yellow-100 to-orange-200',
+  historico: 'from-amber-100 to-yellow-200', playa: 'from-sky-100 to-cyan-200',
+  montana: 'from-teal-100 to-green-200',
 };
 
 export default function TouristicAttractionDetail() {
@@ -55,7 +55,7 @@ export default function TouristicAttractionDetail() {
     ? [{ url: attraction.image, caption: attraction.name }]
     : [];
 
-  const gradient = categoryGradients[attraction.category] || 'from-emerald-600 to-teal-500';
+  const gradient = categoryGradients[attraction.category] || 'from-emerald-100 to-teal-200';
 
   return (
     <DetailLayout
