@@ -28,8 +28,7 @@ export function getTikTokEmbedUrl(url: string): string | null {
 export function getInstagramEmbedUrl(url: string): string | null {
   const m = url.match(/instagram\.com\/(?:p|reel|tv)\/([\w-]+)/i);
   if (!m) return null;
-  const kind = /instagram\.com\/reel\//i.test(url) ? 'reel' : 'p';
-  return `https://www.instagram.com/${kind}/${m[1]}/embed/`;
+  return `https://www.instagram.com/p/${m[1]}/embed/`;
 }
 
 export function getEmbedUrl(url: string): string | null {

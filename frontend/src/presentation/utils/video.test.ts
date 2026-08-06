@@ -28,9 +28,14 @@ describe('getInstagramEmbedUrl', () => {
       .toBe('https://www.instagram.com/p/AbCdEf1234/embed/');
   });
 
-  it('builds embed for a reel', () => {
+  it('builds embed for a reel using the canonical /p/ path', () => {
     expect(getInstagramEmbedUrl('https://www.instagram.com/reel/AbCdEf1234/'))
-      .toBe('https://www.instagram.com/reel/AbCdEf1234/embed/');
+      .toBe('https://www.instagram.com/p/AbCdEf1234/embed/');
+  });
+
+  it('extracts the shortcode even when the URL has query params', () => {
+    expect(getInstagramEmbedUrl('https://www.instagram.com/reel/AbCdEf1234/?igsh=Ym04amloMmYwaG8w'))
+      .toBe('https://www.instagram.com/p/AbCdEf1234/embed/');
   });
 
   it('returns null for non-Instagram URL', () => {
