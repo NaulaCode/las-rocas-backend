@@ -42,7 +42,7 @@ const item = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
 };
 
-const defaultTestimonials = [
+const defaultTestimonials: { name: string; text: string; rating: number; role?: string; photo?: string }[] = [
   { name: 'María García', text: 'Una experiencia inolvidable. La calidez de la gente y la belleza del lugar superaron todas mis expectativas. Volveré sin dudarlo.', rating: 5, role: 'Turista' },
   { name: 'Carlos Mendoza', text: 'Excelente servicio y atención. Los guías conocen perfectamente la zona y hacen que cada recorrido sea único.', rating: 5, role: 'Visitante frecuente' },
   { name: 'Daniela Rivera', text: 'Recomiendo totalmente los paquetes turísticos. La organización impecable y los precios muy accesibles.', rating: 5, role: 'Familia' },
@@ -141,14 +141,20 @@ function formatDate(dateStr: string | undefined) {
   });
 }
 
-function Avatar({ name, size = 'md' }: { name: string; size?: 'sm' | 'md' | 'lg' }) {
-  const initials = name.split(' ').filter(Boolean).map(n => n[0]).join('').slice(0, 2);
-  const sizes = { sm: 'w-10 h-10 text-xs', md: 'w-12 h-12 text-sm', lg: 'w-20 h-20 text-xl' };
+function TestimonialPhoto({ name, photo }: { name: string; photo?: string }) {
+  const [failed, setFailed] = useState(false);
+  const src = photo || `https://i.pravatar.cc/160?u=${encodeURIComponent(name.trim() || 'visitante')}`;
+  if (failed) {
+    const initials = name.split(' ').filter(Boolean).map(n => n[0]).join('').slice(0, 2).toUpperCase();
+    return (
+      <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary-500 via-primary-600 to-accent-500 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-primary-500/30 border-4 border-white">
+        {initials}
+      </div>
+    );
+  }
   return (
-    <div className={`relative ${sizes[size]} rounded-full bg-gradient-to-br from-primary-500 via-primary-600 to-accent-500 flex items-center justify-center text-white font-bold shadow-lg shadow-primary-500/30`}>
-      <div className="absolute inset-0 rounded-full border-2 border-white/40" />
-      <div className="absolute -inset-1 rounded-full bg-gradient-to-br from-primary-200/60 to-accent-200/60 -z-10 blur-sm" />
-      {initials}
+    <div className="w-24 h-24 p-1 rounded-full bg-gradient-to-br from-primary-400 via-primary-500 to-accent-400 shadow-lg shadow-primary-500/30">
+      <img src={src} alt={name} onError={() => setFailed(true)} loading="lazy" className="w-full h-full rounded-full object-cover border-2 border-white" />
     </div>
   );
 }
@@ -200,7 +206,7 @@ export default function Home() {
     isInstagramEntry(entry) ? '125%' : '56.25%';
   const heroImages: string[] = gallery.map((g) => g.url).slice(0, 5);
   const heroBg = heroImages.length > 0 ? heroImages : [org?.coverImage || 'https://images.unsplash.com/photo-1504457047772-27faf9c0f3e9?w=1920&h=1080&fit=crop'];
-  const reviews: { name: string; text: string; rating: number; role?: string }[] = (org?.pageContent?.reviews || []).filter((r) => r.approved);
+  const reviews: { name: string; text: string; rating: number; role?: string; photo?: string }[] = (org?.pageContent?.reviews || []).filter((r) => r.approved);
   const testimonials = reviews.length > 0 ? reviews : defaultTestimonials;
 
   const categoryGradients: Record<string, string> = { ...defaultGradients };
@@ -808,35 +814,36 @@ export default function Home() {
               >
                 <div className="absolute -top-20 -right-20 w-52 h-52 bg-primary-100 rounded-full blur-3xl pointer-events-none" />
                 <div className="absolute -bottom-20 -left-20 w-52 h-52 bg-accent-100 rounded-full blur-3xl pointer-events-none" />
-                <motion.div className="absolute bottom-0 left-0 right-0 h-1.5 bg-gradient-to-r from-accent-500 via-primary-500 to-accent-500"
-                  initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ duration: 0.8, delay: 0.3 }} style={{ transformOrigin: 'left' }} />
+                <motion.div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-accent-500 via-primary-500 to-accent-500"
+                  initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ duration: 0.8, delay: 0.2 }} style={{ transformOrigin: 'left' }} />
 
                 <div className="relative">
-                  <motion.svg className="absolute -top-6 left-1/2 -translate-x-1/2 w-16 h-16 text-primary-100"
-                    initial={{ opacity: 0, rotate: -25, scale: 0.5 }} animate={{ opacity: 1, rotate: 0, scale: 1 }}
-                    transition={{ type: 'spring', stiffness: 220, damping: 16, delay: 0.1 }} fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10H14.017zM0 21v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151C7.563 6.068 6 8.789 6 11h4.017v10H0z" />
-                  </motion.svg>
-                  <motion.div animate={{ y: [0, -8, 0] }} transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }} className="relative z-10 inline-block mt-4">
-                    <Avatar name={testimonials[testimonialIndex].name} size="lg" />
+                  <motion.div initial={{ opacity: 0, scale: 0.6, y: 12 }} animate={{ opacity: 1, scale: 1, y: 0 }}
+                    transition={{ type: 'spring', stiffness: 220, damping: 16, delay: 0.1 }} className="relative z-10 inline-block">
+                    <motion.div animate={{ y: [0, -6, 0] }} transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}>
+                      <TestimonialPhoto name={testimonials[testimonialIndex].name} photo={testimonials[testimonialIndex].photo} />
+                    </motion.div>
                   </motion.div>
                 </div>
 
-                <div className="mt-6 mb-6">
+                <div className="mt-6 mb-5">
                   <Stars count={testimonials[testimonialIndex].rating} animate />
                 </div>
 
-                <motion.p initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45, duration: 0.5 }}
-                  className="text-gray-600 text-lg md:text-xl leading-relaxed mb-6 italic relative z-10">
-                  &ldquo;{testimonials[testimonialIndex].text}&rdquo;
-                </motion.p>
+                <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45, duration: 0.5 }}
+                  className="text-gray-600 text-lg md:text-xl leading-relaxed italic relative z-10 max-w-3xl mx-auto min-h-[7rem] md:min-h-[5.5rem] flex items-center justify-center">
+                  <p>&ldquo;{testimonials[testimonialIndex].text}&rdquo;</p>
+                </motion.div>
 
                 <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.55, duration: 0.5 }}
-                  className="mt-4 pt-4 border-t border-gray-100">
-                  <p className="font-bold text-gray-800 text-lg">{testimonials[testimonialIndex].name}</p>
-                  {testimonials[testimonialIndex].role && (
-                    <p className="text-sm text-gray-400 mt-0.5">{testimonials[testimonialIndex].role}</p>
-                  )}
+                  className="mt-7 pt-6 border-t border-gray-100">
+                  <p className="font-bold text-gray-900 text-xl">{testimonials[testimonialIndex].name}</p>
+                  <p className="flex items-center justify-center gap-1.5 text-sm font-semibold text-emerald-600 mt-1.5">
+                    <svg className="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 24 24">
+                      <path fillRule="evenodd" d="M8.603 3.799A4.49 4.49 0 0112 2.25c1.357 0 2.573.6 3.397 1.549a4.49 4.49 0 013.498 1.307 4.491 4.491 0 011.307 3.497A4.49 4.49 0 0121.75 12a4.49 4.49 0 01-1.549 3.397 4.491 4.491 0 01-1.307 3.497 4.491 4.491 0 01-3.497 1.307A4.49 4.49 0 0112 21.75a4.49 4.49 0 01-3.397-1.549 4.49 4.49 0 01-3.498-1.306 4.491 4.491 0 01-1.307-3.498A4.49 4.49 0 012.25 12c0-1.357.6-2.573 1.549-3.397a4.49 4.49 0 011.307-3.497 4.49 4.49 0 013.497-1.307zm7.007 6.387a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z" clipRule="evenodd" />
+                    </svg>
+                    {t('home.visitanteVerificado')}
+                  </p>
                 </motion.div>
               </motion.div>
             </AnimatePresence>
