@@ -553,7 +553,6 @@ export default function Admin() {
                       questions={questions} searchTerm={searchTerm} setSearchTerm={setSearchTerm}
                       filterValue={filterValue} setFilterValue={setFilterValue}
                       openCreate={openCreate} openEdit={openEdit} setDeleteId={setDeleteId}
-                      onQuestionsUpdated={loadData}
                     />
                   )}
                   {tab === 'estadisticas' && (
