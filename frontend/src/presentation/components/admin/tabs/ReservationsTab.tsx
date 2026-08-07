@@ -41,7 +41,7 @@ export default function ReservationsTab({
 
   const filtered = reservations.filter((r) => {
     const query = searchTerm.toLowerCase();
-    const matchSearch = !searchTerm || r.userName.toLowerCase().includes(query) || r.userEmail.toLowerCase().includes(query);
+    const matchSearch = !searchTerm || r.userName.toLowerCase().includes(query) || r.userEmail.toLowerCase().includes(query) || r.id.slice(0, 8).toUpperCase().includes(searchTerm.toUpperCase());
     const matchStatus = !filterValue || r.status === filterValue;
     const matchService = !serviceFilter || r.serviceId === serviceFilter;
     const matchDate = (!startDate || !r.preferredDate || r.preferredDate >= startDate) && (!endDate || !r.preferredDate || r.preferredDate <= endDate);
@@ -123,6 +123,7 @@ export default function ReservationsTab({
       {renderTable(
         [
           { label: <input type="checkbox" checked={allSelected} onChange={toggleSelectAll} className="rounded border-gray-300 text-primary-600 focus:ring-primary-500 cursor-pointer" />, key: 'select' },
+          { label: 'Código', key: 'id', sortable: true },
           { label: 'Cliente', key: 'userName', sortable: true },
           { label: 'Email', key: 'userEmail', sortable: true },
           { label: 'Servicio', key: 'serviceName', sortable: true },
@@ -134,6 +135,9 @@ export default function ReservationsTab({
           <tr key={r.id} className="hover:bg-gray-50/50 transition-colors">
             <td className="px-4 py-3">
               <input type="checkbox" checked={selectedIds.has(r.id)} onChange={() => toggleSelect(r.id)} className="rounded border-gray-300 text-primary-600 focus:ring-primary-500 cursor-pointer" />
+            </td>
+            <td className="px-4 py-3">
+              <span className="inline-block px-2 py-0.5 bg-primary-50 text-primary-700 rounded-md text-xs font-mono font-semibold tracking-wide">{r.id.slice(0, 8).toUpperCase()}</span>
             </td>
             <td className="px-4 py-3 text-sm font-medium text-gray-800">{r.userName}</td>
             <td className="px-4 py-3 text-sm text-gray-600">{r.userEmail}</td>
