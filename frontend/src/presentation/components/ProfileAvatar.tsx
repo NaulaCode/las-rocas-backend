@@ -29,6 +29,13 @@ const FEMALE_NAMES = new Set([
   'pilar', 'rebeca', 'rocio', 'salome', 'silvia', 'susana', 'teresa', 'victoria', 'yolanda', 'amanda',
   'adriana', 'alexandra', 'gisselle', 'joselin', 'joseline', 'katiuska', 'marisol', 'viviana', 'ximena',
   'zoila', 'yessenia', 'fatima', 'milena', 'anthonella', 'alisson', 'brianna', 'nathaly', 'scarlet',
+  'evelyn', 'melany', 'melanie', 'yajaira', 'kelly', 'keysha', 'heidy', 'lissette', 'lisette',
+  'jackeline', 'jacqueline', 'steffany', 'stefany', 'yesenia', 'gema', 'dayana', 'mercedes',
+  'elizabeth', 'marlene', 'jeanette', 'janeth', 'yadira', 'gretel', 'sasha', 'alyssa', 'celeste',
+  'luna', 'paulina', 'mely', 'mila', 'leidy', 'sulema', 'roxana', 'yamilca', 'genesis',
+  'kristel', 'angelica', 'lissete', 'danielly', 'bianca', 'mariafernanda', 'mariuxi', 'denisse',
+  'marilin', 'marilyn', 'catherine', 'caroline', 'doris', 'esther', 'hilda', 'ivonne', 'ligia',
+  'lidia', 'magaly', 'miriam', 'nadia', 'odalis', 'priscila', 'sonia', 'wendy', 'yenny', 'xiomara',
 ]);
 
 const MALE_NAMES = new Set([
@@ -44,16 +51,17 @@ const MALE_NAMES = new Set([
   'vicente', 'victor', 'xavier', 'stiven', 'steven', 'kevin', 'dylan', 'jordy', 'jeremy', 'erick',
   'erick', 'dario', 'fausto', 'german', 'lenin', 'mauro', 'nelson', 'orlando', 'roberto', 'washington',
   'wilson', 'dennis', 'douglas', 'freire', 'jefferson', 'jose', 'antonio', 'geovanny', 'marvin',
+  'marlon', 'ruben', 'jordan', 'brayan', 'leo', 'enzo', 'axl', 'dante', 'gino', 'oriel',
 ]);
 
-function detectGender(name: string): 'men' | 'women' {
+function detectGender(name: string, seed: number): 'men' | 'women' {
   const first = normalizeName(name).split(/\s+/)[0] || '';
-  if (!first) return 'men';
+  if (!first) return seed % 2 === 0 ? 'women' : 'men';
   if (FEMALE_NAMES.has(first)) return 'women';
   if (MALE_NAMES.has(first)) return 'men';
-  if (first.endsWith('a') && !first.endsWith('ma') && !first.endsWith('ola')) return 'women';
-  if (first.endsWith('o') || first.endsWith('r') || first.endsWith('n')) return 'men';
-  return 'men';
+  if (first.endsWith('a')) return 'women';
+  if (first.endsWith('o')) return 'men';
+  return seed % 2 === 0 ? 'women' : 'men';
 }
 
 function getRandomPortrait(name: string) {
@@ -65,7 +73,7 @@ function getRandomPortrait(name: string) {
   }
   const abs = Math.abs(hash);
   const index = abs % 100;
-  return `https://randomuser.me/api/portraits/${detectGender(name)}/${index}.jpg`;
+  return `https://randomuser.me/api/portraits/${detectGender(name, abs)}/${index}.jpg`;
 }
 
 export default function ProfileAvatar({ name, photo, size = 'md', ring = true }: ProfileAvatarProps) {
