@@ -6,8 +6,24 @@ import { ChatbotQuestion } from '../../../../domain/entities/ChatbotQuestion';
 import { PublicUser } from '../../../../domain/entities/User';
 import { PageContent } from '../../../../domain/entities/Organization';
 import StatCard from '../StatCard';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { downloadPDF, generateFullReport } from '../../../utils/pdf';
+
+const CHART_COLORS = ['#6366F1', '#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#14B8A6', '#F97316', '#64748B'];
+
+function ChartTooltip({ active, payload, label }: { active?: boolean; payload?: any[]; label?: string }) {
+  if (!active || !payload || payload.length === 0) return null;
+  return (
+    <div className="bg-white border border-gray-200 rounded-lg shadow-lg px-3 py-2">
+      {label && <p className="text-xs font-semibold text-gray-700 mb-1 capitalize">{label}</p>}
+      {payload.map((p) => (
+        <p key={p.dataKey} className="text-xs text-gray-600">
+          Cantidad: <span className="font-semibold text-gray-900">{p.value}</span>
+        </p>
+      ))}
+    </div>
+  );
+}
 
 interface Props {
   services: TouristicService[];
@@ -98,9 +114,9 @@ export default function DashboardTab({ services, news, reservations, questions, 
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" />
               <YAxis />
-              <Tooltip />
+              <Tooltip content={<ChartTooltip />} />
               <Bar dataKey="value" radius={[4, 4, 0, 0]}>
-                {reservationsByStatus.map((e, i) => <Bar key={i} dataKey="value" fill={statusColors[e.name.toLowerCase()] || '#0088FE'} />)}
+                {reservationsByStatus.map((e, i) => <Cell key={i} fill={statusColors[e.name.toLowerCase()] || CHART_COLORS[i % CHART_COLORS.length]} />)}
               </Bar>
             </BarChart>
           </ResponsiveContainer>
@@ -113,9 +129,10 @@ export default function DashboardTab({ services, news, reservations, questions, 
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" />
               <YAxis />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="value" fill="#0088FE" radius={[4, 4, 0, 0]} />
+              <Tooltip content={<ChartTooltip />} />
+              <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                {servicesByCategory.map((_, i) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />)}
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -129,8 +146,10 @@ export default function DashboardTab({ services, news, reservations, questions, 
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="month" />
               <YAxis />
-              <Tooltip />
-              <Bar dataKey="count" fill="#10B981" radius={[4, 4, 0, 0]} />
+              <Tooltip content={<ChartTooltip />} />
+              <Bar dataKey="count" radius={[4, 4, 0, 0]}>
+                {monthlyReservations.map((_, i) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />)}
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         </div>
