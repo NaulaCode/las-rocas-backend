@@ -55,19 +55,19 @@ export default function ImageLightbox({ images, index, onClose, onPrev, onNext }
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.25 }}
-        className="fixed inset-0 bg-black/90 z-[60] flex items-center justify-center p-4"
+        className="fixed inset-0 bg-black/90 z-[60] flex p-2 sm:p-4 overflow-y-auto"
         onClick={onClose}
       >
         <button
           onClick={onClose}
-          className="absolute top-6 right-6 w-12 h-12 bg-black/40 border border-white/30 backdrop-blur-sm rounded-full flex items-center justify-center text-white shadow-lg hover:bg-black/60 hover:scale-105 transition-all z-10"
+          className="absolute top-3 right-3 sm:top-6 sm:right-6 w-10 h-10 sm:w-12 sm:h-12 bg-black/40 border border-white/30 backdrop-blur-sm rounded-full flex items-center justify-center text-white shadow-lg hover:bg-black/60 hover:scale-105 transition-all z-10"
         >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
 
-        <div className="absolute top-6 left-1/2 -translate-x-1/2 bg-black/40 border border-white/20 backdrop-blur-sm rounded-full px-3 py-1.5 text-white/90 text-sm font-medium">
+        <div className="absolute top-3 sm:top-6 left-1/2 -translate-x-1/2 bg-black/40 border border-white/20 backdrop-blur-sm rounded-full px-2 py-0.5 sm:px-3 sm:py-1.5 text-white/90 text-xs sm:text-sm font-medium whitespace-nowrap">
           {index + 1} / {images.length}
         </div>
 
@@ -75,17 +75,17 @@ export default function ImageLightbox({ images, index, onClose, onPrev, onNext }
           <>
             <button
               onClick={(e) => { e.stopPropagation(); onPrev(); }}
-              className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-black/40 border border-white/30 backdrop-blur-sm rounded-full flex items-center justify-center text-white shadow-lg hover:bg-black/60 transition-all hover:scale-110"
+              className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 w-10 h-10 sm:w-12 sm:h-12 bg-black/40 border border-white/30 backdrop-blur-sm rounded-full flex items-center justify-center text-white shadow-lg hover:bg-black/60 transition-all hover:scale-110"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </button>
             <button
               onClick={(e) => { e.stopPropagation(); onNext(); }}
-              className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-black/40 border border-white/30 backdrop-blur-sm rounded-full flex items-center justify-center text-white shadow-lg hover:bg-black/60 transition-all hover:scale-110"
+              className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 w-10 h-10 sm:w-12 sm:h-12 bg-black/40 border border-white/30 backdrop-blur-sm rounded-full flex items-center justify-center text-white shadow-lg hover:bg-black/60 transition-all hover:scale-110"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </button>
@@ -98,10 +98,10 @@ export default function ImageLightbox({ images, index, onClose, onPrev, onNext }
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.92 }}
           transition={{ duration: 0.3 }}
-          className="max-w-5xl w-full max-h-[85vh] flex flex-col items-center"
+          className="max-w-5xl w-full max-h-[85vh] flex flex-col items-center m-auto"
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="relative w-full max-h-[75vh] flex items-center justify-center">
+          <div className="relative w-full max-h-[60vh] sm:max-h-[75vh] flex items-center justify-center">
             {isVid ? (
               isEmbedVideo(image.url, image.type) ? (
                 <div className="relative w-full" style={{ maxWidth: 800, paddingBottom: '56.25%' }}>
@@ -115,7 +115,7 @@ export default function ImageLightbox({ images, index, onClose, onPrev, onNext }
               ) : (
                 <video
                   src={image.url}
-                  className="max-w-full max-h-[75vh] object-contain rounded-2xl shadow-2xl"
+                  className="max-w-full max-h-[60vh] sm:max-h-[75vh] object-contain rounded-2xl shadow-2xl"
                   controls
                   playsInline
                 />
@@ -124,7 +124,7 @@ export default function ImageLightbox({ images, index, onClose, onPrev, onNext }
               <img
                 src={image.url}
                 alt={image.caption || ''}
-                className="max-w-full max-h-[75vh] object-contain rounded-2xl shadow-2xl"
+                className="max-w-full max-h-[60vh] sm:max-h-[75vh] object-contain rounded-2xl shadow-2xl"
               />
             )}
           </div>
@@ -132,7 +132,7 @@ export default function ImageLightbox({ images, index, onClose, onPrev, onNext }
             <motion.p
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="text-white/80 text-base mt-4 text-center max-w-lg"
+              className="text-white/80 text-sm sm:text-base mt-3 sm:mt-4 text-center max-w-lg px-2"
             >
               {image.caption}
             </motion.p>
