@@ -163,7 +163,7 @@ export default function News() {
             <div className="space-y-8">
               {paged.map((item, index) => (
                 <Link
-                  to={`/noticias/${item.id}`}
+                  to={`/noticias/${item.slug || item.id}`}
                   key={item.id}
                   className="block bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col md:flex-row"
                 >

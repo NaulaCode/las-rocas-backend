@@ -2,6 +2,7 @@ export type NewsType = 'noticia' | 'evento' | 'festividad' | 'actividad';
 
 export interface News {
   id: string;
+  slug?: string;
   title: string;
   content: string;
   summary?: string;

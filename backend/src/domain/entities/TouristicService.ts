@@ -2,6 +2,7 @@ export type ServiceCategory = string;
 
 export interface TouristicService {
   id: string;
+  slug?: string;
   name: string;
   description: string;
   category: ServiceCategory;
@@ -20,6 +21,7 @@ export interface TouristicService {
 }
 
 export interface CreateServiceData {
+  slug?: string;
   name: string;
   description: string;
   category: ServiceCategory;
@@ -35,6 +37,7 @@ export interface CreateServiceData {
 }
 
 export interface UpdateServiceData {
+  slug?: string;
   name?: string;
   description?: string;
   category?: ServiceCategory;

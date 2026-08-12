@@ -2,6 +2,7 @@ import { TouristicService, CreateServiceData, UpdateServiceData } from '../entit
 
 export interface ServiceRepository {
   findById(id: string): Promise<TouristicService | null>;
+  findBySlug(slug: string): Promise<TouristicService | null>;
   findAll(activeOnly?: boolean): Promise<TouristicService[]>;
   findByCategory(category: string): Promise<TouristicService[]>;
   create(data: CreateServiceData): Promise<TouristicService>;

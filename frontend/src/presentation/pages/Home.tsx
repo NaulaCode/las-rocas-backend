@@ -682,7 +682,7 @@ export default function Home() {
                   />
                   <div className="relative bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 border border-gray-100 group-hover:border-transparent">
                     <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary-500 via-accent-500 to-primary-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10" />
-                    <Link to={`/servicios/${service.id}`} className="block">
+                    <Link to={`/servicios/${service.slug || service.id}`} className="block">
                       <div className="relative h-52 overflow-hidden">
                         {service.image ? (
                           <SafeImage src={service.image} alt={service.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />

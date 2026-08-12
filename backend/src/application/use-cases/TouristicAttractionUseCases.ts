@@ -9,8 +9,11 @@ export class TouristicAttractionUseCases {
     return this.repository.findAll(activeOnly);
   }
 
-  async getById(id: string): Promise<TouristicAttraction> {
-    const item = await this.repository.findById(id);
+  async getById(idOrSlug: string): Promise<TouristicAttraction> {
+    let item = await this.repository.findById(idOrSlug);
+    if (!item) {
+      item = await this.repository.findBySlug(idOrSlug);
+    }
     if (!item) throw new NotFoundError('Atractivo turístico no encontrado');
     return item;
   }

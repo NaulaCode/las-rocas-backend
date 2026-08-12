@@ -177,7 +177,7 @@ export default function TouristicAttractions() {
                   className="group relative"
                 >
                   <motion.div className="absolute -inset-0.5 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-2xl opacity-0 group-hover:opacity-20 blur transition-all duration-500" />
-                  <Link to={`/atractivos/${attraction.id}`} className="block relative bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border border-gray-100">
+                  <Link to={`/atractivos/${attraction.slug || attraction.id}`} className="block relative bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border border-gray-100">
                     <div className="relative h-48 overflow-hidden">
                       {attraction.image ? (
                         <SafeImage src={attraction.image} alt={attraction.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />

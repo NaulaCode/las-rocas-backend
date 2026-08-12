@@ -36,7 +36,12 @@ export default function Breadcrumbs() {
           {segments.map((seg, i) => {
             const href = '/' + segments.slice(0, i + 1).join('/');
             const isLast = i === segments.length - 1;
-            const label = routeKeys[seg] ? t(routeKeys[seg]) : seg.charAt(0).toUpperCase() + seg.slice(1);
+            const label = routeKeys[seg]
+              ? t(routeKeys[seg])
+              : seg
+                  .split('-')
+                  .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+                  .join(' ');
             return (
               <li key={seg} className="flex items-center gap-2">
                 <svg className="w-3 h-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">

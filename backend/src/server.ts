@@ -5,6 +5,7 @@ import { testPrismaConnection, disconnectPrisma } from './infrastructure/databas
 import { wsManager } from './infrastructure/websocket/WebSocketManager';
 import { reminderScheduler, sessionCleanupScheduler } from './di/container';
 import { ensurePgvector } from './infrastructure/database/postgres/enablePgvector';
+import { backfillSlugs } from './infrastructure/database/postgres/backfillSlugs';
 
 const startServer = async (): Promise<void> => {
   try {
@@ -12,6 +13,7 @@ const startServer = async (): Promise<void> => {
     log.info('🔌 Conectando a PostgreSQL...');
     try {
       await testPrismaConnection();
+      await backfillSlugs();
     } catch (e) {
       log.warn('No se pudo conectar a PostgreSQL, iniciando server igual', e);
     }

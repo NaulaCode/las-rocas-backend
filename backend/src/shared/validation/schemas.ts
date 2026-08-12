@@ -8,6 +8,7 @@ export const phoneField = z
   .transform((v) => v.replace(/[\s-]/g, ''));
 
 export const createServiceSchema = z.object({
+  slug: z.string().max(80).optional(),
   name: z.string().min(1, 'El nombre es requerido').max(200),
   description: z.string().min(1, 'La descripción es requerida'),
   category: z.string().min(1, 'La categoría es requerida'),
@@ -57,6 +58,7 @@ export const cancelReservationSchema = z.object({
 });
 
 export const createNewsSchema = z.object({
+  slug: z.string().max(80).optional(),
   title: z.string().min(1, 'El título es requerido').max(300),
   content: z.string().min(1, 'El contenido es requerido'),
   summary: z.string().optional(),
@@ -83,6 +85,7 @@ export const loginSchema = z.object({
 });
 
 export const createAttractionSchema = z.object({
+  slug: z.string().max(80).optional(),
   name: z.string().min(1, 'El nombre es requerido').max(200),
   description: z.string().min(1, 'La descripción es requerida'),
   category: z.enum(['natural', 'cultural', 'aventura', 'gastronomico', 'historico', 'playa', 'montana', 'otro']),

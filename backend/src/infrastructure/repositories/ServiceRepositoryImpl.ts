@@ -1,11 +1,18 @@
 import { ServiceRepository } from '../../domain/repositories/ServiceRepository';
 import { TouristicService, CreateServiceData, UpdateServiceData } from '../../domain/entities/TouristicService';
 import { getPrisma } from '../database/postgres/PrismaService';
+import { slugify } from '../../shared/utils/slugify';
 
 export class ServiceRepositoryImpl implements ServiceRepository {
 
   async findById(id: string): Promise<TouristicService | null> {
     const result = await getPrisma().service.findUnique({ where: { id } });
+    if (!result) return null;
+    return this.mapToService(result);
+  }
+
+  async findBySlug(slug: string): Promise<TouristicService | null> {
+    const result = await getPrisma().service.findUnique({ where: { slug } });
     if (!result) return null;
     return this.mapToService(result);
   }
@@ -36,8 +43,10 @@ export class ServiceRepositoryImpl implements ServiceRepository {
   }
 
   async create(data: CreateServiceData): Promise<TouristicService> {
+    const slug = await this.resolveUniqueSlug(slugify(data.slug || data.name));
     const result = await getPrisma().service.create({
       data: {
+        slug,
         name: data.name,
         description: data.description,
         category: data.category,
@@ -61,6 +70,8 @@ export class ServiceRepositoryImpl implements ServiceRepository {
     if (!existing) return null;
 
     const updateData: Record<string, unknown> = {};
+    if (data.slug !== undefined) updateData.slug = await this.resolveUniqueSlug(slugify(data.slug), id);
+    else if (data.name !== undefined && data.name !== existing.name) updateData.slug = await this.resolveUniqueSlug(slugify(data.name), id);
     if (data.name !== undefined) updateData.name = data.name;
     if (data.description !== undefined) updateData.description = data.description;
     if (data.category !== undefined) updateData.category = data.category;
@@ -97,9 +108,24 @@ export class ServiceRepositoryImpl implements ServiceRepository {
     return result !== null;
   }
 
+  private async resolveUniqueSlug(base: string, currentId?: string): Promise<string> {
+    let candidate = base || 'servicio';
+    let i = 2;
+    while (true) {
+      const existing = await getPrisma().service.findUnique({
+        where: { slug: candidate },
+        select: { id: true },
+      });
+      if (!existing || existing.id === currentId) return candidate;
+      candidate = `${base}-${i}`;
+      i++;
+    }
+  }
+
   private mapToService(row: any): TouristicService {
     return {
       id: row.id,
+      slug: row.slug ?? undefined,
       name: row.name,
       description: row.description,
       category: row.category,

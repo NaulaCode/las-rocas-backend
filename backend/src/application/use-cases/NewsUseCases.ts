@@ -9,8 +9,11 @@ export class NewsUseCases {
     return this.newsRepository.findAll(publishedOnly);
   }
 
-  async getById(id: string): Promise<News> {
-    const news = await this.newsRepository.findById(id);
+  async getById(idOrSlug: string): Promise<News> {
+    let news = await this.newsRepository.findById(idOrSlug);
+    if (!news) {
+      news = await this.newsRepository.findBySlug(idOrSlug);
+    }
     if (!news) {
       throw new NotFoundError('Noticia/Evento no encontrado');
     }

@@ -9,8 +9,11 @@ export class ServiceUseCases {
     return this.serviceRepository.findAll(activeOnly);
   }
 
-  async getById(id: string): Promise<TouristicService> {
-    const service = await this.serviceRepository.findById(id);
+  async getById(idOrSlug: string): Promise<TouristicService> {
+    let service = await this.serviceRepository.findById(idOrSlug);
+    if (!service) {
+      service = await this.serviceRepository.findBySlug(idOrSlug);
+    }
     if (!service) {
       throw new NotFoundError('Servicio');
     }

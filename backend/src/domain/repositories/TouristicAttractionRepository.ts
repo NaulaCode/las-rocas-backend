@@ -2,6 +2,7 @@ import { TouristicAttraction, CreateAttractionData, UpdateAttractionData } from 
 
 export interface TouristicAttractionRepository {
   findById(id: string): Promise<TouristicAttraction | null>;
+  findBySlug(slug: string): Promise<TouristicAttraction | null>;
   findAll(activeOnly?: boolean): Promise<TouristicAttraction[]>;
   findByCategory(category: string): Promise<TouristicAttraction[]>;
   create(data: CreateAttractionData): Promise<TouristicAttraction>;

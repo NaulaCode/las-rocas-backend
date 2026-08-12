@@ -1,11 +1,18 @@
 import { TouristicAttractionRepository } from '../../domain/repositories/TouristicAttractionRepository';
 import { TouristicAttraction, CreateAttractionData, UpdateAttractionData } from '../../domain/entities/TouristicAttraction';
 import { getPrisma } from '../database/postgres/PrismaService';
+import { slugify } from '../../shared/utils/slugify';
 
 export class TouristicAttractionRepositoryImpl implements TouristicAttractionRepository {
 
   async findById(id: string): Promise<TouristicAttraction | null> {
     const r = await getPrisma().touristicAttraction.findUnique({ where: { id } });
+    if (!r) return null;
+    return this.mapToAttraction(r);
+  }
+
+  async findBySlug(slug: string): Promise<TouristicAttraction | null> {
+    const r = await getPrisma().touristicAttraction.findUnique({ where: { slug } });
     if (!r) return null;
     return this.mapToAttraction(r);
   }
@@ -27,8 +34,10 @@ export class TouristicAttractionRepositoryImpl implements TouristicAttractionRep
   }
 
   async create(data: CreateAttractionData): Promise<TouristicAttraction> {
+    const slug = await this.resolveUniqueSlug(slugify(data.slug || data.name));
     const r = await getPrisma().touristicAttraction.create({
       data: {
+        slug,
         name: data.name,
         description: data.description,
         category: data.category as any,
@@ -50,6 +59,8 @@ export class TouristicAttractionRepositoryImpl implements TouristicAttractionRep
     if (!existing) return null;
 
     const updateData: Record<string, unknown> = {};
+    if (data.slug !== undefined) updateData.slug = await this.resolveUniqueSlug(slugify(data.slug), id);
+    else if (data.name !== undefined && data.name !== existing.name) updateData.slug = await this.resolveUniqueSlug(slugify(data.name), id);
     if (data.name !== undefined) updateData.name = data.name;
     if (data.description !== undefined) updateData.description = data.description;
     if (data.category !== undefined) updateData.category = data.category;
@@ -83,9 +94,24 @@ export class TouristicAttractionRepositoryImpl implements TouristicAttractionRep
     return r !== null;
   }
 
+  private async resolveUniqueSlug(base: string, currentId?: string): Promise<string> {
+    let candidate = base || 'atractivo';
+    let i = 2;
+    while (true) {
+      const existing = await getPrisma().touristicAttraction.findUnique({
+        where: { slug: candidate },
+        select: { id: true },
+      });
+      if (!existing || existing.id === currentId) return candidate;
+      candidate = `${base}-${i}`;
+      i++;
+    }
+  }
+
   private mapToAttraction(row: any): TouristicAttraction {
     return {
       id: row.id,
+      slug: row.slug ?? undefined,
       name: row.name,
       description: row.description,
       category: row.category,

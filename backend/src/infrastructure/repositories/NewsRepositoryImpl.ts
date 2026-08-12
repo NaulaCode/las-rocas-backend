@@ -2,12 +2,19 @@ import { NewsRepository } from '../../domain/repositories/NewsRepository';
 import { News, CreateNewsData, UpdateNewsData } from '../../domain/entities/News';
 import { getPrisma } from '../database/postgres/PrismaService';
 import { Prisma } from '@prisma/client';
+import { slugify } from '../../shared/utils/slugify';
 
 export class NewsRepositoryImpl implements NewsRepository {
 
   async findById(id: string): Promise<News | null> {
     const prisma = getPrisma();
     const result = await prisma.news.findUnique({ where: { id } });
+    return result as News | null;
+  }
+
+  async findBySlug(slug: string): Promise<News | null> {
+    const prisma = getPrisma();
+    const result = await prisma.news.findUnique({ where: { slug } });
     return result as News | null;
   }
 
@@ -34,8 +41,10 @@ export class NewsRepositoryImpl implements NewsRepository {
 
   async create(data: CreateNewsData): Promise<News> {
     const prisma = getPrisma();
+    const slug = await this.resolveUniqueSlug(slugify(data.slug || data.title));
     const result = await prisma.news.create({
       data: {
+        slug,
         title: data.title,
         content: data.content,
         summary: data.summary ?? undefined,
@@ -55,6 +64,8 @@ export class NewsRepositoryImpl implements NewsRepository {
     if (!exists) return null;
 
     const updateData: Prisma.NewsUpdateInput = {};
+    if (data.slug !== undefined) updateData.slug = await this.resolveUniqueSlug(slugify(data.slug), id);
+    else if (data.title !== undefined && data.title !== exists.title) updateData.slug = await this.resolveUniqueSlug(slugify(data.title), id);
     if (data.title !== undefined) updateData.title = data.title;
     if (data.content !== undefined) updateData.content = data.content;
     if (data.summary !== undefined) updateData.summary = data.summary;
@@ -84,5 +95,19 @@ export class NewsRepositoryImpl implements NewsRepository {
     const prisma = getPrisma();
     const result = await prisma.news.findUnique({ where: { id }, select: { id: true } });
     return result !== null;
+  }
+
+  private async resolveUniqueSlug(base: string, currentId?: string): Promise<string> {
+    let candidate = base || 'noticia';
+    let i = 2;
+    while (true) {
+      const existing = await getPrisma().news.findUnique({
+        where: { slug: candidate },
+        select: { id: true },
+      });
+      if (!existing || existing.id === currentId) return candidate;
+      candidate = `${base}-${i}`;
+      i++;
+    }
   }
 }

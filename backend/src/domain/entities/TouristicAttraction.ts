@@ -10,6 +10,7 @@ export type AttractionCategory =
 
 export interface TouristicAttraction {
   id: string;
+  slug?: string;
   name: string;
   description: string;
   category: AttractionCategory;
@@ -27,6 +28,7 @@ export interface TouristicAttraction {
 }
 
 export interface CreateAttractionData {
+  slug?: string;
   name: string;
   description: string;
   category: AttractionCategory;
@@ -41,6 +43,7 @@ export interface CreateAttractionData {
 }
 
 export interface UpdateAttractionData {
+  slug?: string;
   name?: string;
   description?: string;
   category?: AttractionCategory;

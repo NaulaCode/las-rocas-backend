@@ -254,7 +254,7 @@ export default function Chatbot() {
 
   const isServicePage = location.pathname.startsWith('/servicios/');
   const currentServiceId = isServicePage ? location.pathname.split('/servicios/')[1] : '';
-  const currentService = isServicePage ? services.find(s => s.id === currentServiceId || s.name.toLowerCase().replace(/\s+/g, '-') === currentServiceId.toLowerCase()) : null;
+  const currentService = isServicePage ? services.find(s => s.slug === currentServiceId || s.id === currentServiceId || s.name.toLowerCase().replace(/\s+/g, '-') === currentServiceId.toLowerCase()) : null;
   useEffect(() => { if (isOpen && currentService) { lastMentionedServiceRef.current = currentService.name; } }, [isOpen, currentService]);
   const { size, onPointerDown } = useResizable(416, 640, 300, 480, 600, 900);
 

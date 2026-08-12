@@ -204,7 +204,7 @@ export default function Services() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, delay: idx * 0.05 }}
                   className="group relative cursor-pointer"
-                  onClick={() => navigate(`/servicios/${service.id}`)}
+                  onClick={() => navigate(`/servicios/${service.slug || service.id}`)}
                 >
                   <motion.div
                     className="absolute -inset-0.5 bg-gradient-to-r from-primary-500 to-accent-500 rounded-2xl opacity-0 group-hover:opacity-20 blur transition-all duration-500"

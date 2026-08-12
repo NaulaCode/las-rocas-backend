@@ -352,7 +352,7 @@ export default function ServicioDetalle() {
                 {related.map((r, i) => (
                   <motion.div key={r.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }} transition={{ delay: i * 0.1 }}
-                    className="group relative cursor-pointer" onClick={() => navigate(`/servicios/${r.id}`)}>
+                    className="group relative cursor-pointer" onClick={() => navigate(`/servicios/${r.slug || r.id}`)}>
                     <motion.div className="absolute -inset-0.5 bg-gradient-to-r from-primary-500 to-accent-500 rounded-2xl opacity-0 group-hover:opacity-15 blur transition-all duration-500" />
                     <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden transition-all duration-300 group-hover:shadow-xl group-hover:-translate-y-1">
                       <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-primary-500 via-accent-500 to-primary-500 opacity-0 group-hover:opacity-100 transition-opacity z-10" />

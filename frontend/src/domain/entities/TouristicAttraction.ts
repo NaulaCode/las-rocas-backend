@@ -10,6 +10,7 @@ export type AttractionCategory =
 
 export interface TouristicAttraction {
   id: string;
+  slug?: string;
   name: string;
   description: string;
   category: AttractionCategory;

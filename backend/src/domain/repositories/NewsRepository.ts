@@ -2,6 +2,7 @@ import { News, CreateNewsData, UpdateNewsData } from '../entities/News';
 
 export interface NewsRepository {
   findById(id: string): Promise<News | null>;
+  findBySlug(slug: string): Promise<News | null>;
   findAll(publishedOnly?: boolean): Promise<News[]>;
   findByType(type: string): Promise<News[]>;
   create(data: CreateNewsData): Promise<News>;

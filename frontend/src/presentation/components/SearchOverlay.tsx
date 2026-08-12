@@ -42,9 +42,9 @@ export default function SearchOverlay({ open, onClose }: Props) {
     return () => document.removeEventListener('keydown', onKey);
   }, [open, onClose]);
 
-  const select = useCallback((id: string) => {
+  const select = useCallback((svc: { id: string; slug?: string }) => {
     onClose();
-    navigate(`/servicios/${id}`);
+    navigate(`/servicios/${svc.slug || svc.id}`);
   }, [onClose, navigate]);
 
   return (
@@ -88,7 +88,7 @@ export default function SearchOverlay({ open, onClose }: Props) {
                 {results.map((r) => (
                   <button
                     key={r.id}
-                    onClick={() => select(r.id)}
+                    onClick={() => select(r)}
                     className="w-full flex items-center gap-4 p-3 rounded-xl hover:bg-gray-50 transition-colors text-left"
                   >
                     <div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 bg-gray-100">
