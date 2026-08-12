@@ -897,7 +897,7 @@ export default function Home() {
               className="text-center mb-14"
             >
               <span className="inline-block px-3 py-1 bg-primary-100 text-primary-700 text-xs font-semibold rounded-full mb-4">
-                {t('home.galeriaTitulo')}
+                {t('galeria.titulo')}
               </span>
               <h2 className="text-4xl md:text-5xl font-bold mb-4">
                 <span className="gradient-text">{org?.pageContent?.home?.galleryTitle || 'Descubre Las Rocas a través de imágenes'}</span>
