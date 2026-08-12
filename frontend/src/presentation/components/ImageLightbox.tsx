@@ -60,14 +60,14 @@ export default function ImageLightbox({ images, index, onClose, onPrev, onNext }
       >
         <button
           onClick={onClose}
-          className="absolute top-6 right-6 w-12 h-12 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-all z-10"
+          className="absolute top-6 right-6 w-12 h-12 bg-black/40 border border-white/30 backdrop-blur-sm rounded-full flex items-center justify-center text-white shadow-lg hover:bg-black/60 hover:scale-105 transition-all z-10"
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
 
-        <div className="absolute top-6 left-1/2 -translate-x-1/2 text-white/70 text-sm font-medium">
+        <div className="absolute top-6 left-1/2 -translate-x-1/2 bg-black/40 border border-white/20 backdrop-blur-sm rounded-full px-3 py-1.5 text-white/90 text-sm font-medium">
           {index + 1} / {images.length}
         </div>
 
@@ -75,7 +75,7 @@ export default function ImageLightbox({ images, index, onClose, onPrev, onNext }
           <>
             <button
               onClick={(e) => { e.stopPropagation(); onPrev(); }}
-              className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-all hover:scale-110"
+              className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-black/40 border border-white/30 backdrop-blur-sm rounded-full flex items-center justify-center text-white shadow-lg hover:bg-black/60 transition-all hover:scale-110"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -83,7 +83,7 @@ export default function ImageLightbox({ images, index, onClose, onPrev, onNext }
             </button>
             <button
               onClick={(e) => { e.stopPropagation(); onNext(); }}
-              className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-all hover:scale-110"
+              className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-black/40 border border-white/30 backdrop-blur-sm rounded-full flex items-center justify-center text-white shadow-lg hover:bg-black/60 transition-all hover:scale-110"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

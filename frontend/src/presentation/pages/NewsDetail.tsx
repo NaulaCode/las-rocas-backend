@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import i18n from '../../i18n';
 import { container } from '../../di/container';
 import DetailLayout from '../components/DetailLayout';
+import ImageLightbox from '../components/ImageLightbox';
 import type { News } from '../../domain/entities/News';
 
 const typeGradients: Record<string, string> = {
@@ -26,6 +27,7 @@ export default function NewsDetail() {
   const { t } = useTranslation();
   const [item, setItem] = useState<News | null>(null);
   const [loading, setLoading] = useState(true);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   useEffect(() => {
     if (!id) return;
@@ -60,7 +62,10 @@ export default function NewsDetail() {
     >
       <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
         {item.image && (
-          <div className="relative h-64 md:h-96 overflow-hidden">
+          <div
+            className="relative h-64 md:h-96 overflow-hidden cursor-zoom-in"
+            onClick={() => setLightboxIndex(0)}
+          >
             <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
           </div>
@@ -97,6 +102,16 @@ export default function NewsDetail() {
           </div>
         </div>
       </div>
+
+      {lightboxIndex !== null && item.image && (
+        <ImageLightbox
+          images={[{ url: item.image, caption: item.title }]}
+          index={lightboxIndex}
+          onClose={() => setLightboxIndex(null)}
+          onPrev={() => setLightboxIndex((prev) => (prev === null ? 0 : 0))}
+          onNext={() => setLightboxIndex((prev) => (prev === null ? 0 : 0))}
+        />
+      )}
     </DetailLayout>
   );
 }

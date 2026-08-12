@@ -438,6 +438,16 @@ export default function ServicioDetalle() {
           </div>
         </section>
       </div>
+
+      {lightboxIndex !== null && images.length > 0 && (
+        <ImageLightbox
+          images={images}
+          index={lightboxIndex}
+          onClose={() => setLightboxIndex(null)}
+          onPrev={() => setLightboxIndex((prev) => prev === null ? 0 : (prev - 1 + images.length) % images.length)}
+          onNext={() => setLightboxIndex((prev) => prev === null ? 0 : (prev + 1) % images.length)}
+        />
+      )}
     </DetailLayout>
   );
 }
