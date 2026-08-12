@@ -1,5 +1,6 @@
 import { describe, it, before } from 'node:test';
 import assert from 'node:assert/strict';
+import { randomUUID } from 'node:crypto';
 
 const mockRepo = () => {
   let services: any[] = [];
@@ -7,9 +8,10 @@ const mockRepo = () => {
     findAll: async (activeOnly?: boolean) =>
       activeOnly ? services.filter(s => s.isActive) : services,
     findById: async (id: string) => services.find(s => s.id === id) || null,
+    findBySlug: async (slug: string) => services.find(s => s.slug === slug) || null,
     findByCategory: async (cat: string) => services.filter(s => s.category === cat && s.isActive),
     create: async (d: any) => {
-      const s = { ...d, id: 'svc-' + Date.now(), isActive: true, createdAt: new Date(), updatedAt: new Date() };
+      const s = { ...d, id: randomUUID(), isActive: true, createdAt: new Date(), updatedAt: new Date() };
       services.push(s);
       return s;
     },

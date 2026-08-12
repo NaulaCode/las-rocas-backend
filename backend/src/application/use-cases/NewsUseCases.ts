@@ -1,6 +1,7 @@
 import { NewsRepository } from '../../domain/repositories/NewsRepository';
 import { News, CreateNewsData, UpdateNewsData } from '../../domain/entities/News';
 import { NotFoundError, ValidationError } from '../../domain/errors/AppError';
+import { isUUID } from '../../shared/utils/isUUID';
 
 export class NewsUseCases {
   constructor(private newsRepository: NewsRepository) {}
@@ -10,7 +11,10 @@ export class NewsUseCases {
   }
 
   async getById(idOrSlug: string): Promise<News> {
-    let news = await this.newsRepository.findById(idOrSlug);
+    let news: News | null = null;
+    if (isUUID(idOrSlug)) {
+      news = await this.newsRepository.findById(idOrSlug);
+    }
     if (!news) {
       news = await this.newsRepository.findBySlug(idOrSlug);
     }

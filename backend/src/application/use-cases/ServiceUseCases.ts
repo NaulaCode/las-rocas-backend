@@ -1,6 +1,7 @@
 import { ServiceRepository } from '../../domain/repositories/ServiceRepository';
 import { TouristicService, CreateServiceData, UpdateServiceData } from '../../domain/entities/TouristicService';
 import { NotFoundError, ValidationError } from '../../domain/errors/AppError';
+import { isUUID } from '../../shared/utils/isUUID';
 
 export class ServiceUseCases {
   constructor(private serviceRepository: ServiceRepository) {}
@@ -10,7 +11,10 @@ export class ServiceUseCases {
   }
 
   async getById(idOrSlug: string): Promise<TouristicService> {
-    let service = await this.serviceRepository.findById(idOrSlug);
+    let service: TouristicService | null = null;
+    if (isUUID(idOrSlug)) {
+      service = await this.serviceRepository.findById(idOrSlug);
+    }
     if (!service) {
       service = await this.serviceRepository.findBySlug(idOrSlug);
     }
