@@ -37,6 +37,7 @@ export interface AdminFormData {
   message?: string;
   question?: string;
   answer?: string;
+  answerEn?: string;
   keywords?: string[];
   priority?: number;
   latitude?: number;

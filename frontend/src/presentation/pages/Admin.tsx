@@ -307,6 +307,7 @@ export default function Admin() {
       const payload = {
         question: form.question || '',
         answer: form.answer || '',
+        answerEn: form.answerEn || null,
         category: form.category || '',
         keywords: form.keywords || [],
         priority: form.priority ?? 0,

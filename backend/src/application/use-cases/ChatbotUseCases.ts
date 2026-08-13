@@ -175,12 +175,15 @@ export class ChatbotUseCases {
 
     const faqMatch = await this.findFaqMatch(query);
     if (faqMatch) {
-      session.history.push({ role: 'assistant', content: faqMatch.answer });
+      const lang = this.detectLanguage(query);
+      session.language = lang;
+      const faqAnswer = lang === 'en' ? (faqMatch.answerEn || faqMatch.answer) : faqMatch.answer;
+      session.history.push({ role: 'assistant', content: faqAnswer });
       this.trimHistory(session);
       await this.persistSession(session);
-      const logId = await this.logInteraction(query, faqMatch.answer, 'faq', faqMatch.question, sessionId);
+      const logId = await this.logInteraction(query, faqAnswer, 'faq', faqMatch.question, sessionId);
       return {
-        answer: faqMatch.answer,
+        answer: faqAnswer,
         aiGenerated: false,
         logId,
         relatedQuestions: await this.getRelatedQuestions(query),
@@ -281,13 +284,16 @@ export class ChatbotUseCases {
 
     const faqMatch = await this.findFaqMatch(query);
     if (faqMatch) {
-      session.history.push({ role: 'assistant', content: faqMatch.answer });
+      const lang = this.detectLanguage(query);
+      session.language = lang;
+      const faqAnswer = lang === 'en' ? (faqMatch.answerEn || faqMatch.answer) : faqMatch.answer;
+      session.history.push({ role: 'assistant', content: faqAnswer });
       this.trimHistory(session);
       await this.persistSession(session);
-      onToken(faqMatch.answer);
-      const logId = await this.logInteraction(query, faqMatch.answer, 'faq', faqMatch.question, sessionId);
+      onToken(faqAnswer);
+      const logId = await this.logInteraction(query, faqAnswer, 'faq', faqMatch.question, sessionId);
       const relatedQ = await this.getRelatedQuestions(query);
-      onDone({ answer: faqMatch.answer, aiGenerated: false, logId, relatedQuestions: relatedQ });
+      onDone({ answer: faqAnswer, aiGenerated: false, logId, relatedQuestions: relatedQ });
       return;
     }
 
@@ -389,10 +395,10 @@ export class ChatbotUseCases {
     return 'es';
   }
 
-  private async findFaqMatch(query: string): Promise<{ question: string; answer: string } | null> {
+  private async findFaqMatch(query: string): Promise<{ question: string; answer: string; answerEn?: string | null } | null> {
     const results = await this.chatbotRepository.search(query);
     const best = results.find(q => (q.relevance ?? 0) >= 25);
-    if (best) return { question: best.question, answer: best.answer };
+    if (best) return { question: best.question, answer: best.answer, answerEn: best.answerEn };
 
     if (!this.aiService) return null;
 
@@ -414,7 +420,7 @@ export class ChatbotUseCases {
           const idx = parseInt(match[1], 10) - 1;
           if (idx >= 0 && idx < activeFaqs.length) {
             this.logger.info('FAQ detectado por Gemini', { query, matchedFaq: activeFaqs[idx].question });
-            return { question: activeFaqs[idx].question, answer: activeFaqs[idx].answer };
+            return { question: activeFaqs[idx].question, answer: activeFaqs[idx].answer, answerEn: activeFaqs[idx].answerEn };
           }
         }
       }
@@ -1101,7 +1107,7 @@ REGLAS:
 
     const allFaqs = await this.chatbotRepository.findAll(true);
     for (const f of allFaqs) {
-      const text = `Pregunta: ${f.question}. Respuesta: ${f.answer}. Categoría: ${f.category}.`;
+      const text = `Pregunta: ${f.question}. Respuesta: ${f.answer}.${f.answerEn ? ` Respuesta EN: ${f.answerEn}.` : ''} Categoría: ${f.category}.`;
       try {
         const emb = await this.embeddingService.embed(text.substring(0, 2000));
         await this.embeddingRepo.save(`faq:${f.id}`, text.substring(0, 2000), emb);
@@ -1148,7 +1154,7 @@ REGLAS:
     this.contextCache = null;
 
     const q = await this.chatbotRepository.create(data);
-    await this.reindexEntity('faq', q.id, `Pregunta: ${q.question}. Respuesta: ${q.answer}. Categoría: ${q.category}.`);
+    await this.reindexEntity('faq', q.id, `Pregunta: ${q.question}. Respuesta: ${q.answer}.${q.answerEn ? ` Respuesta EN: ${q.answerEn}.` : ''} Categoría: ${q.category}.`);
     return q;
   }
 
@@ -1157,7 +1163,7 @@ REGLAS:
     if (!q) throw new NotFoundError('Pregunta no encontrada');
     this.contextCache = null;
 
-    await this.reindexEntity('faq', q.id, `Pregunta: ${q.question}. Respuesta: ${q.answer}. Categoría: ${q.category}.`);
+    await this.reindexEntity('faq', q.id, `Pregunta: ${q.question}. Respuesta: ${q.answer}.${q.answerEn ? ` Respuesta EN: ${q.answerEn}.` : ''} Categoría: ${q.category}.`);
     return q;
   }
 
@@ -1170,7 +1176,7 @@ REGLAS:
 
   async seedExtraFaqs(): Promise<{ added: number; total: number; reindexed: boolean }> {
     const newFaqs = [
-      { keywords: ['piscinas', 'termales', 'aguas termales', 'nadar', 'piscina', 'termal', 'relajarse', 'bañarse'], question: '¿Cómo funcionan las Piscinas de Aguas Termales?', answer: 'Nuestras piscinas de aguas termales son alimentadas por fuentes naturales de agua caliente. Están abiertas de 8:00 AM a 6:00 PM, todos los días. El costo de entrada es de $5.00 por persona e incluye el acceso durante todo el día. Contamos con áreas para adultos y niños, vestidores y áreas de descanso alrededor de las piscinas. Te recomendamos llevar traje de baño, toalla y bloqueador solar.', category: 'servicios', priority: 9 },
+      { keywords: ['piscinas', 'termales', 'aguas termales', 'nadar', 'piscina', 'termal', 'relajarse', 'bañarse'], question: '¿Cómo funcionan las Piscinas de Aguas Termales?', answer: 'Nuestras piscinas de aguas termales son alimentadas por fuentes naturales de agua caliente. Están abiertas de 8:00 AM a 6:00 PM, todos los días. El costo de entrada es de $2.00 para adultos y $1.00 para niños. El precio incluye el acceso durante todo el día. Contamos con áreas para adultos y niños, vestidores y áreas de descanso alrededor de las piscinas. Te recomendamos llevar traje de baño, toalla y bloqueador solar.', category: 'servicios', priority: 9 },
       { keywords: ['senderos', 'ecologicos', 'caminata', 'naturaleza', 'sendero', 'flora', 'fauna'], question: '¿Qué son los Senderos Ecológicos y cómo funcionan?', answer: 'Los Senderos Ecológicos son caminos señalizados dentro de nuestra comunidad que te permiten recorrer la naturaleza a tu propio ritmo. El acceso cuesta $3.00 por persona y puedes permanecer el tiempo que desees dentro de nuestro horario (7:00 AM - 5:00 PM). Durante el recorrido podrás observar flora y fauna nativa, y disfrutar de miradores naturales. Te sugerimos llevar calzado cómodo, agua y repelente de insectos.', category: 'servicios', priority: 8 },
       { keywords: ['descuento', 'descuentos', 'grupo', 'grupos', 'promocion', 'promociones', 'oferta', 'ofertas'], question: '¿Hay descuentos para grupos grandes?', answer: 'Sí, ofrecemos descuentos especiales para grupos de 10 personas o más. El descuento varía según los servicios contratados y la temporada. Para grupos escolares, empresariales o familiares grandes, contáctanos directamente a través de nuestro formulario de Contacto o WhatsApp para recibir una cotización personalizada. También tenemos paquetes especiales para excursiones de instituciones educativas.', category: 'servicios', priority: 7 },
       { keywords: ['guia', 'guias', 'idioma', 'idiomas', 'ingles', 'inglés', 'tour', 'guia turistico'], question: '¿Los guías hablan otros idiomas?', answer: 'Actualmente nuestros guías locales brindan recorridos en español. Si necesitas atención en inglés, te recomendamos solicitarlo con anticipación al momento de hacer tu reserva, para que podamos coordinar un guía con conocimientos básicos de inglés. Estamos trabajando para ofrecer servicios en más idiomas pronto.', category: 'servicios', priority: 6 },

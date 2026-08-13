@@ -12,6 +12,10 @@ export function ChatbotForm({ form, setForm }: { form: AdminFormData; setForm: (
         <textarea required rows={4} value={form.answer || ''} onChange={(e) => setForm({...form, answer: e.target.value})}
           className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition-all" />
       </div>
+      <div><label className="block text-sm font-medium mb-1 text-gray-700">Respuesta en inglés <span className="text-gray-400 font-normal">(opcional, para turistas que escriben en inglés)</span></label>
+        <textarea rows={4} value={form.answerEn || ''} onChange={(e) => setForm({...form, answerEn: e.target.value})}
+          className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition-all" placeholder="English translation of the answer (e.g. We are located in Comuna San Miguel...)" />
+      </div>
       <div><label className="block text-sm font-medium mb-1 text-gray-700">Categoría *</label>
         <select required value={form.category || ''} onChange={(e) => setForm({...form, category: e.target.value})}
           className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition-all">

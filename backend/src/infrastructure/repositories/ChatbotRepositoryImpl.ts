@@ -109,6 +109,7 @@ export class ChatbotRepositoryImpl implements ChatbotRepository {
         keywords: data.keywords,
         question: data.question,
         answer: data.answer,
+        answerEn: data.answerEn ?? null,
         category: data.category,
         priority: data.priority ?? 0,
         isActive: data.isActive ?? true,
@@ -126,6 +127,7 @@ export class ChatbotRepositoryImpl implements ChatbotRepository {
     if (data.keywords !== undefined) updateData.keywords = data.keywords;
     if (data.question !== undefined) updateData.question = data.question;
     if (data.answer !== undefined) updateData.answer = data.answer;
+    if (data.answerEn !== undefined) updateData.answerEn = data.answerEn;
     if (data.category !== undefined) updateData.category = data.category;
     if (data.priority !== undefined) updateData.priority = data.priority;
     if (data.isActive !== undefined) updateData.isActive = data.isActive;

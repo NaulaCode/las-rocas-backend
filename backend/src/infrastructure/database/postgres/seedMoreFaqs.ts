@@ -1,11 +1,15 @@
 import { getPrisma, disconnectPrisma } from './PrismaService';
 import { log } from '../../../shared/logger/logger';
+import { config } from '../../../shared/config/config';
+import { GeminiService } from '../../ai/GeminiService';
+import { EmbeddingService } from '../../ai/EmbeddingService';
+import { ChatbotEmbeddingRepositoryImpl } from '../../repositories/ChatbotEmbeddingRepositoryImpl';
 
 const newFaqs = [
   {
     keywords: ['piscinas', 'termales', 'aguas termales', 'nadar', 'piscina', 'termal', 'relajarse', 'bañarse'],
     question: '¿Cómo funcionan las Piscinas de Aguas Termales?',
-    answer: 'Nuestras piscinas de aguas termales son alimentadas por fuentes naturales de agua caliente. Están abiertas de 8:00 AM a 6:00 PM, todos los días. El costo de entrada es de $5.00 por persona e incluye el acceso durante todo el día. Contamos con áreas para adultos y niños, vestidores y áreas de descanso alrededor de las piscinas. Te recomendamos llevar traje de baño, toalla y bloqueador solar.',
+    answer: 'Nuestras piscinas de aguas termales son alimentadas por fuentes naturales de agua caliente. Están abiertas de 8:00 AM a 6:00 PM, todos los días. El costo de entrada es de $2.00 para adultos y $1.00 para niños. El precio incluye el acceso durante todo el día. Contamos con áreas para adultos y niños, vestidores y áreas de descanso alrededor de las piscinas. Te recomendamos llevar traje de baño, toalla y bloqueador solar.',
     category: 'servicios',
     priority: 9,
   },
@@ -142,19 +146,131 @@ const newFaqs = [
     category: 'servicios',
     priority: 6,
   },
+  {
+    keywords: ['ubicacion larga', 'dame la ubicacion', 'ubicacion', 'donde se encuentran', 'ubicados', 'lugar exacto', 'encontramos', 'coordenadas', 'latitud', 'longitud', 'direccion completa', 'pregunte por la ubicacion'],
+    question: '¿Me puedes dar la ubicación larga de dónde se encuentran?',
+    answer: 'Nuestra ubicación completa es: Asociación Turística Las Rocas (Asotur), Comuna San Miguel, Cantón Naranjal, Provincia del Guayas, Ecuador. Coordenadas: -2.760096, -79.626700. Ver en Google Maps: https://www.google.com/maps?q=-2.760096,-79.626700 . Estamos a aproximadamente 20 minutos de Naranjal, en la costa sur de Ecuador.',
+    category: 'ubicacion',
+    priority: 9,
+  },
+  {
+    keywords: ['ver la direccion', 'direccion para llegar', 'direccion', 'asotur', 'asotur las rocas', 'llegar', 'como llegar', 'indicaciones', 'ruta', 'navegacion', 'gps', 'donde puedo ver la direccion'],
+    question: '¿En dónde puedo ver la dirección para llegar a Asotur Las Rocas?',
+    answer: 'Puedes ver nuestra dirección en Google Maps: https://www.google.com/maps?q=-2.760096,-79.626700 . Y obtener indicaciones exactas desde tu ubicación: https://www.google.com/maps/dir/?api=1&destination=-2.760096,-79.626700 . Nuestra dirección es: Comuna San Miguel, Cantón Naranjal, Provincia del Guayas, Ecuador. También encuentras el mapa en la sección de Contacto de nuestra web.',
+    category: 'ubicacion',
+    priority: 9,
+  },
+  {
+    keywords: ['asociacion turistica las rocas', 'asociacion', 'asotur', 'donde se encuentra', 'se encuentra', 'donde queda', 'queda', 'ubicacion', 'ubicada', 'donde esta la asociacion'],
+    question: '¿Dónde se encuentra la asociación turística Las Rocas?',
+    answer: 'La Asociación Turística Las Rocas (Asotur) se encuentra en la Comuna San Miguel, Cantón Naranjal, Provincia del Guayas, Ecuador, a aproximadamente 20 minutos de Naranjal. Ubicación en el mapa: https://www.google.com/maps?q=-2.760096,-79.626700',
+    category: 'ubicacion',
+    priority: 9,
+  },
+  {
+    keywords: ['comuna san miguel', 'san miguel', 'comuna', 'donde queda la comuna', 'naranjal', 'canton'],
+    question: '¿Dónde queda la Comuna San Miguel?',
+    answer: 'La Comuna San Miguel queda en el Cantón Naranjal, Provincia del Guayas, en la costa sur de Ecuador. Las Rocas se ubica dentro de esta comuna, a aproximadamente 20 minutos del centro de Naranjal. Ver en el mapa: https://www.google.com/maps?q=-2.760096,-79.626700',
+    category: 'ubicacion',
+    priority: 7,
+  },
+  {
+    keywords: ['lejos', 'distancia', 'naranjal', 'cuanto falta', 'que tan lejos', 'minutos de naranjal', 'cerca de naranjal'],
+    question: '¿Qué tan lejos está Las Rocas de Naranjal?',
+    answer: 'Las Rocas está a aproximadamente 20 minutos en vehículo desde Naranjal. Desde Guayaquil, el viaje hasta Naranjal toma alrededor de una hora y media. También puedes llegar en bus desde Guayaquil o Naranjal, o coordinar nuestro transporte turístico con reserva previa.',
+    category: 'ubicacion',
+    priority: 6,
+  },
+  {
+    keywords: ['guayaquil', 'desde guayaquil', 'viajar desde guayaquil', 'ir desde guayaquil', 'guayaquil a las rocas', 'carretera', 'via', 'bus desde guayaquil'],
+    question: '¿Cómo llego desde Guayaquil a Las Rocas?',
+    answer: 'Desde Guayaquil puedes llegar de dos formas: En bus: hay buses desde Guayaquil hacia Naranjal que te dejan cerca de la comuna. En auto: toma la vía Guayaquil–Machala hacia Naranjal y luego el desvío hacia Comuna San Miguel (Las Rocas está a unos 20 minutos de Naranjal). También coordinamos transporte turístico con reserva previa. Mapa: https://www.google.com/maps?q=-2.760096,-79.626700',
+    category: 'ubicacion',
+    priority: 8,
+  },
+  {
+    keywords: ['entrada', 'costo de la entrada', 'cuanto cuesta la entrada', 'tarifa', 'valor de entrada', 'precio de entrada', 'cuanto vale la entrada', 'cuanto pagar', 'cuanto se paga'],
+    question: '¿Cuánto cuesta la entrada a Las Rocas?',
+    answer: 'No tenemos una entrada general: cada servicio tiene su propia tarifa. Senderos Ecológicos $3 por persona, Piscinas de Aguas Termales $2 adultos y $1 niños, Caminata Ecológica Guiada $10 por persona y Recorrido a la Vertiente de Agua Natural $10 por persona. Consulta la sección de Servicios de nuestra web para ver los precios actualizados.',
+    category: 'servicios',
+    priority: 8,
+  },
+  {
+    keywords: ['senderos ecologicos', 'costo de los senderos', 'precio de los senderos', 'senderos', 'cuanto cuestan los senderos'],
+    question: '¿Cuál es el costo de los Senderos Ecológicos?',
+    answer: 'El acceso a los Senderos Ecológicos cuesta $3.00 por persona e incluye el recorrido por los caminos naturales dentro de nuestro horario de atención. Te sugerimos llevar calzado cómodo, agua y repelente de insectos.',
+    category: 'servicios',
+    priority: 7,
+  },
+  {
+    keywords: ['caminata ecologica', 'costo de la caminata', 'precio de la caminata', 'caminata guiada', 'cuanto cuesta la caminata', 'caminata'],
+    question: '¿Cuánto cuesta la Caminata Ecológica Guiada?',
+    answer: 'La Caminata Ecológica Guiada cuesta $10.00 por persona e incluye un recorrido por senderos naturales acompañado por guías locales especializados. Te recomendamos reservar con anticipación para asegurar tu cupo.',
+    category: 'servicios',
+    priority: 7,
+  },
+  {
+    keywords: ['domingo', 'domingos', 'abierto el domingo', 'atencion el domingo', 'fines de semana', 'fin de semana', 'horario fin de semana', 'sabado'],
+    question: '¿Están abiertos los domingos?',
+    answer: 'Sí, los domingos atendemos con cita previa. Nuestro horario es de lunes a viernes de 8:00 AM a 6:00 PM y sábados de 9:00 AM a 2:00 PM. Si deseas visitarnos un domingo, contáctanos con anticipación para coordinar tu visita.',
+    category: 'general',
+    priority: 8,
+  },
+  {
+    keywords: ['restaurante', 'restaurant', 'donde comer', 'comer', 'almuerzo', 'cocina', 'cafeteria', 'comida'],
+    question: '¿Hay restaurante en Las Rocas?',
+    answer: 'Sí, contamos con un Restaurante Comunitario donde se ofrecen platos tradicionales de la gastronomía local con ingredientes frescos. También tenemos opciones vegetarianas si nos avisas con anticipación.',
+    category: 'gastronomia',
+    priority: 7,
+  },
+  {
+    keywords: ['piscina', 'piscinas', 'niños', 'piscinas para niños', 'aptas para niños', 'menores', 'area de niños', 'familia'],
+    question: '¿Las piscinas de aguas termales son aptas para niños?',
+    answer: 'Sí, nuestras piscinas de aguas termales cuentan con áreas para adultos y para niños. Recomendamos que los menores estén siempre bajo la supervisión de un adulto. Lleva traje de baño, toalla y bloqueador solar.',
+    category: 'servicios',
+    priority: 7,
+  },
+  {
+    keywords: ['asotur', 'que es asotur', 'que significa asotur', 'significado', 'asociacion turistica', 'organizacion', 'las rocas que es'],
+    question: '¿Qué es Asotur Las Rocas?',
+    answer: 'Asotur es la Asociación Turística Las Rocas, una organización comunitaria de la Comuna San Miguel dedicada a impulsar el turismo local, ofrecer servicios y actividades turísticas, y promover el desarrollo de su comunidad.',
+    category: 'general',
+    priority: 8,
+  },
+  {
+    keywords: ['tarjeta', 'tarjetas', 'credito', 'debito', 'visa', 'mastercard', 'pago con tarjeta', 'tarjeta de credito'],
+    question: '¿Puedo pagar con tarjeta de crédito o débito?',
+    answer: 'Por el momento no aceptamos tarjetas de crédito ni débito. Nuestros métodos de pago son: efectivo en dólares americanos (USD), transferencia bancaria y depósito en cuenta.',
+    category: 'servicios',
+    priority: 7,
+  },
+  {
+    keywords: ['sin reserva', 'visitar sin reserva', 'entrar sin reserva', 'se puede ir', 'sin cita', 'reserva previa', 'ir sin reservar'],
+    question: '¿Se puede visitar Las Rocas sin reserva previa?',
+    answer: 'Sí, puedes visitarnos sin reserva previa. Sin embargo, para servicios como la Caminata Ecológica Guiada, el paquete Full Day, el transporte turístico o las visitas en domingo, te recomendamos reservar con anticipación para asegurar tu cupo.',
+    category: 'reservas',
+    priority: 7,
+  },
+  {
+    keywords: ['feriado', 'feriados', 'dias festivos', 'festivos', 'dias feriados', 'trabajan feriados', 'atencion feriados'],
+    question: '¿Atienden los feriados?',
+    answer: 'Sí, normalmente atendemos durante feriados y fines de semana, que suelen ser fechas con mayor afluencia y eventos especiales. Te recomendamos reservar con anticipación y contactarnos para confirmar el horario de tu visita.',
+    category: 'general',
+    priority: 6,
+  },
 ];
 
 async function run() {
   log.info('Agregando nuevas preguntas frecuentes...');
   const prisma = getPrisma();
 
-  let added = 0;
+  const addedFaqs: { id: string; question: string; answer: string; category: string }[] = [];
   for (const faq of newFaqs) {
     const existing = await prisma.chatbotQuestion.findFirst({
       where: { question: faq.question },
     });
     if (!existing) {
-      await prisma.chatbotQuestion.create({
+      const created = await prisma.chatbotQuestion.create({
         data: {
           keywords: faq.keywords,
           question: faq.question,
@@ -164,12 +280,32 @@ async function run() {
           isActive: true,
         },
       });
-      added++;
+      addedFaqs.push({ id: created.id, question: created.question, answer: created.answer, category: created.category });
       log.info(`  + ${faq.question}`);
     }
   }
 
-  log.info(`Se agregaron ${added} preguntas nuevas.`);
+  if (addedFaqs.length > 0) {
+    if (config.ai.geminiApiKey) {
+      const aiService = new GeminiService(config.ai.geminiApiKey);
+      const embeddingService = new EmbeddingService(aiService);
+      const embeddingRepo = new ChatbotEmbeddingRepositoryImpl();
+      for (const f of addedFaqs) {
+        const text = `Pregunta: ${f.question}. Respuesta: ${f.answer}. Categoría: ${f.category}.`;
+        try {
+          const emb = await embeddingService.embed(text.substring(0, 2000));
+          await embeddingRepo.save(`faq:${f.id}`, text.substring(0, 2000), emb);
+          log.info(`  embed ${f.question}`);
+        } catch (e) {
+          log.warn(`No se pudo generar el embedding de ${f.question}`, e);
+        }
+      }
+    } else {
+      log.warn('GEMINI_API_KEY no configurada; embeddings no generados. Ejecuta npm run seed-embeddings.');
+    }
+  }
+
+  log.info(`Se agregaron ${addedFaqs.length} preguntas nuevas.`);
   await disconnectPrisma();
   process.exit(0);
 }

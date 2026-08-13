@@ -179,6 +179,7 @@ model ChatbotQuestion {
   keywords  String[]
   question  String
   answer    String
+  answerEn  String?  @map("answer_en")
   category  String
   priority  Int      @default(0)
   isActive  Boolean  @default(true) @map("is_active")

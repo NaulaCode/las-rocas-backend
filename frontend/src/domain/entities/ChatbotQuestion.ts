@@ -2,6 +2,7 @@ export interface ChatbotQuestion {
   id: string;
   question: string;
   answer: string;
+  answerEn?: string | null;
   category: string;
   keywords: string[];
   priority: number;
@@ -13,6 +14,7 @@ export interface ChatbotQuestion {
 export interface CreateQuestionDTO {
   question: string;
   answer: string;
+  answerEn?: string | null;
   category: string;
   keywords?: string[];
   priority?: number;

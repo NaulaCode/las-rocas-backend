@@ -3,6 +3,7 @@ export interface ChatbotQuestion {
   keywords: string[];
   question: string;
   answer: string;
+  answerEn?: string | null;
   category: string;
   priority: number;
   isActive: boolean;
@@ -15,6 +16,7 @@ export interface CreateChatbotQuestionData {
   keywords: string[];
   question: string;
   answer: string;
+  answerEn?: string | null;
   category: string;
   priority?: number;
   isActive?: boolean;
@@ -24,6 +26,7 @@ export interface UpdateChatbotQuestionData {
   keywords?: string[];
   question?: string;
   answer?: string;
+  answerEn?: string | null;
   category?: string;
   priority?: number;
   isActive?: boolean;
