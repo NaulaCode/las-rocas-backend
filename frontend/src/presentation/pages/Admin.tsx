@@ -367,7 +367,7 @@ export default function Admin() {
     { id: 'reservations', label: 'Reservas', count: reservations.length, permission: 'reservations:list' },
     { id: 'chatbot', label: 'FAQ Chatbot', count: questions.length, permission: 'chatbot:list' },
     { id: 'estadisticas', label: 'Estadísticas', count: null, permission: null },
-    { id: 'pages', label: 'Páginas', count: 13, permission: 'organization:update' },
+    { id: 'pages', label: 'Páginas', count: 12, permission: 'organization:update' },
     { id: 'attractions', label: 'Atractivos', count: attractions.length, permission: 'attractions:list' },
     { id: 'reviews', label: 'Reseñas', count: null, permission: 'reviews:list' },
 
