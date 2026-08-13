@@ -2,7 +2,7 @@ import https from 'https';
 import { IAiService, ChatOptions, ChatResult, FunctionCall } from '../../domain/ports/IAiService';
 import { logger } from '../../shared/logger/logger';
 
-const TEXT_EMBEDDING_MODEL = 'text-embedding-004';
+const TEXT_EMBEDDING_MODEL = 'gemini-embedding-001';
 const CHAT_MODEL = 'gemini-2.5-flash';
 const API_BASE = 'generativelanguage.googleapis.com';
 const MAX_RETRIES = 3;

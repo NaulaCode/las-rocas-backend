@@ -3,6 +3,27 @@ import { ChatbotQuestion, CreateChatbotQuestionData, UpdateChatbotQuestionData }
 import { getPrisma } from '../database/postgres/PrismaService';
 import { Prisma } from '@prisma/client';
 
+const STOP_WORDS = new Set([
+  'de', 'la', 'el', 'los', 'las', 'que', 'se', 'en', 'a', 'al', 'del', 'y', 'o', 'u',
+  'un', 'una', 'unos', 'unas', 'para', 'por', 'con', 'es', 'son', 'me', 'mi', 'tu', 'te',
+  'su', 'sus', 'lo', 'le', 'si', 'no', 'pero', 'mas', 'más', 'hay', 'the', 'and', 'of',
+  'to', 'in', 'on', 'for', 'is', 'do', 'are', 'you', 'your', 'i', 'we',
+]);
+
+function normalize(text: string): string {
+  return (text || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+const HIGH_INTENT_KEYWORDS = new Set([
+  'where', 'donde', 'ubicacion', 'direccion', 'address', 'location', 'maps', 'map',
+]);
+
 export class ChatbotRepositoryImpl implements ChatbotRepository {
 
   async findById(id: string): Promise<ChatbotQuestion | null> {
@@ -34,49 +55,51 @@ export class ChatbotRepositoryImpl implements ChatbotRepository {
 
   async search(queryText: string): Promise<ChatbotQuestion[]> {
     const prisma = getPrisma();
-    const searchTerms = queryText.split(/\s+/).filter(Boolean);
-    const queryLower = queryText.toLowerCase();
+    const queryNorm = normalize(queryText);
+    const terms = queryNorm
+      .split(' ')
+      .filter((t) => t.length >= 3 && !STOP_WORDS.has(t));
 
-    const termConditions = searchTerms.flatMap((term) => [
-      { question: { contains: term, mode: 'insensitive' as const } },
-      { answer: { contains: term, mode: 'insensitive' as const } },
-    ]);
-
-    const result = await prisma.chatbotQuestion.findMany({
-      where: {
-        isActive: true,
-        OR: [
-          { question: { contains: queryText, mode: 'insensitive' } },
-          { answer: { contains: queryText, mode: 'insensitive' } },
-          ...termConditions,
-        ],
-      },
+    const results = await prisma.chatbotQuestion.findMany({
+      where: { isActive: true },
       orderBy: [
         { priority: 'desc' },
         { createdAt: 'asc' },
       ],
     });
 
-    return result.map((q) => {
-      const qLower = q.question.toLowerCase();
-      const aLower = q.answer.toLowerCase();
-      const kwLower = (q.keywords ?? []).map(k => k.toLowerCase());
+    const scored = results.map((q) => {
+      const qNorm = normalize(q.question);
+      const aNorm = normalize(q.answer);
+      const kwNorms = (q.keywords ?? []).map((k) => normalize(k));
 
       let score = 0;
+      if (queryNorm && qNorm === queryNorm) score += 100;
+      else if (queryNorm && qNorm.includes(queryNorm)) score += 60;
 
-      if (qLower === queryLower) score += 80;
-      else if (qLower.includes(queryLower)) score += 60;
-
-      for (const term of searchTerms) {
-        if (qLower.includes(term)) score += 12;
-        if (aLower.includes(term)) score += 6;
-        if (kwLower.some(k => k.includes(term) || term.includes(k))) score += 20;
+      for (const term of terms) {
+        const matchedKeyword = kwNorms.find((k) => k === term || k.includes(term) || term.includes(k));
+        if (matchedKeyword) {
+          score += HIGH_INTENT_KEYWORDS.has(matchedKeyword) ? 40 : 30;
+        } else if (qNorm.includes(term)) {
+          score += 15;
+        } else if (aNorm.includes(term)) {
+          score += 6;
+        }
       }
 
-      score += Math.min(q.priority ?? 0, 10);
+      score += Math.min(q.priority ?? 0, 10) * 0.5;
 
-      return { ...q, relevance: Math.min(score, 100) };
-    }) as ChatbotQuestion[];
+      return { ...q, relevance: Math.round(Math.min(score, 100)) };
+    });
+
+    return scored
+      .filter((q) => (q.relevance ?? 0) >= 10)
+      .sort((a, b) =>
+        (b.relevance ?? 0) - (a.relevance ?? 0) ||
+        (b.priority ?? 0) - (a.priority ?? 0) ||
+        a.createdAt.getTime() - b.createdAt.getTime()
+      ) as ChatbotQuestion[];
   }
 
   async create(data: CreateChatbotQuestionData): Promise<ChatbotQuestion> {
