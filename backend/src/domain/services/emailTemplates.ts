@@ -17,7 +17,7 @@ const STATUS_META: Record<string, { label: string; color: string; bg: string; me
     label: 'Cancelada',
     color: '#991b1b',
     bg: '#fee2e2',
-    message: 'Si crees que hay un error, cont&aacute;ctanos respondiendo a este correo o escr&iacute;benos por WhatsApp.',
+    message: 'Si crees que hay un error, escr&iacute;benos por WhatsApp.',
   },
   completada: {
     label: 'Completada',
