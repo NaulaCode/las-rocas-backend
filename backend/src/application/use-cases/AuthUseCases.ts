@@ -139,7 +139,7 @@ export class AuthUseCases {
     if (this.mailService) {
       const resetLink = `${this.frontendUrl}/reset-password?token=${resetToken}`;
       const html = passwordResetEmail({ userName: user.firstName, resetLink });
-      this.mailService.send(user.email, 'Recuperación de contraseña - Las Rocas', html).catch(e =>
+      this.mailService.send(user.email, 'Recuperación de contraseña - Asociación Turística Las Rocas', html).catch(e =>
         this.logger.error(`Error sending password reset email`, e)
       );
     }

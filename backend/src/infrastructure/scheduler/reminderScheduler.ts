@@ -48,7 +48,7 @@ export class ReminderScheduler {
           });
           await mail.send(
             r.userEmail,
-            'Recordatorio: tu reserva en Las Rocas es mañana',
+            'Recordatorio: tu reserva en Asociación Turística Las Rocas es mañana',
             html,
           );
           logger.info(`Reminder sent to ${r.userEmail} for ${r.serviceName}`);

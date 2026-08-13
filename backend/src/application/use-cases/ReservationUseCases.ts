@@ -92,6 +92,11 @@ export class ReservationUseCases {
     const reservation = await this.reservationRepository.create(data);
 
     if (this.mailService) {
+      let orgLogo: string | undefined;
+      if (this.organizationRepository) {
+        const org = await this.organizationRepository.find();
+        orgLogo = org?.logo;
+      }
       const html = reservationConfirmation({
         userName: data.userName,
         serviceName: data.serviceName || 'Servicio',
@@ -101,8 +106,9 @@ export class ReservationUseCases {
         message: data.message,
         id: reservation.id,
         status: 'pendiente',
+        logoUrl: orgLogo,
       });
-      this.mailService.send(data.userEmail, 'Solicitud de reserva recibida - Las Rocas', html).catch(e =>
+      this.mailService.send(data.userEmail, 'Solicitud de reserva recibida - Asociación Turística Las Rocas', html).catch(e =>
         this.logger.error('Error sending confirmation email', e)
       );
     }
@@ -119,8 +125,9 @@ export class ReservationUseCases {
           numberOfPeople: reservation.numberOfPeople,
           message: reservation.message,
           id: reservation.id,
+          logoUrl: org?.logo,
         });
-        this.mailService.send(org.email, 'Nueva reserva recibida - Las Rocas', html).catch(e =>
+        this.mailService.send(org.email, 'Nueva reserva recibida - Asociación Turística Las Rocas', html).catch(e =>
           this.logger.error('Error sending admin notification', e)
         );
       }
@@ -136,6 +143,11 @@ export class ReservationUseCases {
     }
 
     if (this.mailService && data.status) {
+      let orgLogo: string | undefined;
+      if (this.organizationRepository) {
+        const org = await this.organizationRepository.find();
+        orgLogo = org?.logo;
+      }
       if (data.status === 'confirmada') {
         const html = reservationConfirmation({
           userName: reservation.userName,
@@ -146,8 +158,9 @@ export class ReservationUseCases {
           message: reservation.message,
           id: reservation.id,
           status: 'confirmada',
+          logoUrl: orgLogo,
         });
-        this.mailService.send(reservation.userEmail, 'Reserva confirmada - Las Rocas', html).catch(e =>
+        this.mailService.send(reservation.userEmail, 'Reserva confirmada - Asociación Turística Las Rocas', html).catch(e =>
           this.logger.error('Error sending confirmation email', e)
         );
       } else {
@@ -156,8 +169,9 @@ export class ReservationUseCases {
           serviceName: reservation.serviceName,
           status: data.status,
           id: reservation.id,
+          logoUrl: orgLogo,
         });
-        this.mailService.send(reservation.userEmail, 'Estado de reserva actualizado - Las Rocas', html).catch(e =>
+        this.mailService.send(reservation.userEmail, 'Estado de reserva actualizado - Asociación Turística Las Rocas', html).catch(e =>
           this.logger.error('Error sending status email', e)
         );
       }
@@ -181,11 +195,16 @@ export class ReservationUseCases {
     if (!updated) throw new NotFoundError('Reserva no encontrada');
 
     if (this.mailService) {
+      let orgLogo: string | undefined;
+      if (this.organizationRepository) {
+        const org = await this.organizationRepository.find();
+        orgLogo = org?.logo;
+      }
       const html = reservationStatusChange({
         userName: updated.userName, serviceName: updated.serviceName,
-        status: 'cancelada', id: updated.id,
+        status: 'cancelada', id: updated.id, logoUrl: orgLogo,
       });
-      this.mailService.send(updated.userEmail, 'Reserva cancelada - Las Rocas', html).catch(e =>
+      this.mailService.send(updated.userEmail, 'Reserva cancelada - Asociación Turística Las Rocas', html).catch(e =>
         this.logger.error('Error sending cancellation email', e)
       );
     }

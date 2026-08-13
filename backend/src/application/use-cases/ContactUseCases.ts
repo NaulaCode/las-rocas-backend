@@ -33,8 +33,9 @@ export class ContactUseCases {
           phone: data.phone,
           subject: data.subject,
           message: data.message,
+          logoUrl: org?.logo,
         });
-        this.mailService.send(org.email, 'Nuevo mensaje de contacto - Las Rocas', html).catch(e =>
+        this.mailService.send(org.email, 'Nuevo mensaje de contacto - Asociación Turística Las Rocas', html).catch(e =>
           this.logger.error('Error sending contact notification', e)
         );
       }
