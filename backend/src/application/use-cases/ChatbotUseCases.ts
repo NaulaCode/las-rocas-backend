@@ -181,7 +181,7 @@ export class ChatbotUseCases {
       session.history.push({ role: 'assistant', content: faqAnswer });
       this.trimHistory(session);
       await this.persistSession(session);
-      const logId = await this.logInteraction(query, faqAnswer, 'faq', faqMatch.question, sessionId);
+      const logId = await this.logInteraction(query, faqAnswer, 'faq', faqMatch.question, sessionId, this.confidenceLevel(faqMatch.relevance ?? 0));
       return {
         answer: faqAnswer,
         aiGenerated: false,
@@ -255,7 +255,7 @@ export class ChatbotUseCases {
         answerLength: finalAnswer.length,
       });
 
-      const logId = await this.logInteraction(query, finalAnswer, 'ai', undefined, sessionId);
+      const logId = await this.logInteraction(query, finalAnswer, 'ai', undefined, sessionId, this.aiConfidence(ragResult));
       const related = await this.getRelatedQuestions(query);
 
       return { answer: finalAnswer, aiGenerated: true, logId, relatedQuestions: related, sources: ragResult.sources };
@@ -291,7 +291,7 @@ export class ChatbotUseCases {
       this.trimHistory(session);
       await this.persistSession(session);
       onToken(faqAnswer);
-      const logId = await this.logInteraction(query, faqAnswer, 'faq', faqMatch.question, sessionId);
+      const logId = await this.logInteraction(query, faqAnswer, 'faq', faqMatch.question, sessionId, this.confidenceLevel(faqMatch.relevance ?? 0));
       const relatedQ = await this.getRelatedQuestions(query);
       onDone({ answer: faqAnswer, aiGenerated: false, logId, relatedQuestions: relatedQ });
       return;
@@ -373,7 +373,7 @@ export class ChatbotUseCases {
         answerLength: finalAnswer.length,
       });
 
-      const logId = await this.logInteraction(query, finalAnswer, 'ai', undefined, sessionId);
+      const logId = await this.logInteraction(query, finalAnswer, 'ai', undefined, sessionId, this.aiConfidence(ragResult));
       const relatedQ = await this.getRelatedQuestions(query);
       onDone({ answer: finalAnswer, aiGenerated: true, logId, sources: ragResult.sources, relatedQuestions: relatedQ });
     } catch (error) {
@@ -428,10 +428,10 @@ export class ChatbotUseCases {
     return 'en';
   }
 
-  private async findFaqMatch(query: string): Promise<{ question: string; answer: string; answerEn?: string | null } | null> {
+  private async findFaqMatch(query: string): Promise<{ question: string; answer: string; answerEn?: string | null; relevance?: number } | null> {
     const results = await this.chatbotRepository.search(query);
     const best = results.find(q => (q.relevance ?? 0) >= 25);
-    if (best) return { question: best.question, answer: best.answer, answerEn: best.answerEn };
+    if (best) return { question: best.question, answer: best.answer, answerEn: best.answerEn, relevance: best.relevance };
 
     if (!this.aiService) return null;
 
@@ -453,7 +453,7 @@ export class ChatbotUseCases {
           const idx = parseInt(match[1], 10) - 1;
           if (idx >= 0 && idx < activeFaqs.length) {
             this.logger.info('FAQ detectado por Gemini', { query, matchedFaq: activeFaqs[idx].question });
-            return { question: activeFaqs[idx].question, answer: activeFaqs[idx].answer, answerEn: activeFaqs[idx].answerEn };
+            return { question: activeFaqs[idx].question, answer: activeFaqs[idx].answer, answerEn: activeFaqs[idx].answerEn, relevance: 100 };
           }
         }
       }
@@ -997,7 +997,8 @@ REGLAS:
   }
 
   private async buildResponse(query: string, answer: string, source: 'faq' | 'ai' | 'fallback', sessionId?: string): Promise<ChatResult> {
-    const logId = await this.logInteraction(query, answer, source, undefined, sessionId);
+    const confidence = source === 'fallback' ? 'baja' as const : 'media' as const;
+    const logId = await this.logInteraction(query, answer, source, undefined, sessionId, confidence);
     const related = await this.getRelatedQuestions(query);
     return { answer, aiGenerated: source === 'ai', logId, relatedQuestions: related };
   }
@@ -1276,10 +1277,25 @@ REGLAS:
     return this.logRepository.getStats();
   }
 
-  private async logInteraction(query: string, answer: string, source: 'faq' | 'ai' | 'fallback', matchedQuestion?: string, sessionId?: string): Promise<string | undefined> {
+  private confidenceLevel(score: number, max = 100): 'alta' | 'media' | 'baja' {
+    const pct = max > 0 ? (score / max) * 100 : 0;
+    if (pct >= 70) return 'alta';
+    if (pct >= 45) return 'media';
+    return 'baja';
+  }
+
+  private aiConfidence(ragResult: { sources: { similarity?: number }[] }): 'alta' | 'media' | 'baja' {
+    if (ragResult.sources.length > 0) {
+      const sim = ragResult.sources[0].similarity ?? 0;
+      return this.confidenceLevel(sim, 1);
+    }
+    return 'media';
+  }
+
+  private async logInteraction(query: string, answer: string, source: 'faq' | 'ai' | 'fallback', matchedQuestion?: string, sessionId?: string, confidence?: 'alta' | 'media' | 'baja'): Promise<string | undefined> {
     if (!this.logRepository) return undefined;
     try {
-      return await this.logRepository.create({ query, answer, source, matchedQuestion, sessionId });
+      return await this.logRepository.create({ query, answer, source, matchedQuestion, sessionId, confidence });
     } catch (e) {
       this.logger.error('Error al guardar log de chatbot', e);
       return undefined;

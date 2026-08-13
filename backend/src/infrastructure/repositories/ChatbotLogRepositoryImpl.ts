@@ -53,9 +53,9 @@ export class ChatbotLogRepositoryImpl implements ChatbotLogRepository {
     ]);
 
     const [altaCount, mediaCount, bajaCount] = await Promise.all([
-      prisma.chatbotLog.count({ where: { source: 'faq', confidence: 'alta' } }),
-      prisma.chatbotLog.count({ where: { source: 'faq', confidence: 'media' } }),
-      prisma.chatbotLog.count({ where: { source: 'faq', confidence: 'baja' } }),
+      prisma.chatbotLog.count({ where: { confidence: 'alta' } }),
+      prisma.chatbotLog.count({ where: { confidence: 'media' } }),
+      prisma.chatbotLog.count({ where: { confidence: 'baja' } }),
     ]);
 
     const daily = await prisma.$queryRaw<
