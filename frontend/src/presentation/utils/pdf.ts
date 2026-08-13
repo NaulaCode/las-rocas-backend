@@ -629,83 +629,213 @@ interface ReservationPDFData {
   orgLogo?: string;
 }
 
-export function generateReservationPDF(data: ReservationPDFData, t: (key: string) => string) {
+async function loadImage(url: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error('No se pudo cargar la imagen'));
+    img.src = url;
+  });
+}
+
+export async function generateReservationPDF(data: ReservationPDFData, t: (key: string) => string) {
   const doc = new jsPDF('p', 'mm', 'a4');
-  let y = MARGIN;
-  headerBar(doc, t('pdf.titulo'), data.orgName || 'Las Rocas');
-  y = 58;
+  const brand = data.orgName || 'Asociación Turística Las Rocas';
+
+  let logo: HTMLImageElement | null = null;
+  if (data.orgLogo) {
+    try {
+      logo = await loadImage(data.orgLogo);
+    } catch {
+      logo = null;
+    }
+  }
+
+  // Header institucional: logo + nombre
+  doc.setFillColor(...C.primary);
+  doc.rect(0, 0, PAGE_W, 50, 'F');
+  doc.setFillColor(...C.accent);
+  doc.rect(0, 49, PAGE_W, 2.5, 'F');
+
+  if (logo) {
+    const size = 26;
+    const lx = MARGIN;
+    const ly = 11;
+    doc.setFillColor(...C.white);
+    doc.circle(lx + size / 2, ly + size / 2, size / 2 + 1.5, 'F');
+    doc.addImage(logo, 'PNG', lx, ly, size, size);
+    doc.setTextColor(...C.white);
+    doc.setFontSize(13);
+    doc.setFont('helvetica', 'bold');
+    doc.text(brand.toUpperCase(), lx + size + 8, ly + 13);
+    doc.setFontSize(9.5);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(255, 201, 168);
+    doc.text(t('pdf.eslogan'), lx + size + 8, ly + 22);
+  } else {
+    doc.setTextColor(...C.white);
+    doc.setFontSize(16);
+    doc.setFont('helvetica', 'bold');
+    doc.text(brand.toUpperCase(), MARGIN, 24);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(255, 201, 168);
+    doc.text(t('pdf.eslogan'), MARGIN, 34);
+  }
+
+  let y = 64;
 
   doc.setTextColor(...C.primary);
-  doc.setFontSize(15);
+  doc.setFontSize(18);
   doc.setFont('helvetica', 'bold');
-  doc.text(t('pdf.subtitulo'), MARGIN, y);
-  y += 12;
-
+  doc.text(t('pdf.titulo').toUpperCase(), MARGIN, y);
+  y += 7;
   doc.setDrawColor(...C.accent);
-  doc.setLineWidth(0.6);
+  doc.setLineWidth(0.8);
   doc.line(MARGIN, y, PAGE_W - MARGIN, y);
-  y += 12;
+  y += 14;
+
+  // Código y estado destacados
+  const boxH = 32;
+  doc.setFillColor(...C.light);
+  doc.roundedRect(MARGIN, y - 8, CONTENT_W, boxH, 4, 4, 'F');
 
   doc.setTextColor(...C.textLight);
-  doc.setFontSize(11);
+  doc.setFontSize(8);
   doc.setFont('helvetica', 'bold');
-  doc.text(`${t('pdf.codigo')}:`, MARGIN, y);
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(...C.text);
-  doc.text(data.id.slice(0, 8).toUpperCase(), MARGIN + 42, y);
-  y += 10;
+  doc.text(t('pdf.codigo').toUpperCase(), MARGIN + 10, y);
+  doc.setTextColor(...C.primary);
+  doc.setFontSize(20);
+  doc.setFont('helvetica', 'bold');
+  doc.text(data.id.slice(0, 8).toUpperCase(), MARGIN + 10, y + 12);
 
   const sc = statusColors[data.status] || C.textLight;
-  doc.setFillColor(...sc);
-  doc.roundedRect(MARGIN + 42, y - 6, 38, 8, 2, 2, 'F');
-  doc.setTextColor(...C.white);
-  doc.setFontSize(9);
-  doc.setFont('helvetica', 'bold');
   const statusLabel = t(`checkReservation.${data.status}`) || data.status;
-  doc.text(statusLabel, MARGIN + 46, y);
-  y += 16;
-  doc.setTextColor(...C.text);
-
+  doc.setTextColor(...C.textLight);
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'bold');
+  doc.text(t('pdf.estado').toUpperCase(), PAGE_W - MARGIN - 10, y, { align: 'right' });
+  doc.setFont('helvetica', 'bold');
+  const pillW = Math.max(40, doc.getTextWidth(statusLabel) + 12);
+  const pillH = 10;
+  const pillX = PAGE_W - MARGIN - pillW;
+  const pillY = y + 2;
+  doc.setFillColor(...sc);
+  doc.roundedRect(pillX, pillY, pillW, pillH, pillH / 2, pillH / 2, 'F');
+  doc.setTextColor(...C.white);
   doc.setFontSize(10);
-  const rows: [string, string][] = [
+  doc.text(statusLabel, pillX + pillW / 2, pillY + 6.8, { align: 'center' });
+
+  y += boxH + 12;
+
+  const block = (title: string, rows: [string, string][]) => {
+    doc.setTextColor(...C.primary);
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.text(title, MARGIN, y);
+    y += 5;
+    doc.setDrawColor(...C.accent);
+    doc.setLineWidth(0.6);
+    doc.line(MARGIN, y, MARGIN + 50, y);
+    y += 8;
+    rows.forEach(([label, value], i) => {
+      if (y > 260) { doc.addPage(); y = MARGIN + 5; }
+      doc.setFillColor(...(i % 2 === 0 ? ([249, 250, 251] as [number, number, number]) : ([255, 255, 255] as [number, number, number])));
+      doc.rect(MARGIN, y, CONTENT_W, 10, 'F');
+      doc.setTextColor(...C.textLight);
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'bold');
+      doc.text(label, MARGIN + 5, y + 7);
+      doc.setTextColor(...C.text);
+      doc.setFont('helvetica', 'normal');
+      doc.text(fitText(doc, value, CONTENT_W - 65), MARGIN + 65, y + 7);
+      y += 10;
+    });
+    y += 12;
+  };
+
+  block(t('pdf.detallesReserva'), [
     [t('pdf.servicio'), data.serviceName],
+    [t('pdf.fecha'), data.preferredDate
+      ? new Date(data.preferredDate).toLocaleDateString('es-EC', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
+      : '-'],
+    [t('pdf.personas'), data.numberOfPeople ? `${data.numberOfPeople}` : '-'],
+    [t('pdf.codigo'), data.id.slice(0, 8).toUpperCase()],
+  ]);
+
+  block(t('pdf.datosCliente'), [
     [t('pdf.cliente'), data.userName],
     [t('pdf.email'), data.userEmail],
     [t('pdf.telefono'), data.userPhone || '-'],
-    [t('pdf.personas'), data.numberOfPeople?.toString() || '-'],
-    [t('pdf.fecha'), data.preferredDate ? new Date(data.preferredDate).toLocaleDateString('es-EC') : '-'],
-  ];
-  if (data.message) rows.push([t('pdf.mensaje'), data.message]);
+  ]);
 
-  let tableY = y;
-  rows.forEach(([label, value], i) => {
-    const bgColor = i % 2 === 0 ? [249, 250, 251] : [255, 255, 255];
-    doc.setFillColor(bgColor[0], bgColor[1], bgColor[2]);
-    doc.rect(MARGIN, tableY, CONTENT_W, 10, 'F');
-    doc.setTextColor(...C.textLight);
+  if (data.message) {
+    doc.setTextColor(...C.primary);
+    doc.setFontSize(11);
     doc.setFont('helvetica', 'bold');
-    doc.text(label, MARGIN + 5, tableY + 7);
+    doc.text(t('pdf.mensajeCliente'), MARGIN, y);
+    y += 5;
+    doc.setDrawColor(...C.accent);
+    doc.setLineWidth(0.6);
+    doc.line(MARGIN, y, MARGIN + 50, y);
+    y += 8;
+    const msgLines = doc.splitTextToSize(`“${data.message}”`, CONTENT_W - 14);
+    const msgH = msgLines.length * 5 + 8;
+    doc.setFillColor(...C.light);
+    doc.roundedRect(MARGIN, y, CONTENT_W, msgH, 3, 3, 'F');
     doc.setTextColor(...C.text);
-    doc.setFont('helvetica', 'normal');
-    doc.text(value, MARGIN + 55, tableY + 7);
-    tableY += 10;
-  });
+    doc.setFontSize(9.5);
+    doc.setFont('helvetica', 'normal', 'italic');
+    doc.text(msgLines, MARGIN + 7, y + 7);
+    y += msgH + 14;
+  }
 
-  y = tableY + 18;
+  doc.setTextColor(...C.primary);
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'bold');
+  doc.text(t('pdf.informacionImportante'), MARGIN, y);
+  y += 5;
+  doc.setDrawColor(...C.warning);
+  doc.setLineWidth(0.6);
+  doc.line(MARGIN, y, MARGIN + 50, y);
+  y += 8;
+  const infoLines = doc.splitTextToSize(t('pdf.infoImportante'), CONTENT_W - 14);
+  const infoH = infoLines.length * 5 + 8;
+  doc.setFillColor(255, 250, 240);
+  doc.roundedRect(MARGIN, y, CONTENT_W, infoH, 3, 3, 'F');
+  doc.setTextColor(...C.text);
+  doc.setFontSize(9.5);
+  doc.setFont('helvetica', 'normal');
+  doc.text(infoLines, MARGIN + 7, y + 7);
+  y += infoH + 16;
 
+  if (y > 258) { doc.addPage(); y = MARGIN + 5; }
   doc.setDrawColor(...C.accent);
-  doc.setLineWidth(0.4);
+  doc.setLineWidth(0.6);
   doc.line(MARGIN, y, PAGE_W - MARGIN, y);
-  y += 10;
+  y += 11;
   doc.setTextColor(...C.primary);
   doc.setFontSize(12);
   doc.setFont('helvetica', 'bold');
   doc.text(t('pdf.gracias'), MARGIN, y);
-  y += 7;
+  y += 6.5;
   doc.setTextColor(...C.textLight);
-  doc.setFontSize(9);
+  doc.setFontSize(9.5);
   doc.setFont('helvetica', 'normal');
-  doc.text(`${t('pdf.generado')}: ${new Date().toLocaleDateString('es-EC')}`, MARGIN, y);
+  doc.text(t('pdf.fraseFinal'), MARGIN, y);
+  y += 8;
+  doc.text(`${t('pdf.generado')}: ${new Date().toLocaleDateString('es-EC', { year: 'numeric', month: 'long', day: 'numeric' })}`, MARGIN, y);
+
+  doc.setFillColor(...C.primary);
+  doc.rect(0, 285, PAGE_W, 12, 'F');
+  doc.setTextColor(...C.white);
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'bold');
+  doc.text(brand, MARGIN, 291);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(203, 213, 225);
+  doc.text(t('pdf.direccion'), PAGE_W - MARGIN, 291, { align: 'right' });
 
   doc.save(`reserva-${data.id.slice(0, 8)}.pdf`);
   return doc.output('blob');

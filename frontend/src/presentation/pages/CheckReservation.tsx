@@ -373,7 +373,7 @@ export default function CheckReservation() {
                                   userName: r.userName, userEmail: r.userEmail,
                                   userPhone: r.userPhone, numberOfPeople: r.numberOfPeople,
                                   preferredDate: r.preferredDate, message: r.message,
-                                  status: r.status, orgName: org?.name,
+                                  status: r.status, orgName: org?.name, orgLogo: org?.logo,
                                 }, t);
                               }}
                                 className="text-sm text-primary-600 hover:text-primary-700 font-medium inline-flex items-center gap-1.5 px-3 py-2 transition-colors">
