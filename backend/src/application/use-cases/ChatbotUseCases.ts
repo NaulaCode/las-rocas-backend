@@ -385,14 +385,47 @@ export class ChatbotUseCases {
   }
 
   private detectLanguage(query: string): 'es' | 'en' {
-    const esWords = ['hola', 'buenos', 'dias', 'tardes', 'noches', 'gracias', 'por', 'favor', 'como', 'estas', 'queria', 'quisiera', 'necesito', 'puedo', 'hay', 'tiene', 'cual', 'cuanto', 'donde', 'como', 'que', 'para', 'quisieramos', 'podrian', 'podemos', 'deberiamos', 'este', 'esta', 'estos', 'estas', 'esa', 'eso', 'esas', 'esos', 'con', 'sin', 'entre', 'sobre', 'segun', 'durante', 'mediante', 'contra', 'hasta', 'desde', 'se', 'les', 'nos'];
-    const enWords = ['hello', 'hi', 'good', 'morning', 'afternoon', 'evening', 'thanks', 'thank', 'please', 'how', 'much', 'many', 'where', 'what', 'when', 'which', 'who', 'why', 'can', 'could', 'would', 'should', 'will', 'want', 'need', 'is', 'are', 'do', 'does', 'did', 'have', 'has', 'had', 'for', 'the', 'this', 'that', 'these', 'those', 'with', 'without', 'about', 'from', 'and', 'but', 'or', 'some', 'any', 'tell', 'give', 'show', 'know', 'think', 'looking', 'looking', 'need', 'help'];
-    const q = query.toLowerCase();
+    const esWords = new Set([
+      'hola', 'buenos', 'dias', 'tardes', 'noches', 'gracias', 'por', 'favor', 'como', 'estas',
+      'queria', 'quisiera', 'necesito', 'puedo', 'hay', 'tiene', 'tienen', 'cual', 'cuanto',
+      'donde', 'que', 'para', 'queremos', 'quisiéramos', 'quisieramos', 'podrian', 'podemos',
+      'deberiamos', 'este', 'esta', 'estos', 'estas', 'esa', 'eso', 'esas', 'esos', 'con', 'sin',
+      'entre', 'sobre', 'segun', 'durante', 'mediante', 'contra', 'hasta', 'desde', 'se', 'les',
+      'nos', 'me', 'te', 'su', 'sus', 'mi', 'un', 'una', 'unos', 'unas', 'es', 'son', 'el', 'la',
+      'los', 'las', 'no', 'si', 'cuando', 'quien', 'quienes', 'pagar', 'pago', 'precio', 'precios',
+      'costo', 'costos', 'tarifa', 'entrada', 'horario', 'horarios', 'abren', 'abierto', 'abiertos',
+      'atienden', 'atencion', 'atención', 'direccion', 'dirección', 'ubicacion', 'ubicación',
+      'ubicados', 'ubicadas', 'encuentra', 'estacionamiento', 'parqueadero', 'piscinas', 'piscina',
+      'termales', 'senderos', 'caminata', 'restaurante', 'restaurantes', 'gastronomia', 'hospedaje',
+      'reserva', 'reservar', 'tarjeta', 'tarjetas', 'credito', 'debito', 'descuento', 'descuentos',
+      'grupo', 'grupos', 'guia', 'guias', 'turista', 'turismo', 'comuna', 'naranjal', 'guayaquil',
+      'ecuador', 'rocas', 'asotur', 'miguel', 'san', 'domingo', 'domingos', 'sabado', 'sabados',
+      'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'feriados', 'whatsapp', 'telefono',
+      'celular', 'correo', 'contacto', 'visitar', 'visita', 'llego', 'llegar', 'quedan', 'cuanto',
+      'feriado', 'abren', 'venden', 'vendemos', 'cobra', 'cobran', 'valen', 'vale',
+    ]);
+    const enWords = new Set([
+      'hello', 'hi', 'good', 'morning', 'afternoon', 'evening', 'thanks', 'thank', 'please', 'how',
+      'much', 'many', 'where', 'what', 'when', 'which', 'who', 'why', 'can', 'could', 'would',
+      'should', 'will', 'want', 'need', 'is', 'are', 'do', 'does', 'did', 'have', 'has', 'had',
+      'for', 'the', 'this', 'that', 'these', 'those', 'with', 'without', 'about', 'from', 'and',
+      'but', 'or', 'some', 'any', 'tell', 'give', 'show', 'know', 'think', 'looking', 'help',
+      'open', 'opening', 'opens', 'hours', 'time', 'located', 'location', 'address', 'directions',
+      'direction', 'google', 'maps', 'map', 'link', 'price', 'prices', 'cost', 'costs', 'entrance',
+      'fee', 'admission', 'pool', 'pools', 'parking', 'services', 'service', 'restaurant', 'kids',
+      'children', 'pay', 'credit', 'card', 'debit', 'booking', 'book', 'reservation', 'reserve',
+      'visit', 'get', 'from', 'to', 'can', 'tell', 'near', 'how', 'open', 'opening',
+    ]);
+    const tokens = query.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .split(/[^a-zñ]+/).filter((t) => t.length >= 2);
     let esScore = 0, enScore = 0;
-    for (const w of esWords) { if (q.includes(w)) esScore++; }
-    for (const w of enWords) { if (q.includes(w)) enScore++; }
+    for (const t of tokens) {
+      if (esWords.has(t)) esScore++;
+      if (enWords.has(t)) enScore++;
+    }
     if (enScore > esScore) return 'en';
-    return 'es';
+    if (esScore > 0) return 'es';
+    return 'en';
   }
 
   private async findFaqMatch(query: string): Promise<{ question: string; answer: string; answerEn?: string | null } | null> {

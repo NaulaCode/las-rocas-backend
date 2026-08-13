@@ -78,9 +78,14 @@ export class ChatbotRepositoryImpl implements ChatbotRepository {
       else if (queryNorm && qNorm.includes(queryNorm)) score += 60;
 
       for (const term of terms) {
-        const matchedKeyword = kwNorms.find((k) => k === term || k.includes(term) || term.includes(k));
+        const exactKeyword = kwNorms.find((k) => k === term);
+        if (exactKeyword) {
+          score += HIGH_INTENT_KEYWORDS.has(exactKeyword) ? 50 : 40;
+          continue;
+        }
+        const matchedKeyword = kwNorms.find((k) => k.includes(term) || term.includes(k));
         if (matchedKeyword) {
-          score += HIGH_INTENT_KEYWORDS.has(matchedKeyword) ? 40 : 30;
+          score += HIGH_INTENT_KEYWORDS.has(matchedKeyword) ? 35 : 20;
         } else if (qNorm.includes(term)) {
           score += 15;
         } else if (aNorm.includes(term)) {
