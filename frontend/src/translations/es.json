@@ -124,7 +124,12 @@
     "otro": "Otro",
     "verTodos": "Ver todos",
     "resultados": "{{count}} resultado para",
-    "resultados_plural": "{{count}} resultados para"
+    "resultados_plural": "{{count}} resultados para",
+    "ordenar": "Ordenar por",
+    "ordenRelevancia": "Relevancia",
+    "ordenPrecioAsc": "Precio: menor a mayor",
+    "ordenPrecioDesc": "Precio: mayor a menor",
+    "ordenRating": "Mejor calificados"
   },
   "serviceDetail": {
     "reservarAhora": "Reservar Ahora",
@@ -264,7 +269,8 @@
     "quieresAparecer": "¿Quieres aparecer aquí?",
     "comparteFotos": "Comparte tus fotos y experiencias en la Comuna San Miguel usando nuestro hashtag en redes sociales.",
     "hashtag": "#asoturlasrocas",
-    "seoDescripcion": "Galería de imágenes turísticas de la Comuna San Miguel, Naranjal - ASOTURLASROCAS"
+    "seoDescripcion": "Galería de imágenes turísticas de la Comuna San Miguel, Naranjal - ASOTURLASROCAS",
+    "verMas": "Ver más"
   },
   "conocenos": {
     "titulo": "Quiénes Somos",

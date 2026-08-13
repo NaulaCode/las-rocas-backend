@@ -47,6 +47,7 @@ export default function Services() {
   const pageSize = 12;
   const [org, setOrg] = useState<Organization | null>(null);
   const [starRatings, setStarRatings] = useState<Record<string, number>>({});
+  const [sortBy, setSortBy] = useState<'relevance' | 'price-asc' | 'price-desc' | 'rating'>('relevance');
 
   const categoryGradients: Record<string, string> = { ...defaultGradients };
   (org?.pageContent?.categories || []).forEach((c) => {
@@ -99,8 +100,15 @@ export default function Services() {
         (s.location || '').toLowerCase().includes(t)
       );
     }
+    if (sortBy === 'price-asc') {
+      result = [...result].sort((a, b) => (a.price ?? Infinity) - (b.price ?? Infinity));
+    } else if (sortBy === 'price-desc') {
+      result = [...result].sort((a, b) => (b.price ?? -Infinity) - (a.price ?? -Infinity));
+    } else if (sortBy === 'rating') {
+      result = [...result].sort((a, b) => (starRatings[b.name] ?? -Infinity) - (starRatings[a.name] ?? -Infinity));
+    }
     return result;
-  }, [services, searchTerm]);
+  }, [services, searchTerm, sortBy, starRatings]);
 
   const totalPages = Math.ceil(filtered.length / pageSize);
   const safePage = Math.min(page, totalPages || 1);
@@ -133,17 +141,38 @@ export default function Services() {
 
       <div className="container mx-auto px-4 -mt-6">
         <div className="bg-white rounded-2xl shadow-lg p-4 mb-6">
-          <div className="relative">
-            <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-            <input
-              type="text"
-              placeholder={t('common.buscar')}
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-primary-500 bg-gray-50 text-sm"
-            />
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1">
+              <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <input
+                type="text"
+                placeholder={t('common.buscar')}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-primary-500 bg-gray-50 text-sm"
+              />
+            </div>
+            <div className="relative sm:w-72">
+              <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
+              </svg>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+                aria-label={t('services.ordenar')}
+                className="w-full pl-12 pr-10 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-primary-500 bg-gray-50 text-sm appearance-none cursor-pointer"
+              >
+                <option value="relevance">{t('services.ordenRelevancia')}</option>
+                <option value="price-asc">{t('services.ordenPrecioAsc')}</option>
+                <option value="price-desc">{t('services.ordenPrecioDesc')}</option>
+                <option value="rating">{t('services.ordenRating')}</option>
+              </select>
+              <svg className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
           </div>
         </div>
 

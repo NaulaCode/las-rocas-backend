@@ -27,10 +27,13 @@ export default function Galeria() {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [filter, setFilter] = useState<'all' | 'image' | 'video' | 'social'>('all');
+  const [visibleCount, setVisibleCount] = useState(9);
 
   const gallery: { url: string; caption?: string; type?: string }[] = org?.pageContent?.gallery || [];
 
   const filteredGallery = gallery.filter((g) => filter === 'all' || classifyGalleryItem(g) === filter);
+
+  const visibleGallery = filteredGallery.slice(0, visibleCount);
 
   const galleryFilters: { key: 'all' | 'image' | 'video' | 'social'; label: string }[] = [
     { key: 'all', label: t('galeria.todo') },
@@ -74,6 +77,10 @@ export default function Galeria() {
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    setVisibleCount(9);
+  }, [filter]);
 
   const shareFacebook = () => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`, '_blank');
   const shareWhatsApp = () => window.open(`https://wa.me/?text=${encodeURIComponent(`${t('galeria.titulo')} - Asociación Turística Las Rocas - ${window.location.href}`)}`, '_blank');
@@ -163,7 +170,7 @@ export default function Galeria() {
             animate="visible"
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 auto-rows-max"
           >
-            {filteredGallery.map((entry, i) => (
+            {visibleGallery.map((entry, i) => (
               <motion.div
                 key={i}
                 variants={item}
@@ -241,6 +248,19 @@ export default function Galeria() {
           </motion.div>
         ) : (
           <EmptyState variant="gallery" title={filter === 'all' ? t('galeria.sinImagenes') : t('galeria.sinEnCategoria')} description={t('galeria.sinImagenesDesc')} />
+        )}
+        {filteredGallery.length > visibleCount && (
+          <div className="flex justify-center mt-10">
+            <button
+              onClick={() => setVisibleCount((c) => c + 9)}
+              className="px-7 py-3 bg-white border border-gray-200 text-gray-700 rounded-full font-semibold text-sm hover:border-primary-300 hover:text-primary-600 hover:bg-primary-50/50 transition-all flex items-center gap-2 shadow-sm"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+              {t('galeria.verMas')}
+            </button>
+          </div>
         )}
       </div>
 

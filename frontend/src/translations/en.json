@@ -124,7 +124,12 @@
     "otro": "Other",
     "verTodos": "View all",
     "resultados": "{{count}} result for",
-    "resultados_plural": "{{count}} results for"
+    "resultados_plural": "{{count}} results for",
+    "ordenar": "Sort by",
+    "ordenRelevancia": "Relevance",
+    "ordenPrecioAsc": "Price: low to high",
+    "ordenPrecioDesc": "Price: high to low",
+    "ordenRating": "Top rated"
   },
   "serviceDetail": {
     "reservarAhora": "Book Now",
@@ -264,7 +269,8 @@
     "quieresAparecer": "Want to appear here?",
     "comparteFotos": "Share your photos and experiences in Comuna San Miguel using our hashtag on social media.",
     "hashtag": "#asoturlasrocas",
-    "seoDescripcion": "Gallery of tourist images of Comuna San Miguel, Naranjal - ASOTURLASROCAS"
+    "seoDescripcion": "Gallery of tourist images of Comuna San Miguel, Naranjal - ASOTURLASROCAS",
+    "verMas": "See more"
   },
   "conocenos": {
     "titulo": "About Us",
