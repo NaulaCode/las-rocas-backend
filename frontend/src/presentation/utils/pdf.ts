@@ -25,28 +25,14 @@ const MARGIN = 20;
 const CONTENT_W = PAGE_W - MARGIN * 2;
 const CELL_PAD = 3;
 
-function headerBar(doc: jsPDF, title: string, subtitle: string) {
-  doc.setFillColor(...C.primary);
-  doc.rect(0, 0, PAGE_W, 45, 'F');
-  doc.setFillColor(...C.accent);
-  doc.rect(0, 43, PAGE_W, 3, 'F');
-  doc.setTextColor(...C.white);
-  doc.setFontSize(22);
-  doc.setFont('helvetica', 'bold');
-  doc.text(title, MARGIN, 24);
-  doc.setFontSize(10);
-  doc.setFont('helvetica', 'normal');
-  doc.text(subtitle, MARGIN, 35);
-}
-
-function footer(doc: jsPDF) {
+function footer(doc: jsPDF, brand?: string) {
   const n = doc.getNumberOfPages();
   for (let i = 1; i <= n; i++) {
     doc.setPage(i);
     doc.setFontSize(8);
     doc.setTextColor(...C.textLight);
     doc.text(`Página ${i} de ${n}`, PAGE_W - MARGIN, 288, { align: 'right' });
-    doc.text(`Generado: ${new Date().toLocaleDateString('es-EC', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`, MARGIN, 288);
+    doc.text(`${brand ? brand + ' · ' : ''}Generado: ${new Date().toLocaleDateString('es-EC', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`, MARGIN, 288);
   }
 }
 
@@ -216,11 +202,12 @@ const statusLabels: Record<string, string> = {
   borrador: 'Borrador',
 };
 
-export function exportServicesPDF(services: TouristicService[]) {
+export async function exportServicesPDF(services: TouristicService[], org?: OrgInfo) {
   const doc = new jsPDF('p', 'mm', 'a4');
-  headerBar(doc, 'Reporte de Servicios', `Generado: ${new Date().toLocaleDateString('es-EC', { year: 'numeric', month: 'long', day: 'numeric' })} · Total: ${services.length} servicios`);
+  const logo = await loadLogo(org?.logo);
+  const brand = org?.name || 'Asociación Turística Las Rocas';
+  let y = institutionalHeader(doc, logo, brand, 'Reporte de Servicios', `Generado: ${new Date().toLocaleDateString('es-EC', { year: 'numeric', month: 'long', day: 'numeric' })} · Total: ${services.length} servicios`);
 
-  let y = 60;
   const active = services.filter((s) => s.isActive).length;
   const inactive = services.length - active;
   const cats = [...new Set(services.map((s) => s.category))];
@@ -248,16 +235,17 @@ export function exportServicesPDF(services: TouristicService[]) {
   }));
 
   drawTable(doc, y, headers, rows, 8, 8);
-  footer(doc);
+  footer(doc, brand);
   doc.save(`servicios_${new Date().toISOString().split('T')[0]}.pdf`);
   return doc.output('blob');
 }
 
-export function exportNewsPDF(news: News[]) {
+export async function exportNewsPDF(news: News[], org?: OrgInfo) {
   const doc = new jsPDF('p', 'mm', 'a4');
-  headerBar(doc, 'Reporte de Noticias y Eventos', `Generado: ${new Date().toLocaleDateString('es-EC', { year: 'numeric', month: 'long', day: 'numeric' })} · Total: ${news.length} publicaciones`);
+  const logo = await loadLogo(org?.logo);
+  const brand = org?.name || 'Asociación Turística Las Rocas';
+  let y = institutionalHeader(doc, logo, brand, 'Reporte de Noticias y Eventos', `Generado: ${new Date().toLocaleDateString('es-EC', { year: 'numeric', month: 'long', day: 'numeric' })} · Total: ${news.length} publicaciones`);
 
-  let y = 60;
   const published = news.filter((n) => n.isPublished).length;
   const drafts = news.length - published;
   const types = [...new Set(news.map((n) => n.type))];
@@ -284,16 +272,17 @@ export function exportNewsPDF(news: News[]) {
   }));
 
   drawTable(doc, y, headers, rows, 8, 8);
-  footer(doc);
+  footer(doc, brand);
   doc.save(`noticias_${new Date().toISOString().split('T')[0]}.pdf`);
   return doc.output('blob');
 }
 
-export function exportReservationsPDF(reservations: Reservation[], services: TouristicService[]) {
+export async function exportReservationsPDF(reservations: Reservation[], services: TouristicService[], org?: OrgInfo) {
   const doc = new jsPDF('p', 'mm', 'a4');
-  headerBar(doc, 'Reporte de Reservas', `Generado: ${new Date().toLocaleDateString('es-EC', { year: 'numeric', month: 'long', day: 'numeric' })} · Total: ${reservations.length} reservas`);
+  const logo = await loadLogo(org?.logo);
+  const brand = org?.name || 'Asociación Turística Las Rocas';
+  let y = institutionalHeader(doc, logo, brand, 'Reporte de Reservas', `Generado: ${new Date().toLocaleDateString('es-EC', { year: 'numeric', month: 'long', day: 'numeric' })} · Total: ${reservations.length} reservas`);
 
-  let y = 60;
   const pendientes = reservations.filter((r) => r.status === 'pendiente').length;
   const confirmadas = reservations.filter((r) => r.status === 'confirmada').length;
   const completadas = reservations.filter((r) => r.status === 'completada').length;
@@ -335,16 +324,17 @@ export function exportReservationsPDF(reservations: Reservation[], services: Tou
   });
 
   drawTable(doc, y, headers, rows, 8, 8);
-  footer(doc);
+  footer(doc, brand);
   doc.save(`reservas_${new Date().toISOString().split('T')[0]}.pdf`);
   return doc.output('blob');
 }
 
-export function exportAttractionsPDF(attractions: TouristicAttraction[]) {
+export async function exportAttractionsPDF(attractions: TouristicAttraction[], org?: OrgInfo) {
   const doc = new jsPDF('p', 'mm', 'a4');
-  headerBar(doc, 'Reporte de Atractivos Turísticos', `Generado: ${new Date().toLocaleDateString('es-EC', { year: 'numeric', month: 'long', day: 'numeric' })} · Total: ${attractions.length} atractivos`);
+  const logo = await loadLogo(org?.logo);
+  const brand = org?.name || 'Asociación Turística Las Rocas';
+  let y = institutionalHeader(doc, logo, brand, 'Reporte de Atractivos Turísticos', `Generado: ${new Date().toLocaleDateString('es-EC', { year: 'numeric', month: 'long', day: 'numeric' })} · Total: ${attractions.length} atractivos`);
 
-  let y = 60;
   const active = attractions.filter((a) => a.isActive).length;
   const inactive = attractions.length - active;
   const cats = [...new Set(attractions.map((a) => a.category))];
@@ -381,7 +371,7 @@ export function exportAttractionsPDF(attractions: TouristicAttraction[]) {
   }));
 
   drawTable(doc, y, headers, rows, 8, 8);
-  footer(doc);
+  footer(doc, brand);
   doc.save(`atractivos_${new Date().toISOString().split('T')[0]}.pdf`);
   return doc.output('blob');
 }
@@ -397,12 +387,13 @@ export function downloadBlob(blob: Blob, filename: string) {
   URL.revokeObjectURL(url);
 }
 
-export function downloadPDF(reservations: Reservation[], services: TouristicService[]) {
+export async function downloadPDF(reservations: Reservation[], services: TouristicService[], org?: OrgInfo) {
   try {
     const doc = new jsPDF('p', 'mm', 'a4');
-    headerBar(doc, 'Reporte de Reservas', `Generado: ${new Date().toLocaleDateString('es-EC', { year: 'numeric', month: 'long', day: 'numeric' })} · Total: ${reservations.length} reservas`);
+    const logo = await loadLogo(org?.logo);
+    const brand = org?.name || 'Asociación Turística Las Rocas';
+    let y = institutionalHeader(doc, logo, brand, 'Reporte de Reservas', `Generado: ${new Date().toLocaleDateString('es-EC', { year: 'numeric', month: 'long', day: 'numeric' })} · Total: ${reservations.length} reservas`);
 
-    let y = 60;
     const pendientes = reservations.filter((r) => r.status === 'pendiente').length;
     const confirmadas = reservations.filter((r) => r.status === 'confirmada').length;
     const completadas = reservations.filter((r) => r.status === 'completada').length;
@@ -461,24 +452,26 @@ export function downloadPDF(reservations: Reservation[], services: TouristicServ
     });
 
     drawTable(doc, y, headers, rows, 8, 8);
-    footer(doc);
+    footer(doc, brand);
     doc.save(`reservas_${new Date().toISOString().split('T')[0]}.pdf`);
     return doc.output('blob');
   } catch (e) { console.error('PDF error:', e); alert('Error al generar PDF: ' + e); }
 }
 
-export function generateFullReport(
+export async function generateFullReport(
   services: TouristicService[],
   news: News[],
   reservations: Reservation[],
   questions: ChatbotQuestion[],
   pageContent: PageContent,
+  org?: OrgInfo,
 ) {
   try {
     const doc = new jsPDF('p', 'mm', 'a4');
-    headerBar(doc, 'Reporte Completo de la Plataforma', `Generado: ${new Date().toLocaleDateString('es-EC', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`);
+    const logo = await loadLogo(org?.logo);
+    const brand = org?.name || 'Asociación Turística Las Rocas';
+    let y = institutionalHeader(doc, logo, brand, 'Reporte Completo de la Plataforma', `Generado: ${new Date().toLocaleDateString('es-EC', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`);
 
-    let y = 60;
     const pendientes = reservations.filter((r) => r.status === 'pendiente').length;
     const confirmadas = reservations.filter((r) => r.status === 'confirmada').length;
     const completadas = reservations.filter((r) => r.status === 'completada').length;
@@ -609,7 +602,7 @@ export function generateFullReport(
       y += 8;
     }
 
-    footer(doc);
+    footer(doc, brand);
     doc.save(`reporte_completo_${new Date().toISOString().split('T')[0]}.pdf`);
     return doc.output('blob');
   } catch (e) { console.error('Full report PDF error:', e); alert('Error al generar reporte PDF: ' + e); }
@@ -639,20 +632,16 @@ async function loadImage(url: string): Promise<HTMLImageElement> {
   });
 }
 
-export async function generateReservationPDF(data: ReservationPDFData, t: (key: string) => string) {
-  const doc = new jsPDF('p', 'mm', 'a4');
-  const brand = data.orgName || 'Asociación Turística Las Rocas';
-
-  let logo: HTMLImageElement | null = null;
-  if (data.orgLogo) {
-    try {
-      logo = await loadImage(data.orgLogo);
-    } catch {
-      logo = null;
-    }
+async function loadLogo(url?: string): Promise<HTMLImageElement | null> {
+  if (!url) return null;
+  try {
+    return await loadImage(url);
+  } catch {
+    return null;
   }
+}
 
-  // Header institucional: logo + nombre
+function drawBrandHeader(doc: jsPDF, logo: HTMLImageElement | null, brand: string, tagline: string) {
   doc.setFillColor(...C.primary);
   doc.rect(0, 0, PAGE_W, 50, 'F');
   doc.setFillColor(...C.accent);
@@ -672,7 +661,7 @@ export async function generateReservationPDF(data: ReservationPDFData, t: (key: 
     doc.setFontSize(9.5);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(255, 201, 168);
-    doc.text(t('pdf.eslogan'), lx + size + 8, ly + 22);
+    doc.text(tagline, lx + size + 8, ly + 22);
   } else {
     doc.setTextColor(...C.white);
     doc.setFontSize(16);
@@ -681,8 +670,40 @@ export async function generateReservationPDF(data: ReservationPDFData, t: (key: 
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(255, 201, 168);
-    doc.text(t('pdf.eslogan'), MARGIN, 34);
+    doc.text(tagline, MARGIN, 34);
   }
+}
+
+interface OrgInfo {
+  name?: string;
+  logo?: string;
+}
+
+function institutionalHeader(doc: jsPDF, logo: HTMLImageElement | null, brand: string, title: string, subtitle: string) {
+  drawBrandHeader(doc, logo, brand, 'Turismo, naturaleza y comunidad');
+  let y = 64;
+  doc.setTextColor(...C.primary);
+  doc.setFontSize(18);
+  doc.setFont('helvetica', 'bold');
+  doc.text(title, MARGIN, y);
+  y += 6;
+  doc.setDrawColor(...C.accent);
+  doc.setLineWidth(0.8);
+  doc.line(MARGIN, y, PAGE_W - MARGIN, y);
+  y += 11;
+  doc.setTextColor(...C.textLight);
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'normal');
+  doc.text(subtitle, MARGIN, y);
+  return y + 7;
+}
+
+export async function generateReservationPDF(data: ReservationPDFData, t: (key: string) => string) {
+  const doc = new jsPDF('p', 'mm', 'a4');
+  const brand = data.orgName || 'Asociación Turística Las Rocas';
+  const logo = await loadLogo(data.orgLogo);
+
+  drawBrandHeader(doc, logo, brand, t('pdf.eslogan'));
 
   let y = 64;
 

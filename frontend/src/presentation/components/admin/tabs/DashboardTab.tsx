@@ -32,6 +32,7 @@ interface Props {
   questions: ChatbotQuestion[];
   adminUsers: PublicUser[];
   pageContent: PageContent;
+  org?: { name?: string; logo?: string };
   monthlyReservations: { month: string; count: number }[];
   topServices: { serviceId: string; serviceName: string; count: number }[];
   loadData: () => void;
@@ -40,7 +41,7 @@ interface Props {
   toast: any;
 }
 
-export default function DashboardTab({ services, news, reservations, questions, adminUsers, pageContent, monthlyReservations, topServices, loadData, openCreate, setTab, toast }: Props) {
+export default function DashboardTab({ services, news, reservations, questions, adminUsers, pageContent, org, monthlyReservations, topServices, loadData, openCreate, setTab, toast }: Props) {
   const statusColors: Record<string, string> = {
     pendiente: '#F59E0B', confirmada: '#3B82F6', completada: '#10B981', cancelada: '#EF4444',
   };
@@ -209,11 +210,11 @@ export default function DashboardTab({ services, news, reservations, questions, 
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
         <h3 className="text-sm font-semibold text-gray-700 mb-4">Acciones Rápidas</h3>
         <div className="flex flex-wrap gap-3">
-          <button onClick={() => downloadPDF(reservations, services)} className="flex items-center gap-2 px-4 py-2.5 bg-red-50 text-red-700 rounded-lg hover:bg-red-100 transition-colors text-sm font-medium">
+          <button onClick={() => downloadPDF(reservations, services, org)} className="flex items-center gap-2 px-4 py-2.5 bg-red-50 text-red-700 rounded-lg hover:bg-red-100 transition-colors text-sm font-medium">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
             Exportar PDF (Reservas)
           </button>
-          <button onClick={() => generateFullReport(services, news, reservations, questions, pageContent)} className="flex items-center gap-2 px-4 py-2.5 bg-primary-50 text-primary-700 rounded-lg hover:bg-primary-100 transition-colors text-sm font-medium">
+          <button onClick={() => generateFullReport(services, news, reservations, questions, pageContent, org)} className="flex items-center gap-2 px-4 py-2.5 bg-primary-50 text-primary-700 rounded-lg hover:bg-primary-100 transition-colors text-sm font-medium">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
             Reporte Completo
           </button>

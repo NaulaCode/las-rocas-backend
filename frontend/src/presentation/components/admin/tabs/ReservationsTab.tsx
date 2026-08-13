@@ -10,6 +10,7 @@ import Modal from '../Modal';
 interface Props {
   reservations: Reservation[];
   services: TouristicService[];
+  org?: { name?: string; logo?: string };
   searchTerm: string;
   setSearchTerm: (v: string) => void;
   filterValue: string;
@@ -29,7 +30,7 @@ interface Props {
 const PAGE_SIZE = 10;
 
 export default function ReservationsTab({
-  reservations, services, searchTerm, setSearchTerm, filterValue, setFilterValue,
+  reservations, services, org, searchTerm, setSearchTerm, filterValue, setFilterValue,
   startDate, setStartDate, endDate, setEndDate, serviceFilter, setServiceFilter,
   openCreate, openEdit, setDeleteId, updateReservationStatus
 }: Props) {
@@ -99,7 +100,7 @@ export default function ReservationsTab({
             className="px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition-all bg-white" />
         </div>
         <div className="flex items-center gap-2">
-          <button onClick={() => exportReservationsPDF(filtered, services)}
+          <button onClick={() => exportReservationsPDF(filtered, services, org)}
             className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors" title="Exportar PDF">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
           </button>

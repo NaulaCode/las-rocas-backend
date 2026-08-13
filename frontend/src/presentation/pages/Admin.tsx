@@ -517,14 +517,15 @@ export default function Admin() {
                     <DashboardTab
                       services={services} news={news} reservations={reservations}
                       questions={questions} adminUsers={adminUsers}
-                      pageContent={pageContent} monthlyReservations={monthlyReservations}
+                      pageContent={pageContent} org={{ name: org?.name, logo: org?.logo }}
+                      monthlyReservations={monthlyReservations}
                       topServices={topServices} loadData={loadData} openCreate={openCreate}
                       setTab={setTab} toast={toast}
                     />
                   )}
                   {tab === 'services' && (
                     <ServicesTab
-                      services={services} pageContent={pageContent}
+                      services={services} pageContent={pageContent} org={{ name: org?.name, logo: org?.logo }}
                       searchTerm={searchTerm} setSearchTerm={setSearchTerm}
                       filterValue={filterValue} setFilterValue={setFilterValue}
                       openCreate={openCreate} openEdit={openEdit} setDeleteId={setDeleteId}
@@ -532,14 +533,15 @@ export default function Admin() {
                   )}
                   {tab === 'news' && (
                     <NewsTab
-                      news={news} searchTerm={searchTerm} setSearchTerm={setSearchTerm}
+                      news={news} org={{ name: org?.name, logo: org?.logo }}
+                      searchTerm={searchTerm} setSearchTerm={setSearchTerm}
                       filterValue={filterValue} setFilterValue={setFilterValue}
                       openCreate={openCreate} openEdit={openEdit} setDeleteId={setDeleteId}
                     />
                   )}
                   {tab === 'reservations' && (
                     <ReservationsTab
-                      reservations={reservations} services={services}
+                      reservations={reservations} services={services} org={{ name: org?.name, logo: org?.logo }}
                       searchTerm={searchTerm} setSearchTerm={setSearchTerm}
                       filterValue={filterValue} setFilterValue={setFilterValue}
                       startDate={startDate} setStartDate={setStartDate}
@@ -564,7 +566,8 @@ export default function Admin() {
                   )}
                   {tab === 'attractions' && (
                     <AttractionsTab
-                      attractions={attractions} searchTerm={searchTerm} setSearchTerm={setSearchTerm}
+                      attractions={attractions} org={{ name: org?.name, logo: org?.logo }}
+                      searchTerm={searchTerm} setSearchTerm={setSearchTerm}
                       filterValue={filterValue} setFilterValue={setFilterValue}
                       openCreate={openCreate} openEdit={openEdit} setDeleteId={setDeleteId}
                     />
