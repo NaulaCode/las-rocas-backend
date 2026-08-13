@@ -113,7 +113,7 @@ export default function DashboardTab({ services, news, reservations, questions, 
             <BarChart data={reservationsByStatus}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" />
-              <YAxis />
+              <YAxis allowDecimals={false} />
               <Tooltip content={<ChartTooltip />} />
               <Bar dataKey="value" radius={[4, 4, 0, 0]}>
                 {reservationsByStatus.map((e, i) => <Cell key={i} fill={statusColors[e.name.toLowerCase()] || CHART_COLORS[i % CHART_COLORS.length]} />)}
@@ -128,7 +128,7 @@ export default function DashboardTab({ services, news, reservations, questions, 
             <BarChart data={servicesByCategory}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" />
-              <YAxis />
+              <YAxis allowDecimals={false} />
               <Tooltip content={<ChartTooltip />} />
               <Bar dataKey="value" radius={[4, 4, 0, 0]}>
                 {servicesByCategory.map((_, i) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />)}
@@ -145,7 +145,7 @@ export default function DashboardTab({ services, news, reservations, questions, 
             <BarChart data={monthlyReservations}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="month" />
-              <YAxis />
+              <YAxis allowDecimals={false} />
               <Tooltip content={<ChartTooltip />} />
               <Bar dataKey="count" radius={[4, 4, 0, 0]}>
                 {monthlyReservations.map((_, i) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />)}
