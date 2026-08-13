@@ -53,6 +53,12 @@ export default function Layout() {
 
   const isActive = (path: string) => location.pathname === path;
 
+  const hideFloatingWidgets =
+    location.pathname.startsWith('/admin') ||
+    location.pathname === '/login' ||
+    location.pathname === '/forgot-password' ||
+    location.pathname === '/reset-password';
+
   const navLinks = [
     { to: '/', label: t('nav.inicio') },
     { to: '/servicios', label: t('nav.servicios') },
@@ -280,7 +286,7 @@ export default function Layout() {
         initial={{ opacity: 0, scale: 0 }}
         animate={{ opacity: showBackToTop ? 1 : 0, scale: showBackToTop ? 1 : 0 }}
         transition={{ duration: 0.2 }}
-        className="fixed bottom-24 right-6 md:bottom-6 md:right-6 z-40 w-12 h-12 bg-primary-600 text-white rounded-full shadow-xl hover:bg-primary-700 hover:shadow-2xl flex items-center justify-center transition-all"
+        className="fixed bottom-24 right-6 z-40 w-12 h-12 bg-primary-600 text-white rounded-full shadow-xl hover:bg-primary-700 hover:shadow-2xl flex items-center justify-center transition-all"
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
         aria-label={t('nav.volverArriba')}
@@ -291,8 +297,8 @@ export default function Layout() {
       </motion.button>
 
         <Footer org={org} />
-      <WhatsAppButton />
-      <Chatbot />
+      {!hideFloatingWidgets && <WhatsAppButton />}
+      {!hideFloatingWidgets && <Chatbot />}
       <CookieConsent storage={container.cookieConsentStorage} />
     </div>
   );
