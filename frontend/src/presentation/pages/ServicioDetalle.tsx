@@ -29,6 +29,7 @@ export default function ServicioDetalle() {
   const [error, setError] = useState('');
   const [fieldErrors, setFieldErrors] = useState<{ email?: string; phone?: string }>({});
   const [bookedDates, setBookedDates] = useState<Set<string>>(new Set());
+  const [blockedDates, setBlockedDates] = useState<Map<string, string>>(new Map());
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [showReview, setShowReview] = useState(false);
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -39,9 +40,13 @@ export default function ServicioDetalle() {
     Promise.all([
       container.services.getById(id),
       container.reservations.getAll().catch(() => []),
-    ]).then(([s, res]) => {
+      container.organization.get().catch(() => null),
+    ]).then(([s, res, orgData]) => {
       setService(s);
       setReservations(res);
+      const blocked = new Map<string, string>();
+      (orgData?.pageContent?.blockedDates || []).forEach((bd: any) => { if (bd.date) blocked.set(bd.date, bd.reason || ''); });
+      setBlockedDates(blocked);
       const taken = new Set<string>();
       res
         .filter((r: Reservation) => r.serviceId === id && (r.status === 'pendiente' || r.status === 'confirmada'))
@@ -60,6 +65,11 @@ export default function ServicioDetalle() {
       .finally(() => setLoading(false));
   }, [id, navigate]);
 
+  const blockedMessage = (date: string) => {
+    const reason = blockedDates.get(date);
+    return reason ? `${t('serviceDetail.fechaBloqueada')}: ${reason}` : t('serviceDetail.fechaBloqueada');
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!id) return;
@@ -71,6 +81,11 @@ export default function ServicioDetalle() {
     else if (!isValidPhone(form.userPhone)) newFieldErrors.phone = t('errors.invalidPhone');
     setFieldErrors(newFieldErrors);
     if (Object.keys(newFieldErrors).length > 0) return;
+
+    if (form.preferredDate && blockedDates.has(form.preferredDate)) {
+      setError(blockedMessage(form.preferredDate));
+      return;
+    }
 
     if (form.preferredDate && bookedDates.has(form.preferredDate)) {
       setError(t('serviceDetail.fechaNoDisponible'));
@@ -221,7 +236,16 @@ export default function ServicioDetalle() {
                         className="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100 bg-white transition-all" />
                       <input type="date" value={form.preferredDate}
                         min={minDate} max={service.availableUntil || undefined}
-                        onChange={(e) => setForm({ ...form, preferredDate: e.target.value })}
+                        onChange={(e) => {
+                          setForm({ ...form, preferredDate: e.target.value });
+                          if (e.target.value && blockedDates.has(e.target.value)) {
+                            setError(blockedMessage(e.target.value));
+                          } else if (e.target.value && bookedDates.has(e.target.value)) {
+                            setError(t('serviceDetail.fechaNoDisponible'));
+                          } else {
+                            setError('');
+                          }
+                        }}
                         className="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100 bg-white transition-all" />
                     </div>
                     {error && <p className="text-red-500 text-xs">{error}</p>}

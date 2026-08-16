@@ -169,6 +169,7 @@
     "noDisponible": "Not available",
     "expirado": "This service is no longer available for booking",
     "fechaNoDisponible": "This date is not available",
+    "fechaBloqueada": "This date is blocked",
     "fechaDisponible": "Date available",
     "fechaDisponibilidadLimitada": "This date has active bookings — may have limited availability",
     "conReservas": "Has bookings",

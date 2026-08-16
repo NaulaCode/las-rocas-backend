@@ -192,6 +192,14 @@ export default function Contact() {
     setFieldErrors(newFieldErrors);
     if (Object.keys(newFieldErrors).length > 0) return;
 
+    const blocked = new Map<string, string>();
+    (org?.pageContent?.blockedDates || []).forEach((bd: any) => { if (bd.date) blocked.set(bd.date, bd.reason || ''); });
+    if (form.preferredDate && blocked.has(form.preferredDate)) {
+      const reason = blocked.get(form.preferredDate);
+      setError(reason ? `${t('serviceDetail.fechaBloqueada')}: ${reason}` : t('serviceDetail.fechaBloqueada'));
+      return;
+    }
+
     setLoading(true);
     setError('');
 
@@ -599,7 +607,18 @@ export default function Contact() {
                         } />
                         <input type="date" value={form.preferredDate}
                           min={new Date().toISOString().split('T')[0]}
-                          onChange={(e) => setForm({ ...form, preferredDate: e.target.value })}
+                          onChange={(e) => {
+                            setForm({ ...form, preferredDate: e.target.value });
+                            if (e.target.value) {
+                              const bd = (org?.pageContent?.blockedDates || []);
+                              const hit = bd.find((b: any) => b.date === e.target.value);
+                              if (hit) {
+                                setError(hit.reason ? `${t('serviceDetail.fechaBloqueada')}: ${hit.reason}` : t('serviceDetail.fechaBloqueada'));
+                                return;
+                              }
+                            }
+                            setError('');
+                          }}
                           className={inputClass} />
                       </div>
                       {form.preferredDate && checkingAvail && (
