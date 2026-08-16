@@ -101,7 +101,7 @@ export const attractionController = new TouristicAttractionController(attraction
 export const uploadController = new UploadController(uploadUseCases);
 export const auditController = new AuditController(auditUseCases);
 export const contactController = new ContactController(contactUseCases, auditLogger, wsNotifier);
-export const reviewController = new ReviewController(reviewUseCases);
+export const reviewController = new ReviewController(reviewUseCases, wsNotifier);
 export const roleController = new RoleController(roleUseCases, auditLogger);
 export const loadPermissions = createPermissionLoader(roleRepo);
 

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { container } from '../../../../di/container';
 import type { Review } from '../../../../domain/entities/Review';
 
-export default function ReviewsTab() {
+export default function ReviewsTab({ onChange }: { onChange?: () => void }) {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -25,7 +25,7 @@ export default function ReviewsTab() {
         <div className="mb-6">
           <h3 className="text-sm font-semibold text-amber-600 mb-2">Pendientes de Aprobación ({pending.length})</h3>
           <div className="space-y-3">
-            {pending.map(r => <ReviewCard key={r.id} review={r} onApprove={async () => { await container.reviews.approve(r.id); load(); }} onDelete={async () => { await container.reviews.delete(r.id); load(); }} />)}
+            {pending.map(r => <ReviewCard key={r.id} review={r} onApprove={async () => { await container.reviews.approve(r.id); load(); onChange?.(); }} onDelete={async () => { await container.reviews.delete(r.id); load(); onChange?.(); }} />)}
           </div>
         </div>
       )}
@@ -38,7 +38,7 @@ export default function ReviewsTab() {
           </div>
         ) : (
           <div className="space-y-3">
-            {approved.map(r => <ReviewCard key={r.id} review={r} onDelete={async () => { await container.reviews.delete(r.id); load(); }} />)}
+            {approved.map(r => <ReviewCard key={r.id} review={r} onDelete={async () => { await container.reviews.delete(r.id); load(); onChange?.(); }} />)}
           </div>
         )}
       </div>

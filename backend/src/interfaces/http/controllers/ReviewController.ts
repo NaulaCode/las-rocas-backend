@@ -1,12 +1,19 @@
 import { Request, Response, NextFunction } from 'express';
 import { ReviewUseCases } from '../../../application/use-cases/ReviewUseCases';
+import { IWebSocketNotifier } from '../../../domain/ports/IWebSocketNotifier';
 
 export class ReviewController {
-  constructor(private reviewUseCases: ReviewUseCases) {}
+  constructor(
+    private reviewUseCases: ReviewUseCases,
+    private wsNotifier: IWebSocketNotifier,
+  ) {}
 
   async submit(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const review = await this.reviewUseCases.submit(req.body);
+      this.wsNotifier.broadcast('new-review', {
+        id: review.id, name: review.name, serviceName: review.serviceName, rating: review.rating, message: 'Nueva reseña por aprobar',
+      });
       res.status(201).json({ status: 'success', message: 'Reseña enviada. Será publicada tras revisión.', data: review });
     } catch (error) { next(error); }
   }

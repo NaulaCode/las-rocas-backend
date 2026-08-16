@@ -88,6 +88,7 @@ export default function Admin() {
   const [monthlyReservations, setMonthlyReservations] = useState<{ month: string; count: number }[]>([]);
   const [topServices, setTopServices] = useState<{ serviceId: string; serviceName: string; count: number }[]>([]);
   const [unreadMessages, setUnreadMessages] = useState(0);
+  const [pendingReviews, setPendingReviews] = useState(0);
   const [contactRefresh, setContactRefresh] = useState(0);
   const [activityRefresh, setActivityRefresh] = useState(0);
   const [userPermissions, setUserPermissions] = useState<string[]>([]);
@@ -103,10 +104,12 @@ export default function Admin() {
       container.attractions.getAllIncludingInactive().catch(() => []),
       container.contact.getAll().catch(() => []),
       container.auth.getUsers().catch(() => []),
+      container.reviews.getAll().catch(() => []),
 
     ])
-      .then(([srv, nw, rs, qtns, orgData, atr, msgs, adminUsrs]: any[]) => {
+      .then(([srv, nw, rs, qtns, orgData, atr, msgs, adminUsrs, rvws]: any[]) => {
         setUnreadMessages(msgs.filter((m: any) => !m.isRead).length);
+        setPendingReviews(rvws.filter((r: any) => !r.isApproved).length);
         setServices(srv);
         setNews(nw);
         setReservations(rs);
@@ -197,6 +200,10 @@ export default function Admin() {
     container.contact.getAll().then(msgs => setUnreadMessages(msgs.filter(m => !m.isRead).length)).catch(() => {});
   }, []);
 
+  const refreshReviews = useCallback(() => {
+    container.reviews.getAll().then(rs => setPendingReviews(rs.filter(r => !r.isApproved).length)).catch(() => {});
+  }, []);
+
   useWebSocket({
     'new-reservation': () => {
       toast('Nueva reserva recibida', 'info');
@@ -209,6 +216,10 @@ export default function Admin() {
       toast('Nuevo mensaje de contacto', 'info');
       setContactRefresh(n => n + 1);
       refreshMessages();
+    },
+    'new-review': () => {
+      toast('Nueva reseña por aprobar', 'info');
+      refreshReviews();
     },
     'new-audit-log': () => {
       setActivityRefresh(n => n + 1);
@@ -369,7 +380,7 @@ export default function Admin() {
     { id: 'estadisticas', label: 'Estadísticas', count: null, permission: null },
     { id: 'pages', label: 'Páginas', count: 12, permission: 'organization:update' },
     { id: 'attractions', label: 'Atractivos', count: attractions.length, permission: 'attractions:list' },
-    { id: 'reviews', label: 'Reseñas', count: null, permission: 'reviews:list' },
+    { id: 'reviews', label: 'Reseñas', count: pendingReviews, permission: 'reviews:list' },
 
     { id: 'mensajes', label: 'Mensajes', count: unreadMessages, permission: 'contact:list' },
    // { id: 'activity', label: 'Activity Log', count: null, permission: 'audit:list' },
@@ -467,7 +478,7 @@ export default function Admin() {
           <div className="flex items-center gap-2">
             <div className="hidden md:flex items-center bg-gray-100 rounded-lg px-3 py-1.5 text-sm text-gray-400 gap-1">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-              <span className="text-xs text-gray-400">{services.length} servicios · {reservations.filter(r => r.status === 'pendiente').length} pendientes · {unreadMessages} mensajes</span>
+              <span className="text-xs text-gray-400">{services.length} servicios · {reservations.filter(r => r.status === 'pendiente').length} pendientes · {unreadMessages} mensajes · {pendingReviews} reseñas</span>
             </div>
             <div className="hidden md:flex items-center gap-1 px-3 py-1.5">
               <span className="text-xs text-gray-400">Bienvenido,</span>
@@ -581,7 +592,7 @@ export default function Admin() {
                       user={user} toast={toast}
                     />
                   )}
-                  {tab === 'reviews' && <ReviewsTab />}
+                  {tab === 'reviews' && <ReviewsTab onChange={refreshReviews} />}
 
                   {tab === 'roles' && <RolesTab />}
                   {tab === 'mensajes' && <ContactMessageTab key={contactRefresh} />}
