@@ -55,6 +55,7 @@ function ReviewCard({ review, onApprove, onDelete }: { review: Review; onApprove
             <span className="font-medium text-sm text-gray-800">{review.name}</span>
             {review.serviceName && <span className="text-xs text-gray-400">· {review.serviceName}</span>}
             <span className="text-xs text-gray-400">· {new Date(review.createdAt).toLocaleDateString()}</span>
+            {review.email && <span className="text-xs text-gray-500">· {review.email}</span>}
           </div>
           <div className="flex items-center gap-0.5 mb-2">
             {[1, 2, 3, 4, 5].map(s => (
