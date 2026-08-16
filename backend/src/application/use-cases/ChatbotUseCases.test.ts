@@ -280,6 +280,7 @@ describe('ChatbotUseCases', () => {
           save: async () => {},
           delete: async () => {},
           deleteAll: async () => {},
+          count: async () => 1,
         },
       });
       ucWithAI = buildUseCase(m);
@@ -381,6 +382,7 @@ describe('ChatbotUseCases', () => {
           save: async () => {},
           delete: async () => {},
           deleteAll: async () => {},
+          count: async () => 1,
         },
       });
       ucWithRAG = buildUseCase(m);

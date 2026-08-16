@@ -5,7 +5,7 @@ import { logger } from '../../shared/logger/logger';
 const TEXT_EMBEDDING_MODEL = 'gemini-embedding-001';
 const CHAT_MODEL = 'gemini-2.5-flash';
 const API_BASE = 'generativelanguage.googleapis.com';
-const MAX_RETRIES = 3;
+const MAX_RETRIES = 4;
 
 function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -128,7 +128,10 @@ export class GeminiService implements IAiService {
         const isRateLimit = msg.includes('rate_limit') || msg.includes('Too Many Requests');
 
         if ((isQuota || isRateLimit) && attempt < MAX_RETRIES) {
-          const wait = Math.min(1000 * Math.pow(2, attempt) + Math.random() * 1000, 30000);
+          const retryHint = msg.match(/retry in\s+([\d.]+)\s*s/i);
+          const wait = retryHint
+            ? Math.min(parseFloat(retryHint[1]) * 1000 + 2000, 90000)
+            : Math.min(1000 * Math.pow(2, attempt) + Math.random() * 1000, 60000);
           logger.warn(`Gemini rate limited (attempt ${attempt}/${MAX_RETRIES}), retrying in ${Math.round(wait)}ms`);
           await sleep(wait);
           continue;

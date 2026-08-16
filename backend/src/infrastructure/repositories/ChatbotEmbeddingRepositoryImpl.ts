@@ -75,6 +75,11 @@ export class ChatbotEmbeddingRepositoryImpl implements IChatbotEmbeddingReposito
     await prisma.chatbotEmbedding.deleteMany();
   }
 
+  async count(): Promise<number> {
+    const prisma = getPrisma();
+    return prisma.chatbotEmbedding.count();
+  }
+
   async searchSimilar(embedding: number[], topK: number = 10): Promise<SemanticSearchResult[]> {
     if (this.pgvectorAvailable !== false) {
       try {

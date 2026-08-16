@@ -11,4 +11,5 @@ export interface IChatbotEmbeddingRepository {
   save(id: string, content: string, embedding: number[]): Promise<void>;
   delete(id: string): Promise<void>;
   deleteAll(): Promise<void>;
+  count(): Promise<number>;
 }

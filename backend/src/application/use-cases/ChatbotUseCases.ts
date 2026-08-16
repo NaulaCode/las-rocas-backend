@@ -27,6 +27,11 @@ const AVAILABILITY_INTENT = [
   'cupo', 'disponibilidad', 'disponible', 'hay lugar', 'hay espacio',
   'lugar disponible', 'quedan', 'espacio libre', 'capacidad', 'espacio para',
 ];
+const GENERIC_KEYWORDS = new Set([
+  'cuanto', 'cuesta', 'cuestan', 'costo', 'costos', 'precio', 'precios', 'valor', 'tarifa',
+  'price', 'cost', 'rate', 'costs', 'hola', 'saludos', 'gracias', 'favor', 'quiero',
+  'saber', 'queria', 'quisiera', 'pregunta', 'preguntar', 'podria', 'podrian', 'puede',
+]);
 
 export interface ChatSource {
   type: 'service' | 'faq' | 'attraction' | 'news' | 'organization';
@@ -149,6 +154,7 @@ export class ChatbotUseCases {
         .replace(/[¿?!¡.,;:]/g, '')
         .split(/\s+/)
         .filter(w => w.length > 3)
+        .filter(w => !GENERIC_KEYWORDS.has(w))
         .filter(w => !bestMatch.keywords.some(k => k.toLowerCase() === w));
 
       if (queryWords.length === 0) return;
@@ -203,6 +209,10 @@ export class ChatbotUseCases {
     }
 
     try {
+      if (this.hasAvailabilityIntent(query)) {
+        return await this.answerAvailability(query, session, sessionId);
+      }
+
       const ragResult = await this.buildRagContext(query);
       const lang = this.detectLanguage(query);
       session.language = lang;
@@ -273,6 +283,99 @@ export class ChatbotUseCases {
     }
   }
 
+  private parsePeopleFromQuery(query: string): number | undefined {
+    const m = query.match(/(\d+)\s*(?:personas?|pax)/i);
+    if (!m) return undefined;
+    const n = parseInt(m[1], 10);
+    return n > 0 && n < 1000 ? n : undefined;
+  }
+
+  private buildAvailabilityArgs(query: string): Record<string, any> {
+    const args: Record<string, any> = {};
+    const people = this.parsePeopleFromQuery(query);
+    if (people !== undefined) args.people = people;
+    if (this.parseDateArg(query)) args.date = query;
+    return args;
+  }
+
+  private async answerAvailability(query: string, session: ChatbotSession, sessionId?: string): Promise<ChatResult> {
+    const startTime = Date.now();
+    const lang = this.detectLanguage(query);
+    session.language = lang;
+
+    const ragResult = await this.buildRagContext(query);
+    const systemPrompt = this.buildSystemPrompt(ragResult.context, lang);
+    const args = this.buildAvailabilityArgs(query);
+    const fnResult = await this.executeFunction({ name: 'check_availability', args });
+
+    const aiMessages = this.buildChatHistory(session);
+    const fnMessages: AiChatMessage[] = [
+      { role: 'model', content: JSON.stringify({ functionCall: { name: 'check_availability', args } }) },
+      { role: 'user', content: JSON.stringify({ functionResponse: fnResult }) },
+    ];
+
+    const result = await this.aiService!.chat({ systemPrompt, messages: [...aiMessages, ...fnMessages], tools: TOOLS });
+    const finalAnswer = (result.text || fnResult.message || '').trim();
+
+    session.history.push({ role: 'assistant', content: finalAnswer });
+    this.trimHistory(session);
+    await this.persistSession(session);
+
+    const elapsed = Date.now() - startTime;
+    this.logger.info('Disponibilidad respondida (determinista)', { query, elapsedMs: elapsed });
+
+    const logId = await this.logInteraction(query, finalAnswer, 'ai', undefined, sessionId, 'alta');
+    const related = await this.getRelatedQuestions(query);
+    return { answer: finalAnswer, aiGenerated: true, logId, relatedQuestions: related, sources: ragResult.sources };
+  }
+
+  private async streamAvailability(
+    query: string,
+    session: ChatbotSession,
+    sessionId: string | undefined,
+    onToken: (token: string) => void,
+    onDone: (result: { answer: string; aiGenerated: boolean; logId?: string; sources?: ChatSource[]; relatedQuestions?: { question: string; answer: string }[] }) => void,
+  ): Promise<void> {
+    const startTime = Date.now();
+    const lang = this.detectLanguage(query);
+    session.language = lang;
+
+    const ragResult = await this.buildRagContext(query);
+    const systemPrompt = this.buildSystemPrompt(ragResult.context, lang);
+    const args = this.buildAvailabilityArgs(query);
+    const fnResult = await this.executeFunction({ name: 'check_availability', args });
+
+    const aiMessages = this.buildChatHistory(session);
+    const fnMessages: AiChatMessage[] = [
+      { role: 'model', content: JSON.stringify({ functionCall: { name: 'check_availability', args } }) },
+      { role: 'user', content: JSON.stringify({ functionResponse: fnResult }) },
+    ];
+
+    const ai = this.aiService!;
+    let accumulatedText = '';
+    await ai.chatStream({
+      systemPrompt,
+      messages: [...aiMessages, ...fnMessages],
+      tools: TOOLS,
+      onToken: (token) => {
+        accumulatedText += token;
+        onToken(token);
+      },
+    });
+
+    const finalAnswer = accumulatedText.trim() || fnResult.message || '';
+    session.history.push({ role: 'assistant', content: finalAnswer });
+    this.trimHistory(session);
+    await this.persistSession(session);
+
+    const elapsed = Date.now() - startTime;
+    this.logger.info('Disponibilidad respondida (stream, determinista)', { query, elapsedMs: elapsed });
+
+    const logId = await this.logInteraction(query, finalAnswer, 'ai', undefined, sessionId, 'alta');
+    const relatedQ = await this.getRelatedQuestions(query);
+    onDone({ answer: finalAnswer, aiGenerated: true, logId, sources: ragResult.sources, relatedQuestions: relatedQ });
+  }
+
   async chatStream(
     query: string,
     sessionId: string | undefined,
@@ -310,6 +413,11 @@ export class ChatbotUseCases {
     }
 
     try {
+      if (this.hasAvailabilityIntent(query)) {
+        await this.streamAvailability(query, session, sessionId, onToken, onDone);
+        return;
+      }
+
       const ragResult = await this.buildRagContext(query);
       const lang = this.detectLanguage(query);
       session.language = lang;
@@ -684,9 +792,8 @@ Email: ${org.email || ''}`);
   private async ensureEmbeddingsPopulated(query: string): Promise<void> {
     if (!this.embeddingService || !this.embeddingRepo) return;
     try {
-      const testEmb = await this.embeddingService.embed('test');
-      const existing = await this.embeddingRepo.searchSimilar(testEmb, 1);
-      if (existing.length > 0) return;
+      const existing = await this.embeddingRepo.count();
+      if (existing > 0) return;
 
       this.logger.info('RAG: poblando embeddings para todas las entidades...');
 
