@@ -298,24 +298,23 @@ export class ChatbotUseCases {
     return args;
   }
 
+  private formatAvailability(fnResult: Record<string, any>): string {
+    const msg = fnResult?.message || 'Consulta la disponibilidad en nuestro formulario de reserva para registrar tu visita.';
+    if (fnResult?.available && Array.isArray(fnResult.details) && fnResult.details.length > 0) {
+      const details = fnResult.details.map((d: any) => `- ${d.name}: ${d.spots} cupos disponibles`).join('\n');
+      return `${msg}\n\nServicios con cupo disponible:\n${details}`;
+    }
+    return msg;
+  }
+
   private async answerAvailability(query: string, session: ChatbotSession, sessionId?: string): Promise<ChatResult> {
     const startTime = Date.now();
     const lang = this.detectLanguage(query);
     session.language = lang;
 
-    const ragResult = await this.buildRagContext(query);
-    const systemPrompt = this.buildSystemPrompt(ragResult.context, lang);
     const args = this.buildAvailabilityArgs(query);
     const fnResult = await this.executeFunction({ name: 'check_availability', args });
-
-    const aiMessages = this.buildChatHistory(session);
-    const fnMessages: AiChatMessage[] = [
-      { role: 'model', content: JSON.stringify({ functionCall: { name: 'check_availability', args } }) },
-      { role: 'user', content: JSON.stringify({ functionResponse: fnResult }) },
-    ];
-
-    const result = await this.aiService!.chat({ systemPrompt, messages: [...aiMessages, ...fnMessages], tools: TOOLS });
-    const finalAnswer = (result.text || fnResult.message || '').trim();
+    const finalAnswer = this.formatAvailability(fnResult);
 
     session.history.push({ role: 'assistant', content: finalAnswer });
     this.trimHistory(session);
@@ -326,9 +325,8 @@ export class ChatbotUseCases {
 
     const logId = await this.logInteraction(query, finalAnswer, 'ai', undefined, sessionId, 'alta');
     const related = await this.getRelatedQuestions(query);
-    return { answer: finalAnswer, aiGenerated: true, logId, relatedQuestions: related, sources: ragResult.sources };
+    return { answer: finalAnswer, aiGenerated: true, logId, relatedQuestions: related, sources: [] };
   }
-
   private async streamAvailability(
     query: string,
     session: ChatbotSession,
@@ -340,40 +338,22 @@ export class ChatbotUseCases {
     const lang = this.detectLanguage(query);
     session.language = lang;
 
-    const ragResult = await this.buildRagContext(query);
-    const systemPrompt = this.buildSystemPrompt(ragResult.context, lang);
     const args = this.buildAvailabilityArgs(query);
     const fnResult = await this.executeFunction({ name: 'check_availability', args });
+    const finalAnswer = this.formatAvailability(fnResult);
 
-    const aiMessages = this.buildChatHistory(session);
-    const fnMessages: AiChatMessage[] = [
-      { role: 'model', content: JSON.stringify({ functionCall: { name: 'check_availability', args } }) },
-      { role: 'user', content: JSON.stringify({ functionResponse: fnResult }) },
-    ];
-
-    const ai = this.aiService!;
-    let accumulatedText = '';
-    await ai.chatStream({
-      systemPrompt,
-      messages: [...aiMessages, ...fnMessages],
-      tools: TOOLS,
-      onToken: (token) => {
-        accumulatedText += token;
-        onToken(token);
-      },
-    });
-
-    const finalAnswer = accumulatedText.trim() || fnResult.message || '';
     session.history.push({ role: 'assistant', content: finalAnswer });
     this.trimHistory(session);
     await this.persistSession(session);
+
+    onToken(finalAnswer);
 
     const elapsed = Date.now() - startTime;
     this.logger.info('Disponibilidad respondida (stream, determinista)', { query, elapsedMs: elapsed });
 
     const logId = await this.logInteraction(query, finalAnswer, 'ai', undefined, sessionId, 'alta');
     const relatedQ = await this.getRelatedQuestions(query);
-    onDone({ answer: finalAnswer, aiGenerated: true, logId, sources: ragResult.sources, relatedQuestions: relatedQ });
+    onDone({ answer: finalAnswer, aiGenerated: true, logId, sources: [], relatedQuestions: relatedQ });
   }
 
   async chatStream(

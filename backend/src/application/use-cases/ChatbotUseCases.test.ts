@@ -303,6 +303,21 @@ describe('ChatbotUseCases', () => {
       assert.equal(result.available, false);
       assert.ok(result.message.includes('No pude entender la fecha'));
     });
+
+    it('formatAvailability appends service details when available', () => {
+      const formatted = (ucWithAI as any).formatAvailability({
+        available: true,
+        message: 'Sí, existe disponibilidad para el domingo.',
+        details: [{ name: 'Piscinas', spots: 999 }, { name: 'Senderos', spots: 999 }],
+      });
+      assert.ok(formatted.includes('Piscinas: 999 cupos disponibles'));
+      assert.ok(formatted.includes('Senderos: 999 cupos disponibles'));
+    });
+
+    it('formatAvailability returns raw message when no details', () => {
+      const formatted = (ucWithAI as any).formatAvailability({ available: false, message: 'No hay disponibilidad.' });
+      assert.equal(formatted, 'No hay disponibilidad.');
+    });
   });
 
   describe('get_services function', () => {
