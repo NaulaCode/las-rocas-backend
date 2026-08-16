@@ -27,7 +27,7 @@ function createMocks(overrides: any = {}) {
         questions.splice(questions.findIndex(q => q.id === id), 1);
         return questions.length < before;
       },
-      search: async (query: string) => questions.map(q => ({ ...q, relevance: q.keywords?.some((kw: string) => query.toLowerCase().includes(kw)) ? 30 : 10 })),
+      search: async (query: string) => questions.map(q => ({ ...q, relevance: q.keywords?.some((kw: string) => query.toLowerCase().includes(kw)) ? 80 : 10 })),
       ...overrides.chatbotRepo,
     },
     serviceRepo: {
@@ -241,6 +241,17 @@ describe('ChatbotUseCases', () => {
       const result = await uc.chat('¿Cuál es el horario?');
       assert.equal(result.aiGenerated, false);
       assert.ok(result.answer.includes('lunes a sábado'));
+    });
+
+    it('skips FAQ matching for availability queries', async () => {
+      await uc.createQuestion({
+        question: '¿Hay eventos este fin de semana?',
+        answer: 'Sí, hay eventos.',
+        category: 'general',
+        keywords: ['disponibilidad', 'domingo'],
+      });
+      const match = await uc.findFaqMatch('¿hay disponibilidad para el domingo?');
+      assert.equal(match, null);
     });
   });
 

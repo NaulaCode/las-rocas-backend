@@ -22,6 +22,11 @@ import { CreateChatbotQuestionData, UpdateChatbotQuestionData } from '../../doma
 const MAX_HISTORY = 10;
 const CONTEXT_TTL = 5 * 60 * 1000;
 const MIN_SEMANTIC_SIMILARITY = 0.45;
+const FAQ_MIN_RELEVANCE = 50;
+const AVAILABILITY_INTENT = [
+  'cupo', 'disponibilidad', 'disponible', 'hay lugar', 'hay espacio',
+  'lugar disponible', 'quedan', 'espacio libre', 'capacidad', 'espacio para',
+];
 
 export interface ChatSource {
   type: 'service' | 'faq' | 'attraction' | 'news' | 'organization';
@@ -428,9 +433,19 @@ export class ChatbotUseCases {
     return 'en';
   }
 
+  private hasAvailabilityIntent(query: string): boolean {
+    const q = query.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    return AVAILABILITY_INTENT.some((p) => q.includes(p));
+  }
+
   private async findFaqMatch(query: string): Promise<{ question: string; answer: string; answerEn?: string | null; relevance?: number } | null> {
+    if (this.hasAvailabilityIntent(query)) {
+      this.logger.info('Intención de disponibilidad detectada, omitiendo FAQ', { query });
+      return null;
+    }
+
     const results = await this.chatbotRepository.search(query);
-    const best = results.find(q => (q.relevance ?? 0) >= 25);
+    const best = results.find(q => (q.relevance ?? 0) >= FAQ_MIN_RELEVANCE);
     if (best) return { question: best.question, answer: best.answer, answerEn: best.answerEn, relevance: best.relevance };
 
     if (!this.aiService) return null;
