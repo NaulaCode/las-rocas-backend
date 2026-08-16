@@ -357,7 +357,7 @@ export default function PagesTab({ org, orgForm, setOrgForm, pageContent, setPag
           <h3 className="text-sm font-semibold text-gray-700 mb-4">Información de Contacto</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Field label="Teléfono" value={contacto.phone || ''} onChange={(v) => updatePC('contacto', { ...contacto, phone: v })} />
-            <Field label="Número WhatsApp" value={contacto.whatsappNumber || ''} onChange={(v) => updatePC('contacto', { ...contacto, whatsappNumber: v })} placeholder="Ej: 593999123456 (sin +)" />
+            <Field label="Número WhatsApp" value={contacto.whatsappNumber || ''} onChange={(v) => updatePC('contacto', { ...contacto, whatsappNumber: v.replace(/[^0-9]/g, '') })} placeholder="Ej: 593999123456 (solo dígitos)" />
             <Field label="Email" value={contacto.email || ''} onChange={(v) => updatePC('contacto', { ...contacto, email: v })} />
             <Field label="Dirección" value={contacto.address || ''} onChange={(v) => updatePC('contacto', { ...contacto, address: v })} />
             <Field label="Horario" value={contacto.schedule || ''} onChange={(v) => updatePC('contacto', { ...contacto, schedule: v })} />

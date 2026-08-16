@@ -7,6 +7,7 @@ import type { TouristicAttraction } from '../../domain/entities/TouristicAttract
 import type { Organization } from '../../domain/entities/Organization';
 import DetailLayout from '../components/DetailLayout';
 import ImageLightbox from '../components/ImageLightbox';
+import { waLink } from '../utils/whatsapp';
 
 const categoryGradients: Record<string, string> = {
   natural: 'from-green-100 to-emerald-200', cultural: 'from-purple-100 to-indigo-200',
@@ -131,7 +132,7 @@ export default function TouristicAttractionDetail() {
             <h3 className="font-bold text-lg mb-2">{t('attractionDetail.teInteresa')}</h3>
             <p className="text-emerald-100 text-sm mb-4">{t('attractionDetail.contactanos')}</p>
             <a
-              href={`https://wa.me/${whatsapp}?text=${encodeURIComponent(t('attractionDetail.consultaMsg', { nombre: attraction.name }))}`}
+              href={waLink(whatsapp, t('attractionDetail.consultaMsg', { nombre: attraction.name }))}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center justify-center gap-2 w-full bg-white text-emerald-700 font-semibold py-3 px-4 rounded-xl hover:bg-emerald-50 transition-colors"

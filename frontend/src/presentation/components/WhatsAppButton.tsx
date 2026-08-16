@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { container } from '../../di/container';
 import type { Organization } from '../../domain/entities/Organization';
+import { waLink } from '../utils/whatsapp';
 
 export default function WhatsAppButton() {
   const [number, setNumber] = useState('');
@@ -25,7 +26,7 @@ export default function WhatsAppButton() {
 
   return (
     <motion.a
-      href={`https://wa.me/${number}`}
+      href={waLink(number)}
       target="_blank"
       rel="noopener noreferrer"
       initial={{ opacity: 0, scale: 0 }}

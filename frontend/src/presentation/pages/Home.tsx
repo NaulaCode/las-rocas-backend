@@ -12,6 +12,7 @@ import AnimatedPrice from '../components/AnimatedPrice';
 import EmptyState from '../components/EmptyState';
 import { HeroSkeleton, CardSkeleton, NewsCardSkeleton } from '../components/Skeleton';
 import { getYouTubeEmbedUrl, getFacebookEmbedUrl, getTikTokEmbedUrl, getInstagramEmbedUrl, getEmbedType } from '../utils/video';
+import { waLink } from '../utils/whatsapp';
 import { useTranslation } from 'react-i18next';
 import i18n from '../../i18n';
 import ProfileAvatar from '../components/ProfileAvatar';
@@ -871,7 +872,7 @@ export default function Home() {
               {t('home.contactoWhatsApp')}
             </p>
             <a
-              href={`https://wa.me/${whatsapp}`}
+              href={waLink(whatsapp)}
               target="_blank" rel="noopener noreferrer"
               className="inline-flex items-center gap-2 bg-green-500 text-white px-8 py-3.5 rounded-full font-bold text-lg hover:bg-green-600 transition-all transform hover:scale-105 hover:-translate-y-0.5 shadow-xl shadow-green-500/30"
             >
