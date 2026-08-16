@@ -33,6 +33,16 @@ export default function Layout() {
   }, []);
 
   useEffect(() => {
+    const logo = org?.logo;
+    if (!logo) return;
+    const links = document.querySelectorAll<HTMLLinkElement>('link[rel="icon"], link[rel="apple-touch-icon"]');
+    links.forEach((link) => {
+      link.href = logo;
+      if (link.rel === 'icon') link.type = 'image/png';
+    });
+  }, [org?.logo]);
+
+  useEffect(() => {
     const onScroll = () => {
       setScrolled(window.scrollY > 20);
       setShowBackToTop(window.scrollY > 400);
