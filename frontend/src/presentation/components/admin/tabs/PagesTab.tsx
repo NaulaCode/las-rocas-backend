@@ -58,13 +58,13 @@ interface Props {
   toast: any;
 }
 
-const pageSubTabs = ['general', 'home', 'servicios', 'atractivos', 'noticias', 'conocenos', 'contacto', 'galeria', 'categorias', 'notificaciones', 'fechas-bloqueadas', 'usuarios-admin'];
+const pageSubTabs = ['general', 'home', 'servicios', 'atractivos', 'noticias', 'conocenos', 'contacto', 'galeria', 'categorias', 'notificaciones', 'usuarios-admin'];
 
 const subTabLabels: Record<string, string> = {
   general: 'General', home: 'Inicio', servicios: 'Servicios', atractivos: 'Atractivos',
   noticias: 'Noticias', conocenos: 'Conócenos', contacto: 'Contacto',
   galeria: 'Galería', categorias: 'Categorías',
-  notificaciones: 'Notificaciones', 'fechas-bloqueadas': 'Fechas Bloqueadas', 'usuarios-admin': 'Usuarios Admin',
+  notificaciones: 'Notificaciones', 'usuarios-admin': 'Usuarios Admin',
 };
 
 export default function PagesTab({ org, orgForm, setOrgForm, pageContent, setPageContent, logoUrl, setLogoUrl, adminUsers, setAdminUsers, user, toast: t }: Props) {
@@ -72,8 +72,7 @@ export default function PagesTab({ org, orgForm, setOrgForm, pageContent, setPag
   const [notifMessage, setNotifMessage] = useState('');
   const [notifStart, setNotifStart] = useState('');
   const [notifEnd, setNotifEnd] = useState('');
-  const [blockDate, setBlockDate] = useState('');
-  const [blockReason, setBlockReason] = useState('');
+
   const [showAdminForm, setShowAdminForm] = useState(false);
   const [editingUser, setEditingUser] = useState<PublicUser | null>(null);
   const [newEmail, setNewEmail] = useState('');
@@ -589,50 +588,6 @@ export default function PagesTab({ org, orgForm, setOrgForm, pageContent, setPag
     );
   };
 
-  const renderFechasBloqueadasTab = () => {
-    const blockedDates = pageContent.blockedDates || [];
-    return (
-      <div className="space-y-4">
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
-          <h3 className="text-sm font-semibold text-gray-700 mb-4">Bloquear Fecha</h3>
-          <div className="flex gap-3 items-end">
-            <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Fecha</label>
-              <input type="date" value={blockDate} onChange={(e) => setBlockDate(e.target.value)}
-                className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition-all" />
-            </div>
-            <div className="flex-1">
-              <label className="block text-xs font-medium text-gray-500 mb-1">Razón</label>
-              <input value={blockReason} onChange={(e) => setBlockReason(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition-all" placeholder="Motivo del bloqueo..." />
-            </div>
-            <button onClick={() => { if (!blockDate) return; const nb = [...blockedDates, { id: Date.now().toString(), date: blockDate, reason: blockReason, createdAt: new Date().toISOString() }]; updatePC('blockedDates', nb); setBlockDate(''); setBlockReason(''); }}
-              className="px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700 transition-colors whitespace-nowrap">Bloquear</button>
-          </div>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
-          <h3 className="text-sm font-semibold text-gray-700 mb-4">Fechas Bloqueadas</h3>
-          {blockedDates.length === 0 ? (
-            <p className="text-sm text-gray-400 text-center py-6">No hay fechas bloqueadas</p>
-          ) : (
-            <div className="space-y-2">
-              {blockedDates.map((bd: any) => (
-                <div key={bd.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <div>
-                    <p className="text-sm font-medium text-gray-700">{new Date(bd.date).toLocaleDateString()}</p>
-                    {bd.reason && <p className="text-xs text-gray-400">{bd.reason}</p>}
-                  </div>
-                  <button onClick={() => updatePC('blockedDates', blockedDates.filter((d: any) => d.id !== bd.id))}
-                    className="p-1.5 text-red-400 hover:text-red-600"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  };
-
   const [confirmPass, setConfirmPass] = useState('');
 
   const renderUsuariosAdminTab = () => {
@@ -857,7 +812,6 @@ export default function PagesTab({ org, orgForm, setOrgForm, pageContent, setPag
       case 'galeria': return renderGaleriaTab();
       case 'categorias': return renderCategoriasTab();
       case 'notificaciones': return renderNotificacionesTab();
-      case 'fechas-bloqueadas': return renderFechasBloqueadasTab();
       case 'usuarios-admin': return renderUsuariosAdminTab();
       default: return null;
     }
