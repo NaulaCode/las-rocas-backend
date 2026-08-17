@@ -95,7 +95,7 @@ export default function ServicioDetalle() {
     setSaving(true);
     setError('');
     try {
-      await container.reservations.create({ serviceId: id, serviceName: service?.name, ...form, userPhone: form.userPhone.trim() });
+      await container.reservations.create({ serviceId: service?.id || id, serviceName: service?.name, ...form, userPhone: form.userPhone.trim() });
       setSuccess(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al enviar');
